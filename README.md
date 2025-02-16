@@ -153,7 +153,8 @@ Symbols can be accessed directly through linking, or through hk::util::lookupSym
 
 ## Credits:
 * tetraxile for some help and testing
-* uhhhh
+* shadowninja108
+* marysaka for [oss-rtld](https://github.com/marysaka/oss-rtld)
 
 ## TODO:
 * Pre-compiled smaller packages for musl and libc++
