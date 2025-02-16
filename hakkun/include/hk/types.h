@@ -62,7 +62,7 @@ namespace hk {
 
     using Handle = u32;
 
-    constexpr size sPageSize = 4_KB;
+    constexpr size cPageSize = 4_KB;
 
     template <typename T>
     constexpr T alignUp(T from, size alignment) { return T((ptr(from) + (alignment - 1)) & ~(alignment - 1)); }
@@ -70,9 +70,9 @@ namespace hk {
     constexpr T alignDown(T from, size alignment) { return T(ptr(from) & ~(alignment - 1)); }
 
     template <typename T>
-    constexpr T alignUpPage(T from) { return alignUp(from, sPageSize); }
+    constexpr T alignUpPage(T from) { return alignUp(from, cPageSize); }
     template <typename T>
-    constexpr T alignDownPage(T from) { return alignDown(from, sPageSize); }
+    constexpr T alignDownPage(T from) { return alignDown(from, cPageSize); }
 
 } // namespace hk
 

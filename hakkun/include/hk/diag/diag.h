@@ -9,11 +9,11 @@ namespace hk::diag {
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
 
-    constexpr char sAssertionFailFormat[] =
+    constexpr char cAssertionFailFormat[] =
         R"(
 AssertionFailed: %s
 )";
-    constexpr char sAbortUnlessResultFormat[] =
+    constexpr char cAbortUnlessResultFormat[] =
         R"(
 ResultAbort (%04d-%04d) [from %s]
 )";
@@ -24,34 +24,20 @@ ResultAbort (%04d-%04d) [from %s]
     {                                             \
         const bool _condition_temp = (CONDITION); \
         if (_condition_temp == false) {           \
+            __builtin_trap();                     \
         }                                         \
     }
 
-#define HK_ABORT(FMT, ...)               \
-    {                                    \
-        __builtin_trap();                \
-        ::hk::diag::abortImpl(           \
-            ::hk::svc::BreakReason_User, \
-            ::hk::diag::ResultAbort(),   \
-            nullptr,                     \
-            0,                           \
-            nullptr,                     \
-            0);                          \
+#define HK_ABORT(FMT, ...) \
+    {                      \
+        __builtin_trap();  \
     }
 
 #define HK_ABORT_UNLESS(CONDITION, FMT, ...)      \
     {                                             \
         const bool _condition_temp = (CONDITION); \
-        const char* _fmt = FMT;                   \
         if (_condition_temp == false) {           \
             __builtin_trap();                     \
-            ::hk::diag::abortImpl(                \
-                ::hk::svc::BreakReason_User,      \
-                ::hk::diag::ResultAbort(),        \
-                nullptr,                          \
-                0,                                \
-                nullptr,                          \
-                0);                               \
         }                                         \
     }
 
@@ -60,15 +46,7 @@ ResultAbort (%04d-%04d) [from %s]
         const ::hk::Result _result_temp = RESULT; \
         if (_result_temp.failed()) {              \
             __builtin_trap();                     \
-            ::hk::diag::abortImpl(                \
-                ::hk::svc::BreakReason_User,      \
-                _result_temp,                     \
-                nullptr,                          \
-                0,                                \
-                nullptr,                          \
-                0);                               \
-        }                                         \
-    }
+        }
 
 #else
 
@@ -81,7 +59,7 @@ ResultAbort (%04d-%04d) [from %s]
                 ::hk::diag::ResultAssertionFailure(), \
                 __FILE__,                             \
                 __LINE__,                             \
-                ::hk::diag::sAssertionFailFormat,     \
+                ::hk::diag::cAssertionFailFormat,     \
                 #CONDITION);                          \
         }                                             \
     }
@@ -121,7 +99,7 @@ ResultAbort (%04d-%04d) [from %s]
                 _result_temp,                         \
                 __FILE__,                             \
                 __LINE__,                             \
-                ::hk::diag::sAbortUnlessResultFormat, \
+                ::hk::diag::cAbortUnlessResultFormat, \
                 _result_temp.getModule() + 2000,      \
                 _result_temp.getDescription(),        \
                 #RESULT);                             \

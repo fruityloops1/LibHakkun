@@ -96,7 +96,11 @@ namespace hk::sail {
             _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
         };
 
-        constexpr size sSymbolEntrySize = util::max(sizeof(SymbolDataBlock), sizeof(SymbolDynamic), sizeof(SymbolImmediate));
+        constexpr size cSymbolEntrySize = util::max(sizeof(SymbolDataBlock), sizeof(SymbolDynamic), sizeof(SymbolImmediate), sizeof(SymbolReadADRPGlobal), sizeof(SymbolArithmetic), sizeof(SymbolMultipleCandidate));
+
+#ifdef __aarch64__
+        static_assert(cSymbolEntrySize == 32);
+#endif
 
         class SymbolEntry {
             union {
@@ -143,13 +147,6 @@ namespace hk::sail {
             }
 
             u32 getNameMurmur32() const { return mBase.destNameMurmur; }
-            bool isApplicable() const {
-                if (mBase.type == Symbol::Type_Immediate) {
-                    if (!mImmediate.isVersionValid())
-                        return false;
-                }
-                return true;
-            }
         };
 
         void loadVersions();

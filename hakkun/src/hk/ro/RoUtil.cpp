@@ -22,7 +22,7 @@ namespace hk::ro {
 
         constexpr char sGnuHashMagic[] = { 'G', 'N', 'U', '\0' };
         ptr rodataEnd = module.rodata.end();
-        for (ptr search = rodataEnd; search >= rodataEnd - hk::sPageSize * 2; search--) {
+        for (ptr search = rodataEnd; search >= rodataEnd - hk::cPageSize * 2; search--) {
             if (__builtin_memcmp((void*)search, sGnuHashMagic, sizeof(sGnuHashMagic)) == 0) {
                 const u8* buildId = (const u8*)(search + sizeof(sGnuHashMagic));
                 __builtin_memcpy(out, buildId, sBuildIdSize);

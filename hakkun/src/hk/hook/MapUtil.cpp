@@ -33,7 +33,7 @@ namespace hk::hook {
         while (true) {
             size randomPage = util::getRandomU64() % maxPage;
 
-            ptr attempt = aslrStart + randomPage * sPageSize;
+            ptr attempt = aslrStart + randomPage * cPageSize;
             svc::MemoryInfo memInfo;
             u32 pageInfo;
 
