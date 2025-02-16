@@ -11,8 +11,6 @@ namespace hk::ro {
         svc::MemoryInfo curRangeInfo;
         u32 pageInfo;
         HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, module->m_Base));
-        if (curRangeInfo.permission != svc::MemoryPermission_ReadExecute)
-            *(int*)module->m_Base = 0;
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadExecute, ResultUnusualSectionLayout());
 
         text = { curRangeInfo.base_address, curRangeInfo.size };

@@ -13,6 +13,8 @@ namespace hk::sail {
 
     namespace detail {
 
+        class SymbolEntry;
+
         struct Symbol {
             enum Type
             {
@@ -21,6 +23,7 @@ namespace hk::sail {
                 Type_DataBlock,
                 Type_ReadADRPGlobal,
                 Type_Arithmetic,
+                Type_MultipleCandidate,
             };
 
             const u32 destNameMurmur;
@@ -30,9 +33,9 @@ namespace hk::sail {
             bool isCacheDisabled() const { return symbolPtrCache == 1; }
         };
 
-#define _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC         \
-    void apply(ptr* out, const char* destSymbol); \
-    void apply(ptr* out, const u32* destSymbolMurmur)
+#define _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC                     \
+    void apply(bool abort, ptr* out, const char* destSymbol); \
+    void apply(bool abort, ptr* out, const u32* destSymbolMurmur)
 
         struct SymbolVersioned : Symbol {
             const u64 versionsBitset;
@@ -67,6 +70,8 @@ namespace hk::sail {
             const u32 moduleIdx;
             const u32 offsetIntoModule;
 
+            bool isVersionValid() const { return isVersion(moduleIdx); }
+
             _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
         };
 
@@ -84,6 +89,13 @@ namespace hk::sail {
             _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
         };
 
+        struct SymbolMultipleCandidate : Symbol {
+            const uintptr_t offsetToCandidates;
+            const u64 numCandidates;
+
+            _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
+        };
+
         constexpr size sSymbolEntrySize = util::max(sizeof(SymbolDataBlock), sizeof(SymbolDynamic), sizeof(SymbolImmediate));
 
         class SymbolEntry {
@@ -93,12 +105,13 @@ namespace hk::sail {
                 SymbolImmediate mImmediate;
                 SymbolReadADRPGlobal mReadADRPGlobal;
                 SymbolArithmetic mArithmetic;
+                SymbolMultipleCandidate mMultiple;
                 Symbol mBase;
             };
 
         public:
             _HK_SAIL_PRECALC_TEMPLATE
-            void apply(ptr* out, const T* destSymbol) {
+            void apply(bool abort, ptr* out, const T* destSymbol) {
                 if (!mBase.isCacheDisabled() && mBase.symbolPtrCache != 0) { // > 1
                     *out = mBase.symbolPtrCache;
                     return;
@@ -106,19 +119,22 @@ namespace hk::sail {
 
                 switch (mBase.type) {
                 case Symbol::Type_DataBlock:
-                    mDataBlock.apply(out, destSymbol);
+                    mDataBlock.apply(abort, out, destSymbol);
                     break;
                 case Symbol::Type_Dynamic:
-                    mDynamic.apply(out, destSymbol);
+                    mDynamic.apply(abort, out, destSymbol);
                     break;
                 case Symbol::Type_Immediate:
-                    mImmediate.apply(out, destSymbol);
+                    mImmediate.apply(abort, out, destSymbol);
                     break;
                 case Symbol::Type_ReadADRPGlobal:
-                    mReadADRPGlobal.apply(out, destSymbol);
+                    mReadADRPGlobal.apply(abort, out, destSymbol);
                     break;
                 case Symbol::Type_Arithmetic:
-                    mArithmetic.apply(out, destSymbol);
+                    mArithmetic.apply(abort, out, destSymbol);
+                    break;
+                case Symbol::Type_MultipleCandidate:
+                    mMultiple.apply(abort, out, destSymbol);
                     break;
                 }
 
@@ -127,6 +143,13 @@ namespace hk::sail {
             }
 
             u32 getNameMurmur32() const { return mBase.destNameMurmur; }
+            bool isApplicable() const {
+                if (mBase.type == Symbol::Type_Immediate) {
+                    if (!mImmediate.isVersionValid())
+                        return false;
+                }
+                return true;
+            }
         };
 
         void loadVersions();
@@ -145,7 +168,13 @@ namespace hk::sail {
         else
             destHash = util::hashMurmur(symbol);
 
-        s32 idx = util::binarySearch([](u32 idx) -> u32 { return gSymbols[idx].getNameMurmur32(); }, 0, gNumSymbols - 1, destHash);
+        s32 idx = -1;
+
+        if (gNumSymbols != 0)
+            idx = util::binarySearch([](u32 idx) -> u32 {
+                return gSymbols[idx].getNameMurmur32();
+            },
+                0, gNumSymbols - 1, destHash);
 
         if constexpr (IsPreCalc) {
             HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %08x\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", *symbol);
@@ -155,7 +184,7 @@ namespace hk::sail {
 
         ptr out = 0;
         auto& entry = gSymbols[idx];
-        entry.apply(&out, symbol);
+        entry.apply(true, &out, symbol);
         return out;
     }
 

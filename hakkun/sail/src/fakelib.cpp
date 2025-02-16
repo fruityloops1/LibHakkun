@@ -5,6 +5,7 @@
 #include "util.h"
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 
 namespace sail {
     static void compile(const char* outPath, const char* clangBinary, const std::string& source, const std::string& flags, const char* filename) {
@@ -79,6 +80,7 @@ namespace sail {
         });
 
         size_t bufSize = 0x1000 + symbols.size() * 0x80;
+        size_t curNumSymbols = 0;
 
         std::string asmFile;
         asmFile.reserve(bufSize);
@@ -89,55 +91,50 @@ namespace sail {
             ".global _ZN2hk4sail11gNumSymbolsE\n"
             ".global _ZN2hk4sail8gSymbolsE\n"
             ".global _ZN2hk4sail12gNumVersionsE\n"
-            ".global _ZN2hk4sail9gVersionsE\n"
-            "_ZN2hk4sail11gNumSymbolsE:\n"
-            "\t.quad ");
-
-        asmFile.append(std::to_string(symbols.size()));
+            ".global _ZN2hk4sail9gVersionsE\n");
 
         asmFile.append(
             "\n.align 8\n"
             "_ZN2hk4sail8gSymbolsE:\n");
 
-        // symbols
-        for (auto sym : sorted) {
+        auto insertSymbol = [&](std::string& out, Symbol& sym) {
             u32 hash = hashMurmur(sym.name.c_str());
 
-            asmFile.append("\n.word 0x");
-            asmFile.append(toHexString(hash));
-            asmFile.append("\n.word 0x");
-            asmFile.append(toHexString(sym.type));
-            asmFile.append("\n.quad 0x"); // symbol cache
-            asmFile.append(sym.useCache ? "0" : "1");
+            out.append("\n.word 0x");
+            out.append(toHexString(hash));
+            out.append("\n.word 0x");
+            out.append(toHexString(sym.type));
+            out.append("\n.quad 0x"); // symbol cache
+            out.append(sym.useCache ? "0" : "1");
 
             if (sym.type == Symbol::Type::DataBlock) {
-                asmFile.append("\n.quad ");
-                asmFile.append(sym.getDataBlockName());
-                asmFile.append(" - _ZN2hk4sail8gSymbolsE");
+                out.append("\n.quad ");
+                out.append(sym.getDataBlockName());
+                out.append(" - _ZN2hk4sail8gSymbolsE");
             } else if (sym.type == Symbol::Type::Dynamic) {
-                asmFile.append("\n.quad 0x");
-                asmFile.append(toHexString(rtldElfHash(sym.dataDynamic.name.c_str())));
+                out.append("\n.quad 0x");
+                out.append(toHexString(rtldElfHash(sym.dataDynamic.name.c_str())));
             } else {
                 u64 versions = 0;
                 for (auto ver : sym.versionIndices)
                     versions |= 1 << ver;
 
-                asmFile.append("\n.quad 0x");
-                asmFile.append(toHexString(versions));
+                out.append("\n.quad 0x");
+                out.append(toHexString(versions));
             }
 
             switch (sym.type) {
             case Symbol::Immediate: {
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(sym.dataImmediate.moduleIdx));
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(sym.dataImmediate.offset));
+                out.append("\n.word 0x");
+                out.append(toHexString(sym.dataImmediate.moduleIdx));
+                out.append("\n.word 0x");
+                out.append(toHexString(sym.dataImmediate.offset));
                 break;
             }
             case Symbol::Dynamic: {
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(hashMurmur(sym.dataDynamic.name.c_str())));
-                asmFile.append("\n.word 0x0");
+                out.append("\n.word 0x");
+                out.append(toHexString(hashMurmur(sym.dataDynamic.name.c_str())));
+                out.append("\n.word 0x0");
                 break;
             }
             case Symbol::DataBlock: {
@@ -151,10 +148,10 @@ namespace sail {
                     u32 data;
                 } conv { u8(sym.dataDataBlock.moduleIdx), u8(sym.dataDataBlock.boundary), u8(sym.dataDataBlock.versionBoundary), u8(sym.dataDataBlock.sectionLimit) };
 
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(conv.data));
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(sym.dataDataBlock.offs));
+                out.append("\n.word 0x");
+                out.append(toHexString(conv.data));
+                out.append("\n.word 0x");
+                out.append(toHexString(sym.dataDataBlock.offs));
                 break;
             }
             case Symbol::Arithmetic: {
@@ -170,10 +167,10 @@ namespace sail {
                     abort();
                 }
 
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(foundIdx - sorted.begin()));
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(*reinterpret_cast<u32*>(&sym.dataArithmetic.offset)));
+                out.append("\n.word 0x");
+                out.append(toHexString(foundIdx - sorted.begin()));
+                out.append("\n.word 0x");
+                out.append(toHexString(*reinterpret_cast<u32*>(&sym.dataArithmetic.offset)));
                 break;
             }
             case Symbol::ReadADRPGlobal: {
@@ -189,16 +186,55 @@ namespace sail {
                     abort();
                 }
 
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(foundIdx - sorted.begin()));
-                asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(*reinterpret_cast<u32*>(&sym.dataReadADRPGlobal.offsetToLoInstr)));
+                out.append("\n.word 0x");
+                out.append(toHexString(foundIdx - sorted.begin()));
+                out.append("\n.word 0x");
+                out.append(toHexString(*reinterpret_cast<u32*>(&sym.dataReadADRPGlobal.offsetToLoInstr)));
                 break;
             }
             default:
                 break;
             }
+        };
+
+        std::unordered_map<u32, std::vector<Symbol>> hashGroups;
+
+        for (auto sym : sorted) {
+            u32 hash = hashMurmur(sym.name.c_str());
+            hashGroups[hash].push_back(sym);
         }
+
+        std::string candidateSyms;
+
+        // symbols
+        for (auto sym : sorted) {
+            u32 hash = hashMurmur(sym.name.c_str());
+            auto& group = hashGroups[hash];
+            if (group.empty())
+                continue;
+            if (group.size() > 1) {
+                asmFile.append("\n.word 0x");
+                asmFile.append(toHexString(hash));
+                asmFile.append("\n.word 0x");
+                asmFile.append(toHexString(Symbol::MultipleCandidate));
+                asmFile.append("\n.quad 0x0");
+                asmFile.append("\n.quad symlist_" + sym.name + " - _ZN2hk4sail8gSymbolsE");
+                asmFile.append("\n.quad 0x");
+                asmFile.append(toHexString(group.size()));
+
+                candidateSyms.append("\nsymlist_" + sym.name + ":\n");
+                for (auto msym : group)
+                    insertSymbol(candidateSyms, msym);
+                group.clear();
+            } else
+                insertSymbol(asmFile, sym);
+            curNumSymbols++;
+        }
+
+        asmFile.append("\n_ZN2hk4sail11gNumSymbolsE:");
+        asmFile.append("\n.quad 0x" + toHexString(curNumSymbols));
+
+        asmFile.append(candidateSyms);
 
         // data blocks
 

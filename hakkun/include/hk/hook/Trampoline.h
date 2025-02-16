@@ -28,15 +28,15 @@ namespace hk::hook {
 
         Func getBackupFuncPtr() const { return cast<Func>(mBackup->getRx()); }
 
-    public:
-        TrampolineHook(Func func)
-            : Rp(func) { }
-
         using Rp::getAt;
         using Rp::mFunc;
         using Rp::mModule;
         using Rp::mOffset;
         using Rp::mOrigInstr;
+
+    public:
+        TrampolineHook(Func func)
+            : Rp(func) { }
 
         template <typename L>
         TrampolineHook(L func)

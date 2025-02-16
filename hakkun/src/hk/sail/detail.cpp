@@ -71,7 +71,7 @@ namespace hk::sail {
         }
 
         _HK_SAIL_PRECALC_TEMPLATE
-        hk_alwaysinline void applyDataBlockSymbol(const SymbolDataBlock* sym, ptr* out, const T* destSymbol) {
+        hk_alwaysinline void applyDataBlockSymbol(bool abort, const SymbolDataBlock* sym, ptr* out, const T* destSymbol) {
             const auto* module = ro::getModuleByIndex(sym->moduleIdx);
 
             HK_ABORT_UNLESS(module != nullptr, "UnknownModule with idx %d", sym->moduleIdx);
@@ -137,66 +137,77 @@ namespace hk::sail {
             }
 #undef DBSIZE
 
-            if (IsPreCalc) {
-                HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
-            } else {
-                HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (DataBlock)", destSymbol);
+            if (abort) {
+                if (IsPreCalc) {
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
+                } else {
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (DataBlock)", destSymbol);
+                }
             }
 
             address += sym->offsetToFoundBlock;
             *out = address;
         }
 
-        void SymbolDataBlock::apply(ptr* out, const char* destSymbol) {
-            applyDataBlockSymbol<false>(this, out, destSymbol);
+        void SymbolDataBlock::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyDataBlockSymbol<false>(abort, this, out, destSymbol);
         }
 
-        void SymbolDataBlock::apply(ptr* out, const u32* destSymbol) {
-            applyDataBlockSymbol<true>(this, out, destSymbol);
+        void SymbolDataBlock::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyDataBlockSymbol<true>(abort, this, out, destSymbol);
         }
 
         // Dynamic
 
-        _HK_SAIL_PRECALC_TEMPLATE hk_alwaysinline void applyDynamicSymbol(const SymbolDynamic* sym, ptr* out, const T* destSymbol) {
+        _HK_SAIL_PRECALC_TEMPLATE hk_alwaysinline void applyDynamicSymbol(bool abort, const SymbolDynamic* sym, ptr* out, const T* destSymbol) {
             ptr address = ro::lookupSymbol(sym->lookupNameRtldHash, sym->lookupNameMurmur);
 
-            if (IsPreCalc) {
-                HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
-            } else {
-                HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (Dynamic)", destSymbol);
+            if (abort) {
+                if (IsPreCalc) {
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
+                } else {
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (Dynamic)", destSymbol);
+                }
             }
 
             *out = address;
         }
 
-        void SymbolDynamic::apply(ptr* out, const char* destSymbol) {
-            applyDynamicSymbol<false>(this, out, destSymbol);
+        void SymbolDynamic::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyDynamicSymbol<false>(abort, this, out, destSymbol);
         }
 
-        void SymbolDynamic::apply(ptr* out, const u32* destSymbol) {
-            applyDynamicSymbol<true>(this, out, destSymbol);
+        void SymbolDynamic::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyDynamicSymbol<true>(abort, this, out, destSymbol);
         }
 
         // Immediate
 
         _HK_SAIL_PRECALC_TEMPLATE
-        hk_alwaysinline void applyImmediateSymbol(const SymbolImmediate* sym, ptr* out, const T* destSymbol) {
+        hk_alwaysinline void applyImmediateSymbol(bool abort, const SymbolImmediate* sym, ptr* out, const T* destSymbol) {
             auto* module = ro::getModuleByIndex(sym->moduleIdx);
 
             if (sym->isVersion(sym->moduleIdx))
                 *out = module->range().start() + sym->offsetIntoModule;
+            else if (abort) {
+                if (IsPreCalc) {
+                    HK_ABORT("UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
+                } else {
+                    HK_ABORT("UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
+                }
+            }
         }
 
-        void SymbolImmediate::apply(ptr* out, const char* destSymbol) {
-            applyImmediateSymbol<false>(this, out, destSymbol);
+        void SymbolImmediate::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyImmediateSymbol<false>(abort, this, out, destSymbol);
         }
 
-        void SymbolImmediate::apply(ptr* out, const u32* destSymbol) {
-            applyImmediateSymbol<true>(this, out, destSymbol);
+        void SymbolImmediate::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyImmediateSymbol<true>(abort, this, out, destSymbol);
         }
 
         _HK_SAIL_PRECALC_TEMPLATE
-        hk_alwaysinline void applyReadADRPGlobalSymbol(const SymbolReadADRPGlobal* sym, ptr* out, const T* destSymbol) {
+        hk_alwaysinline void applyReadADRPGlobalSymbol(bool abort, const SymbolReadADRPGlobal* sym, ptr* out, const T* destSymbol) {
             /*if (sym->isVersion(sym->moduleIdx)) {
                 SymbolEntry& entry = gSymbols[sym->symIdx];
                 ptr at;
@@ -210,47 +221,64 @@ namespace hk::sail {
 
             SymbolEntry& entry = gSymbols[sym->symIdx];
             ptr at;
-            entry.apply(&at, &sym->destNameMurmur);
+            entry.apply(abort, &at, &sym->destNameMurmur);
 
-            if (IsPreCalc) {
-                HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %x", *destSymbol);
-            } else {
-                HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
+            if (abort) {
+                if (IsPreCalc) {
+                    HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %x", *destSymbol);
+                } else {
+                    HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
+                }
             }
         }
 
-        void SymbolReadADRPGlobal::apply(ptr* out, const char* destSymbol) {
-            applyReadADRPGlobalSymbol<false>(this, out, destSymbol);
+        void SymbolReadADRPGlobal::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyReadADRPGlobalSymbol<false>(abort, this, out, destSymbol);
         }
 
-        void SymbolReadADRPGlobal::apply(ptr* out, const u32* destSymbol) {
-            applyReadADRPGlobalSymbol<true>(this, out, destSymbol);
+        void SymbolReadADRPGlobal::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyReadADRPGlobalSymbol<true>(abort, this, out, destSymbol);
         }
 
         _HK_SAIL_PRECALC_TEMPLATE
-        hk_alwaysinline void applyArithmeticSymbol(const SymbolArithmetic* sym, ptr* out, const T* destSymbol) {
-            /*auto* module = ro::getModuleByIndex(sym->moduleIdx);
-
-            if (sym->isVersion(sym->moduleIdx)) {
-                SymbolEntry& entry = gSymbols[sym->symIdx];
-                ptr at;
-                entry.apply(&at, &sym->destNameMurmur);
-                *out = at + sym->addend;
-            }*/
-            // go to sleep if you believe this
-
+        hk_alwaysinline void applyArithmeticSymbol(bool abort, const SymbolArithmetic* sym, ptr* out, const T* destSymbol) {
             SymbolEntry& entry = gSymbols[sym->symIdx];
             ptr at;
-            entry.apply(&at, &sym->destNameMurmur);
+            entry.apply(abort, &at, &sym->destNameMurmur);
             *out = at + sym->addend;
         }
 
-        void SymbolArithmetic::apply(ptr* out, const char* destSymbol) {
-            applyArithmeticSymbol<false>(this, out, destSymbol);
+        void SymbolArithmetic::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyArithmeticSymbol<false>(abort, this, out, destSymbol);
         }
 
-        void SymbolArithmetic::apply(ptr* out, const u32* destSymbol) {
-            applyArithmeticSymbol<true>(this, out, destSymbol);
+        void SymbolArithmetic::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyArithmeticSymbol<true>(abort, this, out, destSymbol);
+        }
+
+        _HK_SAIL_PRECALC_TEMPLATE
+        hk_alwaysinline void applyMultipleCandidateSymbol(SymbolMultipleCandidate* sym, ptr* out, const T* destSymbol) {
+            *out = 0;
+            for (fs32 i = 0; i < sym->numCandidates; i++) {
+                SymbolEntry& cur = cast<SymbolEntry*>(uintptr_t(gSymbols) + sym->offsetToCandidates)[i];
+                cur.apply(false, out, destSymbol);
+                if (*out)
+                    return;
+            }
+
+            if (IsPreCalc) {
+                HK_ABORT("UnresolvedSymbol: %08x (Multiple out of %d candidates)", *destSymbol, sym->numCandidates);
+            } else {
+                HK_ABORT("UnresolvedSymbol: %s (Multiple out of %d candidates)", destSymbol, sym->numCandidates);
+            }
+        }
+
+        void SymbolMultipleCandidate::apply(bool abort, ptr* out, const char* destSymbol) {
+            applyMultipleCandidateSymbol(this, out, destSymbol);
+        }
+
+        void SymbolMultipleCandidate::apply(bool abort, ptr* out, const u32* destSymbol) {
+            applyMultipleCandidateSymbol(this, out, destSymbol);
         }
 
     } // namespace detail

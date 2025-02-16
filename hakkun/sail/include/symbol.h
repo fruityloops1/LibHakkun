@@ -14,6 +14,7 @@ namespace sail {
             DataBlock,
             ReadADRPGlobal,
             Arithmetic,
+            MultipleCandidate,
         };
         enum DataBlockVersionBoundary
         {
