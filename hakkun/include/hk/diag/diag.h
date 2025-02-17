@@ -18,7 +18,7 @@ AssertionFailed: %s
 ResultAbort (%04d-%04d) [from %s]
 )";
 
-#ifdef HK_RELEASE
+#if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
 #define HK_ASSERT(CONDITION)                      \
     {                                             \
