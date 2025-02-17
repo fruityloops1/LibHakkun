@@ -21,6 +21,7 @@ Code modification framework for 64-bit RTLD-based userspace Nintendo Switch prog
 * [switch-tools](https://github.com/switchbrew/switch-tools) bin path in `SWITCHTOOLS` env variable, or devkitPro distribution of switch-tools
 #### Compile stdlibs and sail
 
+You can either use a prepackaged stdlib, or compile one yourself:
 ##### Using prepackaged stdlib
 Run `tools/setup_libcxx_prepackaged.py` from your repository's root to download a pre-packaged stdlib. (~20MiB)
 ##### Compiling stdlib yourself
@@ -170,7 +171,7 @@ HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
 static void test() { }
 
 extern "C" void hkMain() {
-    // trampoline/replace
+    // tramopline/replace
     myHook.installAtSym<"SomeFunction">(); // install to symbol provided by sail
     myHook.uninstall(); // hooks can be uninstalled
     myHook.installAtOffset(ro::getMainModule(), 0x1234); // by offset (not recommended)
