@@ -170,7 +170,7 @@ HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
 static void test() { }
 
 extern "C" void hkMain() {
-    // tramopline/replace
+    // trampoline/replace
     myHook.installAtSym<"SomeFunction">(); // install to symbol provided by sail
     myHook.uninstall(); // hooks can be uninstalled
     myHook.installAtOffset(ro::getMainModule(), 0x1234); // by offset (not recommended)
