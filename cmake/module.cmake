@@ -39,7 +39,7 @@ endif()
 target_link_options(${PROJECT_NAME} PRIVATE ${LINKFLAGS} ${OPTIMIZE_OPTIONS})
 target_link_options(${PROJECT_NAME} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--export-dynamic-symbol=_ZN2nn2ro6detail15g_pAutoLoadListE)
 
-if (CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo or CMAKE_BUILD_TYPE STREQUAL Debug)
+if (CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR CMAKE_BUILD_TYPE STREQUAL Debug)
     target_link_options(${PROJECT_NAME} PRIVATE -Wl,--export-dynamic) # meh
 endif()
 
