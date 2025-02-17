@@ -46,7 +46,8 @@ ResultAbort (%04d-%04d) [from %s]
         const ::hk::Result _result_temp = RESULT; \
         if (_result_temp.failed()) {              \
             __builtin_trap();                     \
-        }
+        }                                         \
+    }
 
 #else
 
