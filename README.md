@@ -15,14 +15,19 @@ Code modification framework for 64-bit RTLD-based userspace Nintendo Switch prog
 ## Setup
 #### Prerequisites
 * CMake + GNUMake or Ninja
+* cURL
 * Clang, LLVM, LLD 18 or later
 * Python 3.10, `pyelftools` and `mmh` packages
 * [switch-tools](https://github.com/switchbrew/switch-tools) bin path in `SWITCHTOOLS` env variable, or devkitPro distribution of switch-tools
-* ~1.7GiB of space
 #### Compile stdlibs and sail
-After setting up a repository in a similar fashion to the [example repository](https://github.com/fruityloops1/Hakkun-Example), run `tools/setup_libcxx.py` from your repository's root to download and compile musl libc and LLVM libc++.
 
+##### Using prepackaged stdlib
+Run `tools/setup_libcxx_prepackaged.py` from your repository's root to download a pre-packaged stdlib. (~20MiB)
+##### Compiling stdlib yourself
+After setting up a repository in a similar fashion to the [example repository](https://github.com/fruityloops1/Hakkun-Example), run `tools/setup_libcxx.py` from your repository's root to download and compile musl libc and LLVM libc++. (~1.7GiB)
+##### Sail
 Run `tools/setup_sail.py` from your repository's root to compile sail, the tool used to parse .sym files for symbol sourcing.
+
 #### Build
 With a CMakeLists.txt setup similar to the [example repository](https://github.com/fruityloops1/Hakkun-Example), the project can be built by running CMake from the build folder and calling the build system:
 * `mkdir build`
@@ -188,6 +193,3 @@ Please note trampoline hooks do not relocate instructions at the moment, which s
 * tetraxile for some help and testing
 * shadowninja108
 * marysaka for [oss-rtld](https://github.com/marysaka/oss-rtld)
-
-## TODO:
-* Pre-compiled smaller packages for musl and libc++

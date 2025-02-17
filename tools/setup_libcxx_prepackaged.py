@@ -1,0 +1,28 @@
+import os
+import subprocess
+import tarfile
+import zipfile
+import multiprocessing
+import importlib.util
+import shutil
+import urllib.request
+
+prepackaged_source_tar_name = "stdlib-19.1.0_clang_19.1.7.tar.xz"
+prepackaged_source = "https://github.com/fruityloops1/LibHakkun/releases/download/stdlib-19.1.0/" + prepackaged_source_tar_name
+
+root_dir = os.getcwd()
+
+def downloadAndCompilePrepackaged():
+    print(f"Downloading pre-packaged stdlib")
+
+    subprocess.run(['curl', '-O', '-L', prepackaged_source])
+
+    print(f"Extracting")
+
+    src_tar = tarfile.open(prepackaged_source_tar_name)
+    src_tar.extractall('.')
+    src_tar.close()
+
+    os.remove(prepackaged_source_tar_name)
+
+downloadAndCompilePrepackaged()
