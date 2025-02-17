@@ -106,7 +106,7 @@ The following SVC permissions are used and need to be allowed for Hakkun to func
 
 ## Symbol Language
 Hakkun provides sail, a tool that allows parsing of a symbol language contained within .sym files in the sym/ directory of your repository, for the purpose of sourcing symbols across different versions of programs. After configuring ModuleList.sym and VersionList.sym, the following ways of adding symbols can be used:
-```
+```cpp
 // immediate symbols
 @game:100
 
@@ -150,6 +150,39 @@ some_global_variable = readAdrpGlobal($some_adrp_ldr_instruction)
 some_global_variable = readAdrpGlobal($some_adrp_ldr_instruction, 0x2) // 0x2 indicates the offset of the LDR instruction from the ADRP instruction
 ```
 Symbols can be accessed directly through linking, or through hk::util::lookupSymbol.
+
+## Hooking
+Hakkun provides multiple utils for hooking:
+```cpp
+using namespace hk;
+
+HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
+    int value = myHook.orig(something); // call original function
+    // do something ...
+    return value;
+});
+
+static void test() { }
+
+extern "C" void hkMain() {
+    // tramopline/replace
+    myHook.installAtSym<"SomeFunction">(); // install to symbol provided by sail
+    myHook.uninstall(); // hooks can be uninstalled
+    myHook.installAtOffset(ro::getMainModule(), 0x1234); // by offset (not recommended)
+    myHook.uninstall();
+    myHook.installAtPtr(/* rare usecase */);
+
+    // replace hooks are also a thing, use HkReplace instead of HkTrampoline
+
+    // b/bl branching to function
+    hook::writeBranchLinkAtSym<"SomeFunction2">(test);
+    hook::writeBranchAtPtr(1234, test);
+
+    // writing to module
+    ro::getMainModule()->writeRo<u32>(/* offset */ 0x12345678, /* u32 value */ 0xfefefefe);
+}
+```
+Please note trampoline hooks do not relocate instructions at the moment, which should not be a problem as long as you hook at instructions that do not need to be relocated (avoid branches, adrp, etc.)
 
 ## Credits:
 * tetraxile for some help and testing
