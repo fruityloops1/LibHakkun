@@ -62,6 +62,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE HK_HOOK_TRAMPOLINE_POOL_SIZE=
 if (SDK_PAST_1900)
     target_compile_definitions(${PROJECT_NAME} PRIVATE __RTLD_PAST_19XX__)
 endif()
+if (NOT USE_SAIL)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HK_DISABLE_SAIL)
+endif()
 
 add_subdirectory(sys/hakkun)
 target_link_libraries(${PROJECT_NAME} PRIVATE LibHakkun)
@@ -73,7 +76,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${SWITCHTOOLS}/npdmtool ${CMAKE_CURRENT_BINARY_DIR}/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/main.npdm 2>> ${CMAKE_CURRENT_BINARY_DIR}/npdmtool.log
 )
 
-if (BAKE_SYMBOLS)
+if (USE_SAIL AND BAKE_SYMBOLS)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "-- Generating ${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX}.baked"
     COMMAND python ${CMAKE_SOURCE_DIR}/sys/tools/bake_hashes.py ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX}

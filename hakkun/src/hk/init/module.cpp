@@ -25,7 +25,9 @@ namespace hk::init {
 
     extern "C" void __module_entry__(void* x0, void* x1) {
         ro::initModuleList();
+#ifndef HK_DISABLE_SAIL
         sail::loadSymbols();
+#endif
         callInitializers();
 
         hkMain();

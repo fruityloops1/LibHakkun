@@ -40,6 +40,10 @@ if (SDK_PAST_1900)
     target_compile_definitions(LibHakkun PRIVATE __RTLD_PAST_19XX__)
 endif()
 
+if (NOT USE_SAIL)
+    target_compile_definitions(LibHakkun PRIVATE HK_DISABLE_SAIL)
+endif()
+
 target_compile_options(LibHakkun PRIVATE ${WARN_OPTIONS})
 target_compile_definitions(LibHakkun PRIVATE NNSDK MODULE_NAME=${MODULE_NAME} HK_HOOK_TRAMPOLINE_POOL_SIZE=${TRAMPOLINE_POOL_SIZE})
 

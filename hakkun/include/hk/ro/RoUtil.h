@@ -27,7 +27,5 @@ namespace hk::ro {
 
     ptr lookupSymbol(const char* symbol);
     ptr lookupSymbol(uint64_t bucketHash, uint32_t murmurHash);
-    ptr lookupSymbolWithDb(const char* symbol);
-    ptr lookupSymbolWithDb(uint32_t murmurHash);
 
 } // namespace hk::ro

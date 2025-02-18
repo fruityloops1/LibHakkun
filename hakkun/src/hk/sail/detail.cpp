@@ -1,3 +1,5 @@
+#ifndef HK_DISABLE_SAIL
+
 #include "hk/sail/detail.h"
 #include "hk/diag/diag.h"
 #include "hk/hook/InstrUtil.h"
@@ -284,3 +286,5 @@ namespace hk::sail {
     } // namespace detail
 
 } // namespace hk::sail
+
+#endif

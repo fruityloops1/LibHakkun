@@ -72,6 +72,7 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `TITLE_ID`: Title ID of the target program
 * `MODULE_BINARY`: ExeFS slot for your output module (can be sdk, or subsdk0-subsdk9)
 * `SDK_PAST_1900`: Enable if RTLD version of target program is from SDK 19.0.0 or later, usually the case with titles updated in or later than late 2024
+* `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
 * `TRAMPOLINE_POOL_SIZE`: Maximum amount of trampoline hooks
 * `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols to hashes, reducing binary size at the expense of harder debugging
 #### Sail

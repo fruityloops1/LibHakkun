@@ -1,3 +1,5 @@
+#ifndef HK_DISABLE_SAIL
+
 #include "hk/sail/init.h"
 #include "hk/diag/diag.h"
 #include "hk/init/module.h"
@@ -146,3 +148,5 @@ namespace hk::sail {
     }
 
 } // namespace hk::sail
+
+#endif

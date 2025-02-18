@@ -4,6 +4,7 @@
 #include "hk/hook/InstrUtil.h"
 #include "hk/hook/results.h"
 #include "hk/ro/RoUtil.h"
+#include "hk/util/Context.h"
 #include "hk/util/Lambda.h"
 #include <type_traits>
 
@@ -57,13 +58,7 @@ namespace hk::hook {
 
         template <util::TemplateString Symbol>
         hk_alwaysinline Result installAtSym() {
-            ptr addr;
-            if constexpr (sail::sUsePrecalcHashes) {
-                constexpr u32 symMurmur = util::hashMurmur(Symbol.value);
-                addr = sail::lookupSymbolFromDb<true>(&symMurmur);
-            } else {
-                addr = sail::lookupSymbolFromDb<false>(Symbol.value);
-            }
+            ptr addr = util::lookupSymbol<Symbol>();
 
             return installAtPtr(cast<void*>(addr));
         }
