@@ -46,7 +46,7 @@ File: %s:%d
 )";
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...) {
-#ifndef HK_RELEASE
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
         auto* module = ro::getMainModule();
         if (module) {
             char userMsgBuf[0x80];
