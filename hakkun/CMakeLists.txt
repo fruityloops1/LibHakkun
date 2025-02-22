@@ -25,6 +25,7 @@ set(SOURCES
 add_library(LibHakkun ${SOURCES})
 
 include(../../config/config.cmake)
+include(../cmake/apply_config.cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     target_compile_options(LibHakkun PRIVATE ${OPTIMIZE_OPTIONS_RELEASE})
@@ -32,23 +33,6 @@ else()
     target_compile_options(LibHakkun PRIVATE ${OPTIMIZE_OPTIONS_DEBUG})
 endif()
 
-if (TARGET_IS_STATIC)
-    target_compile_definitions(LibHakkun PRIVATE TARGET_IS_STATIC)
-endif()
-
-if (SDK_PAST_1900)
-    target_compile_definitions(LibHakkun PRIVATE __RTLD_PAST_19XX__)
-endif()
-
-if (NOT USE_SAIL)
-    target_compile_definitions(LibHakkun PRIVATE HK_DISABLE_SAIL)
-endif()
-
-target_compile_options(LibHakkun PRIVATE ${WARN_OPTIONS})
-target_compile_definitions(LibHakkun PRIVATE NNSDK MODULE_NAME=${MODULE_NAME} HK_HOOK_TRAMPOLINE_POOL_SIZE=${TRAMPOLINE_POOL_SIZE})
-
-if (BAKE_SYMBOLS)
-    target_compile_definitions(LibHakkun PRIVATE HK_USE_PRECALCULATED_SYMBOL_DB_HASHES)
-endif()
+apply_config(LibHakkun)
 
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../)
