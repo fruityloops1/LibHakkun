@@ -27,12 +27,6 @@ add_library(LibHakkun ${SOURCES})
 include(../../config/config.cmake)
 include(../cmake/apply_config.cmake)
 
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    target_compile_options(LibHakkun PRIVATE ${OPTIMIZE_OPTIONS_RELEASE})
-else()
-    target_compile_options(LibHakkun PRIVATE ${OPTIMIZE_OPTIONS_DEBUG})
-endif()
-
 apply_config(LibHakkun)
 
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../)

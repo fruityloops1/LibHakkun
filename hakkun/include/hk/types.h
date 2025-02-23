@@ -35,6 +35,9 @@ using fs16 = int_fast16_t;
 using fs32 = int_fast32_t;
 using fs64 = int_fast64_t;
 
+using f32 = float;
+using f64 = double;
+
 using size = size_t;
 using ptrdiff = ptrdiff_t;
 using ptr = uintptr_t;
