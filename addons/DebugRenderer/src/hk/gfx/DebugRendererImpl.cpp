@@ -10,6 +10,7 @@
 #include "nvn/nvn_CppMethods.h"
 #include <cstdint>
 #include <initializer_list>
+#include <string>
 
 #include "OBAMA_shader.h"
 #include "base_shader.h"
@@ -23,6 +24,73 @@ namespace hk::gfx {
         u32 vertexControlOffset;
         u32 fragmentDataOffset;
         u32 vertexDataOffset;
+    };
+
+    class Font {
+        constexpr static int cCharsPerRow = 32;
+        constexpr static float cCharWidthUv = 1.0f / cCharsPerRow;
+
+        const char16_t* mCharset = nullptr;
+        size mNumChars = 0;
+        util::Storage<Texture> mTexture;
+
+        util::Vector2f getCharUvTopLeft(char16_t value) {
+            size idx;
+            for (idx = 0; idx < mNumChars; idx++) { // meh
+                if (mCharset[idx] == value)
+                    break;
+            }
+
+            int row = idx / cCharsPerRow;
+            int col = idx % cCharsPerRow;
+
+            return { col * getCharWidthUv(), row * getCharHeightUv() };
+        }
+
+        struct FontHeader {
+            size charsetSize;
+            int width;
+            int height;
+            u8 data[];
+        };
+
+    public:
+        float getCharWidthUv() const {
+            return cCharWidthUv;
+        }
+
+        float getCharHeightUv() const {
+            return 1.0f / (mNumChars / float(cCharsPerRow));
+        }
+
+        Font(void* fontData, void* device, void* memory) {
+            FontHeader* header = reinterpret_cast<FontHeader*>(fontData);
+            char16_t* charset = reinterpret_cast<char16_t*>(header->data);
+            u8* textureData = header->data + (header->charsetSize + 1) * sizeof(char16_t);
+
+            std::memcpy((void*)mCharset, charset, (header->charsetSize + 1) * sizeof(char16_t));
+            mNumChars = header->charsetSize;
+
+            nvn::SamplerBuilder samp;
+            samp.SetDefaults()
+                .SetMinMagFilter(nvn::MinFilter::LINEAR, nvn::MagFilter::LINEAR)
+                .SetWrapMode(nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP);
+            nvn::TextureBuilder tex;
+            tex.SetDefaults()
+                .SetTarget(nvn::TextureTarget::TARGET_2D)
+                .SetFormat(nvn::Format::R8)
+                .SetSize2D(header->width, header->height);
+            mTexture.create(device, &samp, &tex, header->width * header->height * 1, textureData, (void*)(uintptr_t(memory) + alignUpPage((header->charsetSize + 1) * sizeof(char16_t))));
+        }
+
+        static size calcMemorySize(void* nvnDevice, void* fontData) {
+            FontHeader* header = reinterpret_cast<FontHeader*>(fontData);
+            return alignUpPage((header->charsetSize + 1) * sizeof(char16_t)) + Texture::calcMemorySize(nvnDevice, header->width * header->height * sizeof(u8));
+        }
+
+        ~Font() {
+            mTexture.tryDestroy();
+        }
     };
 
     class DebugRendererImpl {
@@ -58,12 +126,18 @@ namespace hk::gfx {
         uintptr_t mVtxOffset = 0;
         uintptr_t mCurVtxMap = 0;
 
-        hk::util::Storage<Texture> mObama;
-        u8 mObamaBuffer[0x20000] __attribute__((aligned(cPageSize))) { 0 };
+        hk::util::Storage<Texture> mDefaultTexture;
+        u8 mDefaultTextureBuffer[0x20000] __attribute__((aligned(cPageSize))) { 0 };
+
+        nvn::TexturePool* mPrevTexturePool = nullptr;
+        nvn::SamplerPool* mPrevSamplerPool = nullptr;
 
     public:
         void setDevice(nvn::Device* device) { mDevice = device; }
         void setResolution(const util::Vector2f& res) { mResolution = res; }
+
+        void setTexturePool(nvn::CommandBuffer* cmdBuf, nvn::TexturePool* pool) { mPrevTexturePool = pool; }
+        void setSamplerPool(nvn::CommandBuffer* cmdBuf, nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
 
         bool tryInitializeProgram() {
             if (mShader.initialized)
@@ -154,19 +228,17 @@ namespace hk::gfx {
             mIdxBuffer.initialize(mIdxBufferData, cIdxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
 
             {
-                const astc_header* header = reinterpret_cast<astc_header*>((void*)OBAMA_bin);
-
                 nvn::SamplerBuilder samp;
                 samp.SetDefaults()
-                    .SetMinMagFilter(nvn::MinFilter::LINEAR, nvn::MagFilter::LINEAR)
+                    .SetMinMagFilter(nvn::MinFilter::NEAREST, nvn::MagFilter::NEAREST)
                     .SetWrapMode(nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP);
                 nvn::TextureBuilder tex;
                 tex.SetDefaults()
                     .SetTarget(nvn::TextureTarget::TARGET_2D)
-                    .SetFormat(getAstcFormat((void*)OBAMA_bin))
-                    .SetSize2D(header->getWidth(), header->getHeight());
-                HK_ASSERT(sizeof(mObamaBuffer) >= Texture::calcMemorySize(mDevice, OBAMA_bin_size - sizeof(astc_header)));
-                mObama.create(mDevice, &samp, &tex, OBAMA_bin_size - sizeof(astc_header), (void*)(uintptr_t(OBAMA_bin) + sizeof(astc_header)), mObamaBuffer);
+                    .SetFormat(nvn::Format::RGBA8)
+                    .SetSize2D(2, 2);
+                u32 texture[] { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+                mDefaultTexture.create(mDevice, &samp, &tex, sizeof(texture), texture, mDefaultTextureBuffer);
             }
         }
 
@@ -221,6 +293,17 @@ namespace hk::gfx {
             cmdBuffer->BindVertexStreamState(1, &mShader.streamState);
 
             cmdBuffer->BindVertexBuffer(0, mVtxBuffer.getAddress(), cVtxBufferSize);
+
+            bindDefaultTexture();
+        }
+
+        void bindTexture(Texture& tex) {
+            auto handle = tex.get()->getHandle(mCurCommandBuffer);
+            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, handle);
+        }
+
+        void bindDefaultTexture() {
+            bindTexture(*mDefaultTexture.get());
         }
 
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c) {
@@ -248,30 +331,15 @@ namespace hk::gfx {
                     cur[i++] = { vtx->pos / mResolution, vtx->uv, vtx->color };
             }
 
-            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, mObama.get()->get()->getHandle(mCurCommandBuffer));
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, mVtxOffset, 4);
 
             mVtxOffset += 4;
         }
 
-        void drawTest() {
-            auto* vtx = (Vertex*)mVtxBuffer.map();
-            // auto* idx = (u16*)idxBuffer.map();
-
-            vtx[0] = { { 0.0, 0.0 }, { 0, 0 }, 0xFF0000FF };
-            vtx[1] = { { 1.0, 0.0 }, { 0, 0 }, 0xFF00FF00 };
-            vtx[2] = { { 1.0, 1.0 }, { 0, 0 }, 0xFFFFFF00 };
-            vtx[3] = { { 0.0, 1.0 }, { 0, 0 }, 0xFFFF0000 };
-            // idx[0] = 0;
-            // idx[1] = 1;
-            // idx[2] = 2;
-
-            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, 0, 4);
-            // curCommandBuffer->DrawElementsBaseVertex(nvn::DrawPrimitive::TRIANGLES, nvn::IndexType::UNSIGNED_SHORT, 3, idxBuffer.getAddress(), 0);
-            //  float color[] { 1.0, 1.0, 1.0, 1.0 };x
+        void end() {
+            mCurCommandBuffer->SetTexturePool(mPrevTexturePool);
+            mCurCommandBuffer->SetSamplerPool(mPrevSamplerPool);
         }
-
-        void end() { }
     };
 
 } // namespace hk::gfx

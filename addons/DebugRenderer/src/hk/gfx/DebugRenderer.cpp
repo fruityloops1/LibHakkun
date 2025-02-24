@@ -56,12 +56,24 @@ namespace hk::gfx {
         return success;
     }
 
+    static void nvnCommandBufferSetTexturePool(nvn::CommandBuffer* buf, nvn::TexturePool* pool) {
+        sNvnOverrides[3].getOrigFunc<nvn::CommandBufferSetTexturePoolFunc>()(buf, pool);
+        DebugRenderer::instance()->get()->setTexturePool(buf, pool);
+    }
+
+    void nvnCommandBufferSetSamplerPool(nvn::CommandBuffer* buf, nvn::SamplerPool* pool) {
+        sNvnOverrides[4].getOrigFunc<nvn::CommandBufferSetSamplerPoolFunc>()(buf, pool);
+        DebugRenderer::instance()->get()->setSamplerPool(buf, pool);
+    }
+
     //
 
     NvnBootstrapOverride sNvnOverrides[] {
         { "nvnDeviceInitialize", (void*)nvnDeviceInitialize },
         { "nvnDeviceGetProcAddress", (void*)nvnDeviceGetProcAddress },
         { "nvnCommandBufferInitialize", (void*)nvnCommandBufferInitialize },
+        { "nvnCommandBufferSetTexturePool", (void*)nvnCommandBufferSetTexturePool },
+        { "nvnCommandBufferSetSamplerPool", (void*)nvnCommandBufferSetSamplerPool },
     };
 
     HkTrampoline<void*, const char*> nvnBootstrap = hook::trampoline([](const char* symbol) -> void* {
@@ -74,7 +86,6 @@ namespace hk::gfx {
                 return override.func;
             }
         }
-
         return func;
     });
 
@@ -100,11 +111,13 @@ namespace hk::gfx {
 
     void DebugRenderer::setResolution(const util::Vector2f& res) { get()->setResolution(res); }
 
+    void DebugRenderer::bindTexture(Texture& tex) { get()->bindTexture(tex); }
+    void DebugRenderer::bindDefaultTexture() { get()->bindDefaultTexture(); }
+
     void DebugRenderer::clear() { get()->clear(); }
     void DebugRenderer::begin(void* commandBuffer) { get()->begin(reinterpret_cast<nvn::CommandBuffer*>(commandBuffer)); }
     void DebugRenderer::drawTri(const Vertex& a, const Vertex& b, const Vertex& c) { get()->drawTri(a, b, c); }
     void DebugRenderer::drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl) { get()->drawQuad(tl, tr, br, bl); }
-    void DebugRenderer::drawTest() { get()->drawTest(); }
     void DebugRenderer::end() { get()->end(); }
 
 } // namespace hk::gfx
