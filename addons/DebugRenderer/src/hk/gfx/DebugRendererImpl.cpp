@@ -1,4 +1,5 @@
 #include "MemoryBuffer.h"
+#include "gfx/Font.h"
 #include "gfx/Texture.h"
 #include "hk/diag/diag.h"
 #include "hk/gfx/Vertex.h"
@@ -12,8 +13,8 @@
 #include <initializer_list>
 #include <string>
 
-#include "OBAMA_shader.h"
-#include "base_shader.h"
+#include "embed_font.h"
+#include "embed_shader.h"
 
 #include "TextureImpl.cpp"
 
@@ -26,75 +27,8 @@ namespace hk::gfx {
         u32 vertexDataOffset;
     };
 
-    class Font {
-        constexpr static int cCharsPerRow = 32;
-        constexpr static float cCharWidthUv = 1.0f / cCharsPerRow;
-
-        const char16_t* mCharset = nullptr;
-        size mNumChars = 0;
-        util::Storage<Texture> mTexture;
-
-        util::Vector2f getCharUvTopLeft(char16_t value) {
-            size idx;
-            for (idx = 0; idx < mNumChars; idx++) { // meh
-                if (mCharset[idx] == value)
-                    break;
-            }
-
-            int row = idx / cCharsPerRow;
-            int col = idx % cCharsPerRow;
-
-            return { col * getCharWidthUv(), row * getCharHeightUv() };
-        }
-
-        struct FontHeader {
-            size charsetSize;
-            int width;
-            int height;
-            u8 data[];
-        };
-
-    public:
-        float getCharWidthUv() const {
-            return cCharWidthUv;
-        }
-
-        float getCharHeightUv() const {
-            return 1.0f / (mNumChars / float(cCharsPerRow));
-        }
-
-        Font(void* fontData, void* device, void* memory) {
-            FontHeader* header = reinterpret_cast<FontHeader*>(fontData);
-            char16_t* charset = reinterpret_cast<char16_t*>(header->data);
-            u8* textureData = header->data + (header->charsetSize + 1) * sizeof(char16_t);
-
-            std::memcpy((void*)mCharset, charset, (header->charsetSize + 1) * sizeof(char16_t));
-            mNumChars = header->charsetSize;
-
-            nvn::SamplerBuilder samp;
-            samp.SetDefaults()
-                .SetMinMagFilter(nvn::MinFilter::LINEAR, nvn::MagFilter::LINEAR)
-                .SetWrapMode(nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP, nvn::WrapMode::CLAMP);
-            nvn::TextureBuilder tex;
-            tex.SetDefaults()
-                .SetTarget(nvn::TextureTarget::TARGET_2D)
-                .SetFormat(nvn::Format::R8)
-                .SetSize2D(header->width, header->height);
-            mTexture.create(device, &samp, &tex, header->width * header->height * 1, textureData, (void*)(uintptr_t(memory) + alignUpPage((header->charsetSize + 1) * sizeof(char16_t))));
-        }
-
-        static size calcMemorySize(void* nvnDevice, void* fontData) {
-            FontHeader* header = reinterpret_cast<FontHeader*>(fontData);
-            return alignUpPage((header->charsetSize + 1) * sizeof(char16_t)) + Texture::calcMemorySize(nvnDevice, header->width * header->height * sizeof(u8));
-        }
-
-        ~Font() {
-            mTexture.tryDestroy();
-        }
-    };
-
     class DebugRendererImpl {
-        constexpr static size cShaderBufferSize = alignUpPage(base_bin_size);
+        constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
         constexpr static size cShaderUboBufferSize = 0x1000;
         constexpr static size cVtxBufferSize = alignUpPage(0x1000 * sizeof(Vertex));
         constexpr static size cIdxBufferSize = alignUpPage(0x3000 * sizeof(u16));
@@ -122,19 +56,23 @@ namespace hk::gfx {
         struct {
         } mUBO;
 
-        util::Vector2f mResolution { 1, 1 };
+        util::Vector2f mResolution { 1280, 720 };
+        util::Vector2f mGlyphSize { 16, 24 };
         uintptr_t mVtxOffset = 0;
         uintptr_t mCurVtxMap = 0;
 
         hk::util::Storage<Texture> mDefaultTexture;
-        u8 mDefaultTextureBuffer[0x20000] __attribute__((aligned(cPageSize))) { 0 };
+        u8 mDefaultTextureBuffer[0x2000] __attribute__((aligned(cPageSize))) { 0 };
 
         nvn::TexturePool* mPrevTexturePool = nullptr;
         nvn::SamplerPool* mPrevSamplerPool = nullptr;
+        util::Storage<Font> mFont;
+        u8 mFontBuffer[0x8000] __attribute__((aligned(cPageSize))) { 0 };
 
     public:
         void setDevice(nvn::Device* device) { mDevice = device; }
         void setResolution(const util::Vector2f& res) { mResolution = res; }
+        void setGlyphSize(const util::Vector2f& size) { mGlyphSize = size; }
 
         void setTexturePool(nvn::CommandBuffer* cmdBuf, nvn::TexturePool* pool) { mPrevTexturePool = pool; }
         void setSamplerPool(nvn::CommandBuffer* cmdBuf, nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
@@ -142,59 +80,9 @@ namespace hk::gfx {
         bool tryInitializeProgram() {
             if (mShader.initialized)
                 return false;
-            initialize((u8*)base_bin);
+            initialize((u8*)shader_bin);
             mShader.initialized = true;
             return true;
-        }
-
-        struct astc_header {
-            uint8_t magic[4];
-            uint8_t block_x;
-            uint8_t block_y;
-            uint8_t block_z;
-            uint8_t dim_x[3];
-            uint8_t dim_y[3];
-            uint8_t dim_z[3];
-
-            int getWidth() const { return dim_x[0] + (dim_x[1] << 8) + (dim_x[2] << 16); }
-            int getHeight() const { return dim_y[0] + (dim_y[1] << 8) + (dim_y[2] << 16); }
-        };
-
-        nvn::Format getAstcFormat(void* tex) {
-            const astc_header* header = reinterpret_cast<const astc_header*>(tex);
-            nvn::Format format = nvn::Format::NONE;
-            if (header->block_x == 4 && header->block_y == 4)
-                format = nvn::Format::RGBA_ASTC_4x4_SRGB;
-            else if (header->block_x == 5 && header->block_y == 4)
-                format = nvn::Format::RGBA_ASTC_5x4_SRGB;
-            else if (header->block_x == 5 && header->block_y == 5)
-                format = nvn::Format::RGBA_ASTC_5x5_SRGB;
-            else if (header->block_x == 6 && header->block_y == 5)
-                format = nvn::Format::RGBA_ASTC_6x5_SRGB;
-            else if (header->block_x == 6 && header->block_y == 6)
-                format = nvn::Format::RGBA_ASTC_6x6_SRGB;
-            else if (header->block_x == 8 && header->block_y == 5)
-                format = nvn::Format::RGBA_ASTC_8x5_SRGB;
-            else if (header->block_x == 8 && header->block_y == 6)
-                format = nvn::Format::RGBA_ASTC_8x6_SRGB;
-            else if (header->block_x == 8 && header->block_y == 8)
-                format = nvn::Format::RGBA_ASTC_8x8_SRGB;
-            else if (header->block_x == 10 && header->block_y == 5)
-                format = nvn::Format::RGBA_ASTC_10x5_SRGB;
-            else if (header->block_x == 10 && header->block_y == 6)
-                format = nvn::Format::RGBA_ASTC_10x6_SRGB;
-            else if (header->block_x == 10 && header->block_y == 8)
-                format = nvn::Format::RGBA_ASTC_10x8_SRGB;
-            else if (header->block_x == 10 && header->block_y == 10)
-                format = nvn::Format::RGBA_ASTC_10x10_SRGB;
-            else if (header->block_x == 12 && header->block_y == 10)
-                format = nvn::Format::RGBA_ASTC_12x10_SRGB;
-            else if (header->block_x == 12 && header->block_y == 12)
-                format = nvn::Format::RGBA_ASTC_12x12_SRGB;
-            else
-                HK_ABORT("Unknown ASTC block type %d %d", header->block_x, header->block_y);
-
-            return format;
         }
 
         void initialize(u8* program) {
@@ -239,6 +127,10 @@ namespace hk::gfx {
                     .SetSize2D(2, 2);
                 u32 texture[] { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
                 mDefaultTexture.create(mDevice, &samp, &tex, sizeof(texture), texture, mDefaultTextureBuffer);
+            }
+
+            {
+                mFont.create((void*)test_hkf, mDevice, mFontBuffer);
             }
         }
 
@@ -334,6 +226,55 @@ namespace hk::gfx {
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, mVtxOffset, 4);
 
             mVtxOffset += 4;
+        }
+
+        template <typename Char>
+        void drawString(const util::Vector2f& pos, const Char* str, u32 color) {
+            Vertex* vertices = reinterpret_cast<Vertex*>(mCurVtxMap);
+            Font* font = mFont.get();
+
+            const uintptr_t initialOffset = mVtxOffset;
+            util::Vector2f glyphSize = mGlyphSize / mResolution;
+
+            float charWidthUv = font->getCharWidthUv();
+            float charHeightUv = font->getCharHeightUv();
+
+            util::Vector2f curPos = pos / mResolution;
+            float initialX = curPos.x;
+            while (*str) {
+                if (*str == '\n') {
+                    curPos.x = initialX;
+                    curPos.y += glyphSize.y;
+                    str++;
+                    continue;
+                }
+                if (*str == '\t') {
+                    curPos.x += glyphSize.x * 4;
+                    str++;
+                    continue;
+                }
+                if (*str == '\r') {
+                    curPos.x = initialX;
+                    str++;
+                    continue;
+                }
+
+                util::Vector2f tl = font->getCharUvTopLeft(*str);
+
+                vertices[mVtxOffset++] = { curPos, tl, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, 0 }, tl + util::Vector2f { charWidthUv, 0 }, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, glyphSize.y }, tl + util::Vector2f { charWidthUv, charHeightUv }, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { 0, glyphSize.y }, tl + util::Vector2f { 0, charHeightUv }, color };
+
+                str++;
+                curPos.x += glyphSize.x;
+            }
+
+            bindTexture(font->getTexture());
+
+            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, initialOffset, mVtxOffset - initialOffset);
+
+            bindDefaultTexture();
         }
 
         void end() {
