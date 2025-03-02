@@ -1,12 +1,13 @@
 #pragma once
 
+#include "hk/gfx/Font.h"
 #include "hk/gfx/Vertex.h"
 #include "hk/util/Math.h"
 
 namespace hk::gfx {
 
     class DebugRendererImpl;
-    constexpr static size cDebugRendererImplSize = 184320; // This needs to GO
+    constexpr static size cDebugRendererImplSize = 155648; // This needs to GO
 
     class Texture;
 
@@ -26,6 +27,10 @@ namespace hk::gfx {
 
         void setResolution(const util::Vector2f& res);
         void setGlyphSize(const util::Vector2f& size);
+        void setGlyphSize(float scale);
+        void setFont(Font* font);
+        void setCursor(const util::Vector2f& pos);
+        void setPrintColor(u32 color);
 
         void bindTexture(Texture& tex);
         void bindDefaultTexture();
@@ -34,9 +39,12 @@ namespace hk::gfx {
         void begin(void* commandBuffer /* nvn::CommandBuffer* */);
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c);
         void drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl);
-        void drawString(const util::Vector2f& pos, const char* str, u32 color);
-        void drawString(const util::Vector2f& pos, const char16_t* str, u32 color);
+        util::Vector2f drawString(const util::Vector2f& pos, const char* str, u32 color);
+        util::Vector2f drawString(const util::Vector2f& pos, const char16_t* str, u32 color);
+        void printf(const char* fmt, ...);
         void end();
+
+        void* getDevice();
     };
 
 } // namespace hk::gfx

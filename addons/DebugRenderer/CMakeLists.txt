@@ -12,9 +12,8 @@ include(../../../config/config.cmake)
 include(../../cmake/apply_config.cmake)
 include(../../cmake/bin2s.cmake)
 
-embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader.bin shader)
-embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/shaders/OBAMA.astc obama)
-embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/shaders/test.hkf font)
+embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader)
+embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/font.hkf font)
 
 apply_config(DebugRenderer)
 

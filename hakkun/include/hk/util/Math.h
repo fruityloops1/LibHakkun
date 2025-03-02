@@ -106,6 +106,16 @@ namespace hk::util {
             x /= v;
             y /= v;
         }
+
+        operator Vector2<f32>() const {
+            return Vector2<f32>(f32(x), f32(y));
+        }
+        operator Vector2<f64>() const {
+            return Vector2<f64>(f64(x), f64(y));
+        }
+        operator Vector2<int>() const {
+            return Vector2<int>(int(x), int(y));
+        }
     };
 
     using Vector2f = Vector2<f32>;

@@ -92,6 +92,8 @@ namespace hk::gfx {
             mMemForTexture.Finalize();
             mMemForPools.Finalize();
         }
+
+        nvn::Texture& getTexture() { return mTexture; }
     };
 
     Texture::Texture(void* nvnDevice, void* samplerBuilder, void* textureBuilder, size texSize, void* texData, void* memory) {
@@ -106,6 +108,11 @@ namespace hk::gfx {
         nvn::Device* device = reinterpret_cast<nvn::Device*>(nvnDevice);
 
         return TextureImpl::calcPoolsMemSize(device) + alignUpPage(texSize);
+    }
+
+    util::Vector2i Texture::getSize() {
+        auto& tex = get()->getTexture();
+        return { tex.GetWidth(), tex.GetHeight() };
     }
 
 } // namespace hk::gfx

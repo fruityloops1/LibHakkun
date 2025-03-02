@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/types.h"
+#include "hk/util/Math.h"
 
 namespace hk::gfx {
 
@@ -15,6 +16,8 @@ namespace hk::gfx {
 
         Texture(void* nvnDevice, void* samplerBuilder, void* textureBuilder, size texSize, void* texData, void* memory);
         ~Texture();
+
+        util::Vector2i getSize();
 
         static size calcMemorySize(void* nvnDevice, size texSize);
     };

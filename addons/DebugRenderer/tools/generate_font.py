@@ -35,7 +35,6 @@ print(str(texWidth) + " " + str(texHeight))
 image = Image.new("RGBA", (int(texWidth), int(texHeight)), (255, 255, 255, 0))
 draw = ImageDraw.Draw(image)
 
-
 i = 0
 for char in charset:
     x = i % 32
@@ -43,7 +42,6 @@ for char in charset:
 
     draw.text((x * glyphWidth, y * glyphHeight), char, (255,255,255), font=font, anchor='la')
     i = i + 1
-
 
 image.save("font.png")
 

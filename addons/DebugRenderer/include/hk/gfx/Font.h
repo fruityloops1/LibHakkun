@@ -1,9 +1,11 @@
 #pragma once
 
+#include "hk/diag/diag.h"
 #include "hk/gfx/Texture.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
 #include "hk/util/Storage.h"
+#include <cmath>
 
 namespace hk::gfx {
 
@@ -57,6 +59,11 @@ namespace hk::gfx {
             int col = idx % cCharsPerRow;
 
             return { col * getCharWidthUv(), row * getCharHeightUv() };
+        }
+
+        util::Vector2f getGlyphSize() {
+            auto texSize = util::Vector2f(mTexture.get()->getSize());
+            return texSize / util::Vector2f(cCharsPerRow, std::ceilf(mNumChars / float(cCharsPerRow)));
         }
     };
 

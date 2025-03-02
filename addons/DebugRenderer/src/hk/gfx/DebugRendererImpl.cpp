@@ -1,116 +1,85 @@
 #include "MemoryBuffer.h"
-#include "gfx/Font.h"
-#include "gfx/Texture.h"
+
+#include "gfx/Util.h"
 #include "hk/diag/diag.h"
+#include "hk/gfx/Font.h"
+#include "hk/gfx/Texture.h"
 #include "hk/gfx/Vertex.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
 #include "hk/util/Storage.h"
+
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <initializer_list>
+#include <string>
+
 #include "nvn/nvn_Cpp.h"
 #include "nvn/nvn_CppFuncPtrBase.h"
 #include "nvn/nvn_CppMethods.h"
-#include <cstdint>
-#include <initializer_list>
-#include <string>
 
 #include "embed_font.h"
 #include "embed_shader.h"
 
+#include "ShaderImpl.cpp"
 #include "TextureImpl.cpp"
 
 namespace hk::gfx {
-
-    struct BinaryHeader {
-        u32 fragmentControlOffset;
-        u32 vertexControlOffset;
-        u32 fragmentDataOffset;
-        u32 vertexDataOffset;
-    };
-
     class DebugRendererImpl {
         constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
-        constexpr static size cShaderUboBufferSize = 0x1000;
         constexpr static size cVtxBufferSize = alignUpPage(0x1000 * sizeof(Vertex));
         constexpr static size cIdxBufferSize = alignUpPage(0x3000 * sizeof(u16));
+        constexpr static size cDefaultTextureMemorySize = cPageSize * 2;
+        constexpr static size cDefaultFontMemorySize = 0x8000;
 
         nvn::Device* mDevice = nullptr;
-
         nvn::CommandBuffer* mCurCommandBuffer;
-        struct {
-            nvn::Program program;
-            MemoryBuffer shaderBuffer;
-            nvn::VertexStreamState streamState;
-            nvn::VertexAttribState attribStates[3];
-            nvn::ShaderData shaderDatas[2];
-            MemoryBuffer uboBuffer;
-
-            u8 uboPoolBuffer[cShaderBufferSize] __attribute__((aligned(cPageSize))) { 0 };
-            bool initialized = false;
-        } mShader;
-
+        nvn::TexturePool* mPrevTexturePool = nullptr;
+        nvn::SamplerPool* mPrevSamplerPool = nullptr;
+        util::Storage<Shader> mShader;
+        hk::util::Storage<Texture> mDefaultTexture;
+        util::Storage<Font> mFont;
+        uintptr_t mVtxOffset = 0;
+        uintptr_t mCurVtxMap = 0;
         MemoryBuffer mVtxBuffer;
         MemoryBuffer mIdxBuffer;
         u8 mVtxBufferData[cVtxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mIdxBufferData[cIdxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
-
-        struct {
-        } mUBO;
+        u8 mDefaultTextureBuffer[cDefaultTextureMemorySize] __attribute__((aligned(cPageSize))) { 0 };
+        u8 mFontBuffer[cDefaultFontMemorySize] __attribute__((aligned(cPageSize))) { 0 };
 
         util::Vector2f mResolution { 1280, 720 };
+        util::Vector2f mFontTextureGlyphSize;
         util::Vector2f mGlyphSize { 16, 24 };
-        uintptr_t mVtxOffset = 0;
-        uintptr_t mCurVtxMap = 0;
-
-        hk::util::Storage<Texture> mDefaultTexture;
-        u8 mDefaultTextureBuffer[0x2000] __attribute__((aligned(cPageSize))) { 0 };
-
-        nvn::TexturePool* mPrevTexturePool = nullptr;
-        nvn::SamplerPool* mPrevSamplerPool = nullptr;
-        util::Storage<Font> mFont;
-        u8 mFontBuffer[0x8000] __attribute__((aligned(cPageSize))) { 0 };
+        util::Vector2f mCursor { 0, 0 };
+        u32 mPrintColor = rgba(255, 255, 255, 255);
+        Font* mCurrentFont = mFont.get();
+        bool mInitialized = false;
 
     public:
         void setDevice(nvn::Device* device) { mDevice = device; }
         void setResolution(const util::Vector2f& res) { mResolution = res; }
         void setGlyphSize(const util::Vector2f& size) { mGlyphSize = size; }
+        void setGlyphSize(float scale) { mGlyphSize = mFontTextureGlyphSize * scale; }
+        void setFont(Font* font) { mCurrentFont = font; }
+        void setCursor(const util::Vector2f& pos) { mCursor = pos; }
+        void setPrintColor(u32 color) { mPrintColor = color; }
 
         void setTexturePool(nvn::CommandBuffer* cmdBuf, nvn::TexturePool* pool) { mPrevTexturePool = pool; }
         void setSamplerPool(nvn::CommandBuffer* cmdBuf, nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
 
         bool tryInitializeProgram() {
-            if (mShader.initialized)
+            if (mInitialized)
                 return false;
             initialize((u8*)shader_bin);
-            mShader.initialized = true;
+            mInitialized = true;
             return true;
         }
 
         void initialize(u8* program) {
-            const BinaryHeader* header = reinterpret_cast<const BinaryHeader*>(program);
 
-            HK_ASSERT(mShader.program.Initialize(mDevice));
-
-            mShader.shaderBuffer.initialize(program, cShaderBufferSize, mDevice,
-                nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED | nvn::MemoryPoolFlags::SHADER_CODE);
-            nvn::BufferAddress addr = mShader.shaderBuffer.getAddress();
-
-            mShader.shaderDatas[0].data = addr + header->vertexDataOffset;
-            mShader.shaderDatas[0].control = program + header->vertexControlOffset;
-            mShader.shaderDatas[1].data = addr + header->fragmentDataOffset;
-            mShader.shaderDatas[1].control = program + header->fragmentControlOffset;
-
-            HK_ASSERT(mShader.program.SetShaders(2, mShader.shaderDatas));
-
-            mShader.program.SetDebugLabel("hk::gfx::DebugRenderer");
-
-            mShader.attribStates[0].SetDefaults().SetFormat(nvn::Format::RG32F, offsetof(Vertex, pos));
-            mShader.attribStates[1].SetDefaults().SetFormat(nvn::Format::RG32F, offsetof(Vertex, uv));
-            mShader.attribStates[2].SetDefaults().SetFormat(nvn::Format::RGBA8, offsetof(Vertex, color));
-
-            mShader.streamState.SetDefaults().SetStride(sizeof(Vertex));
-
-            // shader.uboBuffer.initialize(shader.uboPoolBuffer, cShaderUboBufferSize, device,
-            //     nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
+            mShader.create(program, cShaderBufferSize, mDevice, nullptr, 0, nullptr, "hk::gfx::DebugRenderer");
 
             mVtxBuffer.initialize(mVtxBufferData, cVtxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
             mIdxBuffer.initialize(mIdxBufferData, cIdxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
@@ -130,7 +99,9 @@ namespace hk::gfx {
             }
 
             {
-                mFont.create((void*)test_hkf, mDevice, mFontBuffer);
+                mFont.create((void*)font_hkf, mDevice, mFontBuffer);
+                mFontTextureGlyphSize = mFont.get()->getGlyphSize();
+                mGlyphSize = mFontTextureGlyphSize;
             }
         }
 
@@ -146,12 +117,7 @@ namespace hk::gfx {
         void begin(nvn::CommandBuffer* cmdBuffer) {
             mCurCommandBuffer = cmdBuffer;
 
-            cmdBuffer->BindProgram(&mShader.program, nvn::ShaderStageBits::ALL_GRAPHICS_BITS);
-
-            // orthoRH_ZO(ubo.mProjMatrix, 0.0f, 1600, 900, 0.0f, -1.0f, 1.0f);
-            // cmdBuffer->BindUniformBuffer(nvn::ShaderStage::VERTEX, 0, shader.uboBuffer.getAddress(), cShaderUboBufferSize);
-            // cmdBuffer->BindUniformBuffer(nvn::ShaderStage::FRAGMENT, 0, shader.uboBuffer.getAddress(), cShaderUboBufferSize);
-            // cmdBuffer->UpdateUniformBuffer(shader.uboBuffer.getAddress(), cShaderUboBufferSize, 0, sizeof(ubo), &ubo);
+            mShader.get()->use(cmdBuffer);
 
             nvn::PolygonState polyState;
             polyState.SetDefaults();
@@ -180,9 +146,6 @@ namespace hk::gfx {
             depthStencilState.SetDefaults();
             depthStencilState.SetDepthWriteEnable(false);
             cmdBuffer->BindDepthStencilState(&depthStencilState);
-
-            cmdBuffer->BindVertexAttribState(3, mShader.attribStates);
-            cmdBuffer->BindVertexStreamState(1, &mShader.streamState);
 
             cmdBuffer->BindVertexBuffer(0, mVtxBuffer.getAddress(), cVtxBufferSize);
 
@@ -229,15 +192,19 @@ namespace hk::gfx {
         }
 
         template <typename Char>
-        void drawString(const util::Vector2f& pos, const Char* str, u32 color) {
+        util::Vector2f drawString(const util::Vector2f& pos, const Char* str, u32 color) {
             Vertex* vertices = reinterpret_cast<Vertex*>(mCurVtxMap);
-            Font* font = mFont.get();
 
             const uintptr_t initialOffset = mVtxOffset;
             util::Vector2f glyphSize = mGlyphSize / mResolution;
 
-            float charWidthUv = font->getCharWidthUv();
-            float charHeightUv = font->getCharHeightUv();
+            float charWidthUv = mCurrentFont->getCharWidthUv();
+            float charHeightUv = mCurrentFont->getCharHeightUv();
+
+            auto adjustmentTL = mGlyphSize / mResolution / 15;
+            auto adjustmentTR = adjustmentTL * util::Vector2f(-1, 1);
+            auto adjustmentBR = adjustmentTL * util::Vector2f(-1, -1);
+            auto adjustmentBL = adjustmentTL * util::Vector2f(1, -1);
 
             util::Vector2f curPos = pos / mResolution;
             float initialX = curPos.x;
@@ -259,28 +226,40 @@ namespace hk::gfx {
                     continue;
                 }
 
-                util::Vector2f tl = font->getCharUvTopLeft(*str);
+                util::Vector2f tl = mCurrentFont->getCharUvTopLeft(*str);
 
-                vertices[mVtxOffset++] = { curPos, tl, color };
-                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, 0 }, tl + util::Vector2f { charWidthUv, 0 }, color };
-                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, glyphSize.y }, tl + util::Vector2f { charWidthUv, charHeightUv }, color };
-                vertices[mVtxOffset++] = { curPos + util::Vector2f { 0, glyphSize.y }, tl + util::Vector2f { 0, charHeightUv }, color };
+                vertices[mVtxOffset++] = { curPos, tl + adjustmentTL, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, 0 }, tl + util::Vector2f { charWidthUv, 0 } + adjustmentTR, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { glyphSize.x, glyphSize.y }, tl + util::Vector2f { charWidthUv, charHeightUv } + adjustmentBR, color };
+                vertices[mVtxOffset++] = { curPos + util::Vector2f { 0, glyphSize.y }, tl + util::Vector2f { 0, charHeightUv } + adjustmentBL, color };
 
                 str++;
                 curPos.x += glyphSize.x;
             }
 
-            bindTexture(font->getTexture());
+            bindTexture(mCurrentFont->getTexture());
 
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, initialOffset, mVtxOffset - initialOffset);
 
             bindDefaultTexture();
+
+            return curPos;
+        }
+
+        void printf(const char* fmt, std::va_list arg) {
+            size_t size = vsnprintf(nullptr, 0, fmt, arg);
+            char* buf = (char*)__builtin_alloca(size + 1);
+            vsnprintf(buf, size + 1, fmt, arg);
+
+            mCursor = drawString(mCursor, buf, mPrintColor);
         }
 
         void end() {
             mCurCommandBuffer->SetTexturePool(mPrevTexturePool);
             mCurCommandBuffer->SetSamplerPool(mPrevSamplerPool);
         }
+
+        nvn::Device* getDevice() const { return mDevice; }
     };
 
 } // namespace hk::gfx
