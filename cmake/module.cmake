@@ -4,6 +4,7 @@ file(TO_CMAKE_PATH "$ENV{DEVKITPRO}" DEVKITPRO)
 include(config/config.cmake)
 include(sys/cmake/apply_config.cmake)
 include(sys/cmake/generate_exefs.cmake)
+include(sys/cmake/addons.cmake)
 
 if(NOT IS_DIRECTORY ${SWITCHTOOLS})
     if(NOT IS_DIRECTORY ${DEVKITPRO})
@@ -40,3 +41,5 @@ if (TARGET_IS_STATIC)
 
     add_rtld_dummy()
 endif()
+
+enable_addons()

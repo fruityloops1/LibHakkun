@@ -1,0 +1,15 @@
+function(enable_addons)
+    foreach(addon IN LISTS HAKKUN_ADDONS)
+        set(ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/${addon})
+        if (NOT IS_DIRECTORY ${ADDON_DIR})
+            message(FATAL_ERROR "${addon} is not an addon!")
+        endif()
+
+        add_subdirectory(${ADDON_DIR})
+        target_include_directories(${PROJECT_NAME} PRIVATE ${ADDON_DIR}/include)
+        target_include_directories(${addon} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sys/hakkun/include)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${addon})
+
+        message("Enabled addon ${addon}")
+    endforeach()
+endfunction()
