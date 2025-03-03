@@ -1,4 +1,4 @@
-# Hakkun
+# <span style="font-size: 48px">Hakkun</span> ![goober](https://mario.wiki.gallery/images/0/0e/Ninji_PMSS.png)
 
 Code modification framework for 64-bit RTLD-based userspace Nintendo Switch programs. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
 
