@@ -1,7 +1,10 @@
-#include "MemoryBuffer.h"
-#include "gfx/Vertex.h"
 #include "hk/gfx/Shader.h"
+#include "hk/gfx/Vertex.h"
+#include "hk/nvn/MemoryBuffer.h"
+
 #include "nvn/nvn_Cpp.h"
+#include "nvn/nvn_CppMethods.h"
+
 #include <new>
 
 namespace hk::gfx {
@@ -31,7 +34,7 @@ namespace hk::gfx {
         };
 
         nvn::Program mProgram;
-        MemoryBuffer mShaderBuffer;
+        hk::nvn::MemoryBuffer mShaderBuffer;
         int mNumAttribStates = 3;
         nvn::VertexAttribState* mAttribStates = nullptr;
         nvn::VertexStreamState* mStreamState = nullptr;
@@ -88,5 +91,7 @@ namespace hk::gfx {
     }
 
     void Shader::use(void* nvnCommandBuffer) { get()->use(static_cast<nvn::CommandBuffer*>(nvnCommandBuffer)); }
+
+    static_assert(sizeof(ShaderImpl) == sizeof(Shader));
 
 } // namespace hk::gfx

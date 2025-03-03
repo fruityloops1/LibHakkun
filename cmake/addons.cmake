@@ -12,4 +12,13 @@ function(enable_addons)
 
         message("Enabled addon ${addon}")
     endforeach()
+
+    foreach(addon IN LISTS HAKKUN_ADDONS)
+        foreach(saddon IN LISTS HAKKUN_ADDONS)
+            if (NOT saddon STREQUAL addon)
+                set(ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/${saddon})
+                target_include_directories(${addon} PRIVATE ${ADDON_DIR}/include ${ADDON_DIR}/include/hk)
+            endif()
+        endforeach()
+    endforeach()
 endfunction()

@@ -1,7 +1,9 @@
 #include "hk/diag/diag.h"
 #include "hk/gfx/Texture.h"
-#include "hk/types.h"
+
 #include "nvn/nvn_Cpp.h"
+#include "nvn/nvn_CppMethods.h"
+
 #include <new>
 
 namespace hk::gfx {
@@ -115,5 +117,7 @@ namespace hk::gfx {
         auto& tex = get()->getTexture();
         return { tex.GetWidth(), tex.GetHeight() };
     }
+
+    static_assert(sizeof(TextureImpl) == sizeof(Texture));
 
 } // namespace hk::gfx

@@ -12,8 +12,6 @@
 namespace hk::gfx {
 
     static_assert(sizeof(DebugRendererImpl) == sizeof(DebugRenderer));
-    static_assert(sizeof(TextureImpl) == sizeof(Texture));
-    static_assert(sizeof(ShaderImpl) == sizeof(Shader));
 
     DebugRenderer DebugRenderer::sInstance;
 

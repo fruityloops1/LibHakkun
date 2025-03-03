@@ -1,10 +1,10 @@
-#include "MemoryBuffer.h"
-
-#include "gfx/Util.h"
 #include "hk/diag/diag.h"
 #include "hk/gfx/Font.h"
+#include "hk/gfx/Shader.h"
 #include "hk/gfx/Texture.h"
+#include "hk/gfx/Util.h"
 #include "hk/gfx/Vertex.h"
+#include "hk/nvn/MemoryBuffer.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
 #include "hk/util/Storage.h"
@@ -21,9 +21,6 @@
 
 #include "embed_font.h"
 #include "embed_shader.h"
-
-#include "ShaderImpl.cpp"
-#include "TextureImpl.cpp"
 
 namespace hk::gfx {
     class DebugRendererImpl {
@@ -42,8 +39,8 @@ namespace hk::gfx {
         util::Storage<Font> mFont;
         uintptr_t mVtxOffset = 0;
         uintptr_t mCurVtxMap = 0;
-        MemoryBuffer mVtxBuffer;
-        MemoryBuffer mIdxBuffer;
+        hk::nvn::MemoryBuffer mVtxBuffer;
+        hk::nvn::MemoryBuffer mIdxBuffer;
         u8 mVtxBufferData[cVtxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mIdxBufferData[cIdxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mDefaultTextureBuffer[cDefaultTextureMemorySize] __attribute__((aligned(cPageSize))) { 0 };
@@ -193,6 +190,8 @@ namespace hk::gfx {
 
         template <typename Char>
         util::Vector2f drawString(const util::Vector2f& pos, const Char* str, u32 color) {
+            checkVtxBuffer();
+
             Vertex* vertices = reinterpret_cast<Vertex*>(mCurVtxMap);
 
             const uintptr_t initialOffset = mVtxOffset;
