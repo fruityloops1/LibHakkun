@@ -32,7 +32,7 @@ namespace hk::gfx {
         void setCursor(const util::Vector2f& pos);
         void setPrintColor(u32 color);
 
-        void bindTexture(Texture& tex);
+        void bindTexture(const TextureHandle& tex);
         void bindDefaultTexture();
 
         void clear();

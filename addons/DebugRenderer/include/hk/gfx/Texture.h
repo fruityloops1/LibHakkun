@@ -8,6 +8,12 @@ namespace hk::gfx {
     class TextureImpl;
     constexpr static size cTextureImplSize = 872; // This needs to GO
 
+    struct TextureHandle {
+        void* texturePool;
+        void* samplerPool;
+        int textureId = 0, samplerId = 0;
+    };
+
     class Texture {
         u8 mStorage[cTextureImplSize];
 
@@ -18,6 +24,8 @@ namespace hk::gfx {
         ~Texture();
 
         util::Vector2i getSize();
+
+        TextureHandle getTextureHandle();
 
         static size calcMemorySize(void* nvnDevice, size texSize);
     };

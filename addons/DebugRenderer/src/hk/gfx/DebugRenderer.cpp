@@ -118,7 +118,7 @@ namespace hk::gfx {
     void DebugRenderer::setCursor(const util::Vector2f& pos) { get()->setCursor(pos); }
     void DebugRenderer::setPrintColor(u32 color) { get()->setPrintColor(color); }
 
-    void DebugRenderer::bindTexture(Texture& tex) { get()->bindTexture(tex); }
+    void DebugRenderer::bindTexture(const TextureHandle& tex) { get()->bindTexture(tex); }
     void DebugRenderer::bindDefaultTexture() { get()->bindDefaultTexture(); }
 
     void DebugRenderer::clear() { get()->clear(); }

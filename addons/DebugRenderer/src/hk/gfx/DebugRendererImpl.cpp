@@ -78,7 +78,6 @@ namespace hk::gfx {
         }
 
         void initialize(u8* program) {
-
             mShader.create(program, cShaderBufferSize, mDevice, nullptr, 0, nullptr, "hk::gfx::DebugRenderer");
 
             mVtxBuffer.initialize(mVtxBufferData, cVtxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
@@ -152,13 +151,14 @@ namespace hk::gfx {
             bindDefaultTexture();
         }
 
-        void bindTexture(Texture& tex) {
-            auto handle = tex.get()->getHandle(mCurCommandBuffer);
-            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, handle);
+        void bindTexture(const TextureHandle& tex) {
+            mCurCommandBuffer->SetTexturePool(static_cast<nvn::TexturePool*>(tex.texturePool));
+            mCurCommandBuffer->SetSamplerPool(static_cast<nvn::SamplerPool*>(tex.samplerPool));
+            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, mDevice->GetTextureHandle(tex.textureId, tex.samplerId));
         }
 
         void bindDefaultTexture() {
-            bindTexture(*mDefaultTexture.get());
+            bindTexture(mDefaultTexture.get()->getTextureHandle());
         }
 
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c) {
@@ -237,7 +237,7 @@ namespace hk::gfx {
                 curPos.x += glyphSize.x;
             }
 
-            bindTexture(mCurrentFont->getTexture());
+            bindTexture(mCurrentFont->getTexture().getTextureHandle());
 
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, initialOffset, mVtxOffset - initialOffset);
 

@@ -78,12 +78,6 @@ namespace hk::gfx {
             mTexture.FlushTexels(nullptr, &region);
         }
 
-        nvn::TextureHandle getHandle(nvn::CommandBuffer* commandBuffer) const {
-            commandBuffer->SetTexturePool(&mTexturePool);
-            commandBuffer->SetSamplerPool(&mSamplerPool);
-            return mDevice->GetTextureHandle(0, 0);
-        }
-
         ~TextureImpl() {
             mTexturePool.Finalize();
             mSamplerPool.Finalize();
@@ -94,6 +88,9 @@ namespace hk::gfx {
         }
 
         nvn::Texture& getTexture() { return mTexture; }
+        TextureHandle getTextureHandle() {
+            return { &mTexturePool, &mSamplerPool, 0, 0 };
+        }
     };
 
     Texture::Texture(void* nvnDevice, void* samplerBuilder, void* textureBuilder, size texSize, void* texData, void* memory) {
@@ -102,6 +99,10 @@ namespace hk::gfx {
 
     Texture::~Texture() {
         get()->~TextureImpl();
+    }
+
+    TextureHandle Texture::getTextureHandle() {
+        return { get()->getTextureHandle() };
     }
 
     size Texture::calcMemorySize(void* nvnDevice, size texSize) {
