@@ -63,10 +63,10 @@ namespace hk::gfx {
         void setCursor(const util::Vector2f& pos) { mCursor = pos; }
         void setPrintColor(u32 color) { mPrintColor = color; }
 
-        void setTexturePool(nvn::CommandBuffer* cmdBuf, nvn::TexturePool* pool) { mPrevTexturePool = pool; }
-        void setSamplerPool(nvn::CommandBuffer* cmdBuf, nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
+        void setPrevTexturePool(nvn::TexturePool* pool) { mPrevTexturePool = pool; }
+        void setPrevSamplerPool(nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
 
-        bool tryInitializeProgram() {
+        bool tryInitialize() {
             if (mInitialized)
                 return false;
             initialize((u8*)shader_bin);
@@ -242,7 +242,7 @@ namespace hk::gfx {
 
             bindDefaultTexture();
 
-            return curPos;
+            return curPos * mResolution;
         }
 
         void printf(const char* fmt, std::va_list arg) {

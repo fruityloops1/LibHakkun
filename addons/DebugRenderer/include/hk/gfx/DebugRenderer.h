@@ -23,7 +23,8 @@ namespace hk::gfx {
 
         static DebugRenderer* instance() { return &sInstance; }
 
-        void installHooks();
+        void installHooks(bool initializeAutomatically = true);
+        bool tryInitialize();
 
         void setResolution(const util::Vector2f& res);
         void setGlyphSize(const util::Vector2f& size);
@@ -44,7 +45,10 @@ namespace hk::gfx {
         void printf(const char* fmt, ...);
         void end();
 
+        void setDevice(void* device /* nvn::Device* */);
         void* getDevice();
+        void setPrevTexturePool(void* pool /* nvn::TexturePool* */);
+        void setPrevSamplerPool(void* pool /* nvn::SamplerPool* */);
     };
 
 } // namespace hk::gfx
