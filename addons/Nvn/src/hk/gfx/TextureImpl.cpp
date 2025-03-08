@@ -61,7 +61,7 @@ namespace hk::gfx {
             HK_ASSERT(mTexture.Initialize(&textureBuilder));
             write(mTexture.GetWidth(), mTexture.GetHeight(), texData);
 
-            HK_ASSERT(mSampler.Initialize(&samplerBuilder))
+            HK_ASSERT(mSampler.Initialize(&samplerBuilder));
 
             mTexturePool.RegisterTexture(0, &mTexture, nullptr);
             mSamplerPool.RegisterSampler(0, &mSampler);
