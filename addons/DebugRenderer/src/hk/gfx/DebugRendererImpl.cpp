@@ -59,6 +59,7 @@ namespace hk::gfx {
         void setResolution(const util::Vector2f& res) { mResolution = res; }
         void setGlyphSize(const util::Vector2f& size) { mGlyphSize = size; }
         void setGlyphSize(float scale) { mGlyphSize = mFontTextureGlyphSize * scale; }
+        void setGlyphHeight(float height) { setGlyphSize(height / mFontTextureGlyphSize.y); }
         void setFont(Font* font) { mCurrentFont = font; }
         void setCursor(const util::Vector2f& pos) { mCursor = pos; }
         void setPrintColor(u32 color) { mPrintColor = color; }
