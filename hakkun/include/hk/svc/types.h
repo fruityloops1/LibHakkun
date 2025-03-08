@@ -324,7 +324,9 @@ namespace hk::svc {
         u8 _0[0x180];
         char threadName[0x20];
         const char* threadNamePtr = threadName;
-        u8 _1A8[0x18];
+        u8 _1A8[0x8];
+        Handle handle;
+        u8 _1B4[0xC];
     };
 
     struct ThreadLocalRegion {

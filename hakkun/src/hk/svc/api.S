@@ -159,12 +159,12 @@ SVC_BEGIN svcCancelSynchronization
 	ret
 SVC_END
 
-SVC_BEGIN svcArbitrateLock
+SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjmj
 	svc 0x1A
 	ret
 SVC_END
 
-SVC_BEGIN svcArbitrateUnlock
+SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEm
 	svc 0x1B
 	ret
 SVC_END

@@ -26,6 +26,30 @@ namespace hk::svc {
         return freq;
     }
 
+    static inline u32 loadExclusive(volatile u32* ptr) {
+        u32 value;
+        asm volatile(
+            "ldaxr %w[value], %[ptr]"
+            : [value] "=&r"(value)
+            : [ptr] "Q"(*ptr)
+            : "memory");
+        return value;
+    }
+
+    static inline bool storeExclusive(volatile u32* ptr, u32 value) {
+        int result;
+        asm volatile(
+            "stlxr %w[result], %w[value], %[ptr]"
+            : [result] "=&r"(result)
+            : [value] "r"(value), [ptr] "Q"(*ptr)
+            : "memory");
+        return result == 0;
+    }
+
+    static inline void clearExclusive() {
+        asm volatile("clrex" ::: "memory");
+    }
+
     inline hk_alwaysinline void prefetchRegion(ptr addr, ptrdiff size) {
 #pragma clang loop unroll(enable)
         while (size > 0) {
@@ -52,6 +76,8 @@ namespace hk::svc {
     }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
+    Result ArbitrateLock(Handle threadHandle, uintptr_t addr, u32 tag);
+    Result ArbitrateUnlock(uintptr_t addr);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
