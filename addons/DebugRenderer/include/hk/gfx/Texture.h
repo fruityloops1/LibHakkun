@@ -6,7 +6,13 @@
 namespace hk::gfx {
 
     class TextureImpl;
-    constexpr static size cTextureImplSize = 872; // This needs to GO
+    constexpr static size cTextureImplSize = // This needs to GO
+#ifdef __aarch64__
+        872
+#else
+        868
+#endif
+        ;
 
     class Texture {
         u8 mStorage[cTextureImplSize];

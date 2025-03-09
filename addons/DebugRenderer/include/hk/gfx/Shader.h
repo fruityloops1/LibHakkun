@@ -5,8 +5,13 @@
 namespace hk::gfx {
 
     class ShaderImpl;
-    constexpr static size cShaderImplSize = 552; // This needs to GO
-
+    constexpr static size cShaderImplSize = // This needs to GO
+#ifdef __aarch64__
+        552
+#else
+        544
+#endif
+        ;
     class Shader {
         u8 mStorage[cShaderImplSize];
 

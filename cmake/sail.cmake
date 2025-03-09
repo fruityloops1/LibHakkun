@@ -4,6 +4,7 @@ set(SAIL_LIBS
     ${CMAKE_CURRENT_BINARY_DIR}/fakesymbols.so
     )
 
+include(config/config.cmake)
 include(sys/cmake/watch.cmake)
 
 function (usesail lib)
@@ -27,7 +28,7 @@ function (usesail lib)
         watch(${lib} ${SYMDEPENDS})
 
         add_custom_command(TARGET ${lib} PRE_LINK
-            COMMAND ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_SOURCE_DIR}/syms ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER}
+            COMMAND ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_SOURCE_DIR}/syms ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0>
         )
     endif()
 endfunction()
