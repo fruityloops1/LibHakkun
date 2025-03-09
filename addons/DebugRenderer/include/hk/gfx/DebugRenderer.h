@@ -28,11 +28,12 @@ namespace hk::gfx {
         void setResolution(const util::Vector2f& res);
         void setGlyphSize(const util::Vector2f& size);
         void setGlyphSize(float scale);
+        void setGlyphHeight(float height);
         void setFont(Font* font);
         void setCursor(const util::Vector2f& pos);
         void setPrintColor(u32 color);
 
-        void bindTexture(Texture& tex);
+        void bindTexture(const TextureHandle& tex);
         void bindDefaultTexture();
 
         void clear();

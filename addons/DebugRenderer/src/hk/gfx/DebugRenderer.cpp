@@ -114,11 +114,12 @@ namespace hk::gfx {
     void DebugRenderer::setResolution(const util::Vector2f& res) { get()->setResolution(res); }
     void DebugRenderer::setGlyphSize(const util::Vector2f& size) { get()->setGlyphSize(size); }
     void DebugRenderer::setGlyphSize(float scale) { get()->setGlyphSize(scale); }
+    void DebugRenderer::setGlyphHeight(float height) { get()->setGlyphHeight(height); }
     void DebugRenderer::setFont(Font* font) { get()->setFont(font); }
     void DebugRenderer::setCursor(const util::Vector2f& pos) { get()->setCursor(pos); }
     void DebugRenderer::setPrintColor(u32 color) { get()->setPrintColor(color); }
 
-    void DebugRenderer::bindTexture(Texture& tex) { get()->bindTexture(tex); }
+    void DebugRenderer::bindTexture(const TextureHandle& tex) { get()->bindTexture(tex); }
     void DebugRenderer::bindDefaultTexture() { get()->bindDefaultTexture(); }
 
     void DebugRenderer::clear() { get()->clear(); }

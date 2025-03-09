@@ -1,7 +1,9 @@
 #include "hk/diag/diag.h"
 #include "hk/gfx/Texture.h"
-#include "hk/types.h"
+
 #include "nvn/nvn_Cpp.h"
+#include "nvn/nvn_CppMethods.h"
+
 #include <new>
 
 namespace hk::gfx {
@@ -59,7 +61,7 @@ namespace hk::gfx {
             HK_ASSERT(mTexture.Initialize(&textureBuilder));
             write(mTexture.GetWidth(), mTexture.GetHeight(), texData);
 
-            HK_ASSERT(mSampler.Initialize(&samplerBuilder))
+            HK_ASSERT(mSampler.Initialize(&samplerBuilder));
 
             mTexturePool.RegisterTexture(0, &mTexture, nullptr);
             mSamplerPool.RegisterSampler(0, &mSampler);
@@ -78,12 +80,6 @@ namespace hk::gfx {
             mTexture.FlushTexels(nullptr, &region);
         }
 
-        nvn::TextureHandle getHandle(nvn::CommandBuffer* commandBuffer) const {
-            commandBuffer->SetTexturePool(&mTexturePool);
-            commandBuffer->SetSamplerPool(&mSamplerPool);
-            return mDevice->GetTextureHandle(0, 0);
-        }
-
         ~TextureImpl() {
             mTexturePool.Finalize();
             mSamplerPool.Finalize();
@@ -94,6 +90,9 @@ namespace hk::gfx {
         }
 
         nvn::Texture& getTexture() { return mTexture; }
+        TextureHandle getTextureHandle() {
+            return { &mTexturePool, &mSamplerPool, 0, 0 };
+        }
     };
 
     Texture::Texture(void* nvnDevice, void* samplerBuilder, void* textureBuilder, size texSize, void* texData, void* memory) {
@@ -102,6 +101,10 @@ namespace hk::gfx {
 
     Texture::~Texture() {
         get()->~TextureImpl();
+    }
+
+    TextureHandle Texture::getTextureHandle() {
+        return { get()->getTextureHandle() };
     }
 
     size Texture::calcMemorySize(void* nvnDevice, size texSize) {
@@ -114,5 +117,7 @@ namespace hk::gfx {
         auto& tex = get()->getTexture();
         return { tex.GetWidth(), tex.GetHeight() };
     }
+
+    static_assert(sizeof(TextureImpl) == sizeof(Texture));
 
 } // namespace hk::gfx

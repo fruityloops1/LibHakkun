@@ -1,10 +1,10 @@
-#include "MemoryBuffer.h"
-
-#include "gfx/Util.h"
 #include "hk/diag/diag.h"
 #include "hk/gfx/Font.h"
+#include "hk/gfx/Shader.h"
 #include "hk/gfx/Texture.h"
+#include "hk/gfx/Util.h"
 #include "hk/gfx/Vertex.h"
+#include "hk/nvn/MemoryBuffer.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
 #include "hk/util/Storage.h"
@@ -21,9 +21,6 @@
 
 #include "embed_font.h"
 #include "embed_shader.h"
-
-#include "ShaderImpl.cpp"
-#include "TextureImpl.cpp"
 
 namespace hk::gfx {
     class DebugRendererImpl {
@@ -42,8 +39,8 @@ namespace hk::gfx {
         util::Storage<Font> mFont;
         uintptr_t mVtxOffset = 0;
         uintptr_t mCurVtxMap = 0;
-        MemoryBuffer mVtxBuffer;
-        MemoryBuffer mIdxBuffer;
+        hk::nvn::MemoryBuffer mVtxBuffer;
+        hk::nvn::MemoryBuffer mIdxBuffer;
         u8 mVtxBufferData[cVtxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mIdxBufferData[cIdxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mDefaultTextureBuffer[cDefaultTextureMemorySize] __attribute__((aligned(cPageSize))) { 0 };
@@ -62,6 +59,7 @@ namespace hk::gfx {
         void setResolution(const util::Vector2f& res) { mResolution = res; }
         void setGlyphSize(const util::Vector2f& size) { mGlyphSize = size; }
         void setGlyphSize(float scale) { mGlyphSize = mFontTextureGlyphSize * scale; }
+        void setGlyphHeight(float height) { setGlyphSize(height / mFontTextureGlyphSize.y); }
         void setFont(Font* font) { mCurrentFont = font; }
         void setCursor(const util::Vector2f& pos) { mCursor = pos; }
         void setPrintColor(u32 color) { mPrintColor = color; }
@@ -78,7 +76,6 @@ namespace hk::gfx {
         }
 
         void initialize(u8* program) {
-
             mShader.create(program, cShaderBufferSize, mDevice, nullptr, 0, nullptr, "hk::gfx::DebugRenderer");
 
             mVtxBuffer.initialize(mVtxBufferData, cVtxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
@@ -152,13 +149,14 @@ namespace hk::gfx {
             bindDefaultTexture();
         }
 
-        void bindTexture(Texture& tex) {
-            auto handle = tex.get()->getHandle(mCurCommandBuffer);
-            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, handle);
+        void bindTexture(const TextureHandle& tex) {
+            mCurCommandBuffer->SetTexturePool(static_cast<nvn::TexturePool*>(tex.texturePool));
+            mCurCommandBuffer->SetSamplerPool(static_cast<nvn::SamplerPool*>(tex.samplerPool));
+            mCurCommandBuffer->BindTexture(nvn::ShaderStage::FRAGMENT, 0, mDevice->GetTextureHandle(tex.textureId, tex.samplerId));
         }
 
         void bindDefaultTexture() {
-            bindTexture(*mDefaultTexture.get());
+            bindTexture(mDefaultTexture.get()->getTextureHandle());
         }
 
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c) {
@@ -193,6 +191,8 @@ namespace hk::gfx {
 
         template <typename Char>
         util::Vector2f drawString(const util::Vector2f& pos, const Char* str, u32 color) {
+            checkVtxBuffer();
+
             Vertex* vertices = reinterpret_cast<Vertex*>(mCurVtxMap);
 
             const uintptr_t initialOffset = mVtxOffset;
@@ -237,7 +237,7 @@ namespace hk::gfx {
                 curPos.x += glyphSize.x;
             }
 
-            bindTexture(mCurrentFont->getTexture());
+            bindTexture(mCurrentFont->getTexture().getTextureHandle());
 
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, initialOffset, mVtxOffset - initialOffset);
 

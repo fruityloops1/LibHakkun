@@ -2,9 +2,12 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+
 #include "nvn/nvn_Cpp.h"
 
-namespace hk::gfx {
+namespace hk::nvn {
+
+    using namespace ::nvn;
 
     class MemoryBuffer {
         nvn::MemoryPool mPool;
@@ -38,4 +41,4 @@ namespace hk::gfx {
         void* map() const { return mPool.Map(); }
     };
 
-} // namespace hk::gfx
+} // namespace hk::nvn

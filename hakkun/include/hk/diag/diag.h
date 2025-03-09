@@ -21,38 +21,38 @@ ResultAbort (%04d-%04d) [from %s]
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
 #define HK_ASSERT(CONDITION)                      \
-    {                                             \
+    do {                                          \
         const bool _condition_temp = (CONDITION); \
         if (_condition_temp == false) {           \
             __builtin_trap();                     \
         }                                         \
-    }
+    } while (0)
 
 #define HK_ABORT(FMT, ...) \
-    {                      \
+    do {                   \
         __builtin_trap();  \
-    }
+    } while (0)
 
 #define HK_ABORT_UNLESS(CONDITION, FMT, ...)      \
-    {                                             \
+    do {                                          \
         const bool _condition_temp = (CONDITION); \
         if (_condition_temp == false) {           \
             __builtin_trap();                     \
         }                                         \
-    }
+    } while (0)
 
 #define HK_ABORT_UNLESS_R(RESULT)                 \
-    {                                             \
+    do {                                          \
         const ::hk::Result _result_temp = RESULT; \
         if (_result_temp.failed()) {              \
             __builtin_trap();                     \
         }                                         \
-    }
+    } while (0)
 
 #else
 
 #define HK_ASSERT(CONDITION)                          \
-    {                                                 \
+    do {                                              \
         const bool _condition_temp = (CONDITION);     \
         if (_condition_temp == false) {               \
             ::hk::diag::abortImpl(                    \
@@ -63,10 +63,10 @@ ResultAbort (%04d-%04d) [from %s]
                 ::hk::diag::cAssertionFailFormat,     \
                 #CONDITION);                          \
         }                                             \
-    }
+    } while (0)
 
 #define HK_ABORT(FMT, ...)               \
-    {                                    \
+    do {                                 \
         ::hk::diag::abortImpl(           \
             ::hk::svc::BreakReason_User, \
             ::hk::diag::ResultAbort(),   \
@@ -74,10 +74,10 @@ ResultAbort (%04d-%04d) [from %s]
             __LINE__,                    \
             "\n" FMT "\n",               \
             __VA_ARGS__);                \
-    }
+    } while (0)
 
 #define HK_ABORT_UNLESS(CONDITION, FMT, ...)      \
-    {                                             \
+    do {                                          \
         const bool _condition_temp = (CONDITION); \
         const char* _fmt = FMT;                   \
         if (_condition_temp == false) {           \
@@ -89,10 +89,10 @@ ResultAbort (%04d-%04d) [from %s]
                 "\n" FMT "\n",                    \
                 __VA_ARGS__);                     \
         }                                         \
-    }
+    } while (0)
 
 #define HK_ABORT_UNLESS_R(RESULT)                     \
-    {                                                 \
+    do {                                              \
         const ::hk::Result _result_temp = RESULT;     \
         if (_result_temp.failed()) {                  \
             ::hk::diag::abortImpl(                    \
@@ -105,7 +105,7 @@ ResultAbort (%04d-%04d) [from %s]
                 _result_temp.getDescription(),        \
                 #RESULT);                             \
         }                                             \
-    }
+    } while (0)
 
 #endif
 
