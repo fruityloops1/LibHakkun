@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(../../config/config.cmake)
+include(../cmake/apply_config.cmake)
+
 include_directories(include)
 set(SOURCES
     src/hk/diag/diag.cpp
@@ -20,14 +23,20 @@ set(SOURCES
 
     src/hk/util/Context.cpp
 
-    src/hk/svc/api.S
-
     src/rtld/RoModule.cpp
     )
-add_library(LibHakkun ${SOURCES})
 
-include(../../config/config.cmake)
-include(../cmake/apply_config.cmake)
+if (IS_32_BIT)
+    set(SOURCES ${SOURCES}
+        src/hk/svc/api.armv7a.S
+        )
+else()
+    set(SOURCES ${SOURCES}
+        src/hk/svc/api.aarch64.S
+        )
+endif()
+
+add_library(LibHakkun ${SOURCES})
 
 apply_config(LibHakkun)
 

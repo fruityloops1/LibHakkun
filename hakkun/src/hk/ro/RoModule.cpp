@@ -1,4 +1,5 @@
 #include "hk/ro/RoModule.h"
+#include "hk/diag/diag.h"
 #include "hk/hook/MapUtil.h"
 #include "hk/ro/results.h"
 #include "hk/svc/api.h"
@@ -7,25 +8,40 @@
 namespace hk::ro {
 
     Result RoModule::findRanges() {
-
         svc::MemoryInfo curRangeInfo;
         u32 pageInfo;
         HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, module->m_Base));
+
+        HK_ASSERT(curRangeInfo.base_address == module->m_Base);
+
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadExecute, ResultUnusualSectionLayout());
-
+#ifdef __aarch64__
         text = { curRangeInfo.base_address, curRangeInfo.size };
+#else
+        text = { uintptr_t(curRangeInfo.base_address), size(curRangeInfo.size) };
+#endif
 
+        auto prev = module->m_Base;
         HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, curRangeInfo.base_address + curRangeInfo.size));
+
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_Read, ResultUnusualSectionLayout());
 
+#ifdef __aarch64__
         rodata = { curRangeInfo.base_address, curRangeInfo.size };
+#else
+        rodata = { uintptr_t(curRangeInfo.base_address), size(curRangeInfo.size) };
+#endif
 
         while (curRangeInfo.permission == svc::MemoryPermission_Read)
             HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, curRangeInfo.base_address + curRangeInfo.size));
 
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadWrite, ResultUnusualSectionLayout());
 
+#ifdef __aarch64__
         data = { curRangeInfo.base_address, curRangeInfo.size };
+#else
+        data = { uintptr_t(curRangeInfo.base_address), size(curRangeInfo.size) };
+#endif
 
         return ResultSuccess();
     }

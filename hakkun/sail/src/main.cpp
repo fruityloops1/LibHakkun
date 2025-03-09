@@ -5,14 +5,15 @@
 #include <filesystem>
 
 int main(int argc, char* argv[]) {
-    if (argc != 6)
-        sail::fail<1>("%s <ModuleList> <VersionList> <SymbolTraversePath> <OutFolder> <ClangBinary>\n", argv[0]);
+    if (argc != 7)
+        sail::fail<1>("%s <ModuleList> <VersionList> <SymbolTraversePath> <OutFolder> <ClangBinary> <Is32Bit>\n", argv[0]);
 
     const char* moduleListPath = argv[1];
     const char* versionListPath = argv[2];
     const char* symbolTraversePath = argv[3];
     const char* outFolder = argv[4];
     const char* clangBinary = argv[5];
+    sail::is32Bit() = argc == 7 && std::string(argv[6]) == "1";
 
     sail::loadConfig(moduleListPath, versionListPath);
 

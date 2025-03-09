@@ -56,7 +56,8 @@ namespace hk::hook {
         Handle curProcess;
         HK_ABORT_UNLESS_R(svc::getProcessHandleMesosphere(&curProcess));
 
-        HK_TRY(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
+        // HK_TRY(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
+        HK_ABORT_UNLESS_R(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
 
         *outRw = dest + ptrToAlignedDiff;
 

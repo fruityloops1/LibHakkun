@@ -13,6 +13,6 @@ function(add_rtld_dummy)
     
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "-- Generating rtld.nso"
-        COMMAND ${SWITCHTOOLS}/elf2nso ${CMAKE_CURRENT_BINARY_DIR}/rtld${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/rtld.nso
+        COMMAND ${PROJECT_SOURCE_DIR}/sys/tools/elf2nso.py ${CMAKE_CURRENT_BINARY_DIR}/rtld${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/rtld.nso
     )
 endfunction()
