@@ -21,12 +21,12 @@ SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjj
     bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjmj
+SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjjj
 	svc 0x1A
 	bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEm
+SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEj
 	svc 0x1B
 	bx lr
 SVC_END
