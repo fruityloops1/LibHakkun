@@ -4,54 +4,24 @@
 #include "hk/svc/types.h"
 
 namespace hk::svc {
-
-#ifdef __aarch64__
-    inline hk_alwaysinline void* getTLSPtr() {
-        void* volatile ptr;
-        asm volatile("mrs %0, tpidrro_el0" : "=r"(ptr));
-        return ptr;
-    }
-#else
-    inline __attribute__((always_inline)) void* getTLSPtr() {
-        void* volatile ptr;
-        asm volatile("mrc p15, 0, %0, cr13, c0, 0x3" : "=r"(ptr));
-        return ptr;
-    }
-#endif
-
-    inline hk_alwaysinline ThreadLocalRegion* getTLS() {
-        return cast<ThreadLocalRegion*>(getTLSPtr());
-    }
-
-#ifdef __aarch64__
-    inline hk_alwaysinline u64 getSystemTick() {
-        volatile u64 tick;
-        asm volatile("mrs %x0, cntpct_el0" : "=r"(tick));
-        return tick;
-    }
-#else
-    inline hk_alwaysinline u64 getSystemTick() {
-        volatile u64 tick;
-        asm volatile("mrrc p15, 0x0, %Q0, %R0, cr14" : "=r"(tick));
-        return tick;
-    }
-#endif
-
 #ifdef __aarch64__
     inline hk_alwaysinline u64 getSystemTickFrequency() {
         volatile u64 freq;
         asm volatile("mrs %x0, cntfrq_el0" : "=r"(freq));
         return freq;
     }
-#else
-    inline hk_alwaysinline u64 getSystemTickFrequency() {
-        volatile u32 freq;
-        asm volatile("mrc p15, 0, %0, cr14, c0, 0" : "=r"(freq));
-        return freq;
+    inline hk_alwaysinline u64 getSystemTick() {
+        volatile u64 tick;
+        asm volatile("mrs %x0, cntpct_el0" : "=r"(tick));
+        return tick;
     }
-#endif
+    inline hk_alwaysinline void* getTLSPtr() {
+        void* volatile ptr;
+        asm volatile("mrs %0, tpidrro_el0" : "=r"(ptr));
+        return ptr;
+    }
 
-    static inline u32 loadExclusive(volatile u32* ptr) {
+    inline u32 loadExclusive(volatile u32* ptr) {
         u32 value;
         asm volatile(
             "ldaxr %w[value], %[ptr]"
@@ -61,7 +31,7 @@ namespace hk::svc {
         return value;
     }
 
-    static inline bool storeExclusive(volatile u32* ptr, u32 value) {
+    inline bool storeExclusive(volatile u32* ptr, u32 value) {
         int result;
         asm volatile(
             "stlxr %w[result], %w[value], %[ptr]"
@@ -71,8 +41,53 @@ namespace hk::svc {
         return result == 0;
     }
 
-    static inline void clearExclusive() {
+    inline void clearExclusive() {
         asm volatile("clrex" ::: "memory");
+    }
+#else
+    inline hk_alwaysinline u64 getSystemTickFrequency() {
+        volatile u32 freq;
+        asm volatile("mrc p15, 0, %0, cr14, c0, 0" : "=r"(freq));
+        return freq;
+    }
+    inline hk_alwaysinline u64 getSystemTick() {
+        volatile u64 tick;
+        asm volatile("mrrc p15, 0x0, %Q0, %R0, cr14" : "=r"(tick));
+        return tick;
+    }
+    inline __attribute__((always_inline)) void* getTLSPtr() {
+        void* volatile ptr;
+        asm volatile("mrc p15, 0, %0, cr13, c0, 0x3" : "=r"(ptr));
+        return ptr;
+    }
+
+    inline uint32_t loadExclusive(volatile uint32_t* ptr) {
+        uint32_t value;
+        asm volatile(
+            "ldrex %0, [%1]"
+            : "=r"(value)
+            : "r"(ptr)
+            : "memory");
+        return value;
+    }
+
+    inline bool storeExclusive(volatile uint32_t* ptr, uint32_t value) {
+        uint32_t result;
+        asm volatile(
+            "strex %0, %1, [%2]"
+            : "=r"(result)
+            : "r"(value), "r"(ptr)
+            : "memory");
+        return result == 0;
+    }
+
+    inline void clearExclusive() {
+        // ...
+    }
+#endif
+
+    inline hk_alwaysinline ThreadLocalRegion* getTLS() {
+        return cast<ThreadLocalRegion*>(getTLSPtr());
     }
 
     inline hk_alwaysinline void prefetchRegion(ptr addr, ptrdiff size) {

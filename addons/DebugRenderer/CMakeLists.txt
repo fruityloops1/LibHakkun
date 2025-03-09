@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 include_directories(include)
 set(SOURCES
-    src/hk/nvn/nvn_CppFuncPtrImpl.cpp
     src/hk/gfx/DebugRenderer.cpp
     src/hk/gfx/Font.cpp
     )
