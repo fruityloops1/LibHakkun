@@ -279,10 +279,11 @@ namespace sail {
         {
             int i = 0;
             for (auto module : getVersionList()) {
+
                 if (module.empty())
-                    asmFile.append("\n.quad 0x0");
+                    asmFile.append("\n.word 0x0");
                 else {
-                    asmFile.append("\n.quad module_versions_");
+                    asmFile.append("\n.word module_versions_");
                     asmFile.append(std::to_string(i));
                     asmFile.append(" - _ZN2hk4sail9gVersionsE");
                 }
