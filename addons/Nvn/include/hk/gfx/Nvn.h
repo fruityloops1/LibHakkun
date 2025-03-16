@@ -6,7 +6,7 @@
 
 namespace hk::gfx {
 
-    inline nvn::Format getAstcFormat(void* tex) {
+    inline nvn::Format getAstcFormat(const void* tex) {
         const AstcHeader* header = reinterpret_cast<const AstcHeader*>(tex);
         nvn::Format format = nvn::Format::NONE;
         if (header->block_x == 4 && header->block_y == 4)
