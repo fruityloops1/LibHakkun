@@ -105,7 +105,8 @@ namespace hk::gfx {
                 mGlyphSize = mFontTextureGlyphSize;
             }
 
-            hkDebugRendererAfterInit(mDevice);
+            if (hkDebugRendererAfterInit)
+                hkDebugRendererAfterInit(mDevice);
         }
 
         void checkVtxBuffer() {
