@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/init/module.h"
 #include "rtld/RoModuleList.h"
+#include <algorithm>
 
 namespace nn::ro::detail {
 
@@ -46,6 +47,12 @@ namespace hk::ro {
         for (nn::ro::detail::RoModule* rtldModule : *nn::ro::detail::g_pAutoLoadList) {
             sModules[sNumModules++].module = rtldModule;
         }
+
+        std::sort(sModules, sModules + sNumModules, [](const RoModule& a, const RoModule& b) {
+            if (a.module == nullptr || a.module->m_Base == 0 || b.module == nullptr || b.module->m_Base == 0)
+                HK_ABORT_UNLESS_R(ResultRtldModuleInvalid());
+            return a.module->m_Base < b.module->m_Base;
+        });
 
         for (int i = 0; i < sNumModules; i++) {
             auto& module = sModules[i];

@@ -159,7 +159,7 @@ namespace hk::sail {
 
     extern size gNumSymbols;
     extern detail::SymbolEntry gSymbols[];
-    extern uintptr_t gVersions[];
+    extern uint32_t gVersions[];
 
     _HK_SAIL_PRECALC_TEMPLATE
     ptr lookupSymbolFromDb(const T* symbol) {
