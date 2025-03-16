@@ -16,7 +16,7 @@ Code modification framework for RTLD-based userspace Nintendo Switch programs wi
 #### Prerequisites
 * CMake + GNUMake or Ninja
 * cURL
-* Clang, LLVM, LLD 18 or later
+* Clang, LLVM, LLD 19 or later
 * Python 3.10, `pyelftools`, `mmh`, and `lz4` packages
 * [switch-tools](https://github.com/switchbrew/switch-tools) bin path in `SWITCHTOOLS` env variable, or devkitPro distribution of switch-tools
 #### Compile stdlibs and sail
