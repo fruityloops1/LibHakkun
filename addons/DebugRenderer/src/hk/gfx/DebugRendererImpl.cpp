@@ -1,3 +1,4 @@
+#include "gfx/DebugRendererSettings.h"
 #include "hk/diag/diag.h"
 #include "hk/gfx/Font.h"
 #include "hk/gfx/Shader.h"
@@ -21,6 +22,8 @@
 
 #include "embed_font.h"
 #include "embed_shader.h"
+
+__attribute__((weak)) hk::gfx::DebugRendererSettings hkDebugRendererSettings;
 
 namespace hk::gfx {
     class DebugRendererImpl {
@@ -118,30 +121,30 @@ namespace hk::gfx {
 
             nvn::PolygonState polyState;
             polyState.SetDefaults();
-            polyState.SetPolygonMode(nvn::PolygonMode::FILL);
-            polyState.SetFrontFace(nvn::FrontFace::CCW);
+            polyState.SetPolygonMode(hkDebugRendererSettings.polygonMode);
+            polyState.SetFrontFace(hkDebugRendererSettings.frontFace);
             cmdBuffer->BindPolygonState(&polyState);
 
             nvn::ColorState colorState;
             colorState.SetDefaults();
-            colorState.SetLogicOp(nvn::LogicOp::COPY);
-            colorState.SetAlphaTest(nvn::AlphaFunc::ALWAYS);
+            colorState.SetLogicOp(hkDebugRendererSettings.logicOp);
+            colorState.SetAlphaTest(hkDebugRendererSettings.alphaFunc);
             for (int i = 0; i < 8; ++i) {
-                colorState.SetBlendEnable(i, true);
+                colorState.SetBlendEnable(i, hkDebugRendererSettings.blendEnable[i]);
             }
             cmdBuffer->BindColorState(&colorState);
 
             nvn::BlendState blendState;
             blendState.SetDefaults();
-            blendState.SetBlendFunc(nvn::BlendFunc::SRC_ALPHA,
-                nvn::BlendFunc::ONE_MINUS_SRC_ALPHA,
-                nvn::BlendFunc::ONE, nvn::BlendFunc::ZERO);
-            blendState.SetBlendEquation(nvn::BlendEquation::ADD, nvn::BlendEquation::ADD);
+            blendState.SetBlendFunc(hkDebugRendererSettings.srcBlendFunc,
+                hkDebugRendererSettings.dstBlendFunc,
+                hkDebugRendererSettings.srcBlendFuncAlpha, hkDebugRendererSettings.dstBlendFuncAlpha);
+            blendState.SetBlendEquation(hkDebugRendererSettings.blendEquationColor, hkDebugRendererSettings.blendEquationAlpha);
             cmdBuffer->BindBlendState(&blendState);
 
             nvn::DepthStencilState depthStencilState;
             depthStencilState.SetDefaults();
-            depthStencilState.SetDepthWriteEnable(false);
+            depthStencilState.SetDepthWriteEnable(hkDebugRendererSettings.depthWriteEnable);
             cmdBuffer->BindDepthStencilState(&depthStencilState);
 
             cmdBuffer->BindVertexBuffer(0, mVtxBuffer.getAddress(), cVtxBufferSize);
