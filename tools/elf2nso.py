@@ -24,8 +24,6 @@ def main(argc, argv):
     do_compress  = '-c' in argv[3:]
     do_checksums = '-s' in argv[3:]
 
-    print(argv[1])
-
     # Load ELF
     try:
         elf = ELFFile(open(argv[1], 'rb'))
