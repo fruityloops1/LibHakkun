@@ -1,0 +1,4 @@
+@sdk
+_ZN2nn4lmem13CreateExpHeapEPvmi
+_ZN2nn4lmem19AllocateFromExpHeapEPNS0_6detail8HeapHeadEm
+_ZN2nn4lmem13FreeToExpHeapEPNS0_6detail8HeapHeadEPv

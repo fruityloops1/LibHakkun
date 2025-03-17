@@ -15,7 +15,7 @@ function (usesail lib)
             message(FATAL_ERROR "Sail binary not found! Did you run setup_sail.py?")
         endif()
 
-        file(GLOB_RECURSE SYM_FILES ${CMAKE_CURRENT_SOURCE_DIR}/syms/*.sym)
+        file(GLOB_RECURSE SYM_FILES ${CMAKE_CURRENT_SOURCE_DIR}/syms/*.sym ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms/*.sym)
 
         set(SYMDEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym")
         set(SYMDEPENDS "${SYMDEPENDS};${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym")
@@ -28,7 +28,7 @@ function (usesail lib)
         watch(${lib} ${SYMDEPENDS})
 
         add_custom_command(TARGET ${lib} PRE_LINK
-            COMMAND ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_SOURCE_DIR}/syms ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0>
+            COMMAND ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0> ${CMAKE_CURRENT_SOURCE_DIR}/syms ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms
         )
     endif()
 endfunction()
