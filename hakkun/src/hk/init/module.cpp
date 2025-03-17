@@ -5,6 +5,10 @@
 #include "rtld/ModuleHeader.h"
 #include "rtld/RoModule.h"
 
+#ifdef HK_ADDON_HeapSourceBss
+#include "hk/mem/BssHeap.h"
+#endif
+
 namespace hk::init {
 
     extern "C" {
@@ -31,6 +35,10 @@ namespace hk::init {
         ro::initModuleList();
 #ifndef HK_DISABLE_SAIL
         sail::loadSymbols();
+#endif
+#ifdef HK_ADDON_HeapSourceBss
+        if (mem::initializeMainHeap)
+            mem::initializeMainHeap();
 #endif
         callInitializers();
 

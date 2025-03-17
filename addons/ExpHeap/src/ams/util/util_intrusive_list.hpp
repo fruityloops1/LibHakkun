@@ -19,16 +19,8 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 
-#include "vapours/util/util_parent_of_member.hpp"
+#include "util_parent_of_member.hpp"
 #include <iterator>
-
-#define NON_COPYABLE(cls)     \
-    cls(const cls&) = delete; \
-    cls& operator=(const cls&) = delete
-
-#define NON_MOVEABLE(cls) \
-    cls(cls&&) = delete;  \
-    cls& operator=(cls&&) = delete
 
 namespace ams::util {
 
