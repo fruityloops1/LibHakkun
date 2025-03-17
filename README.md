@@ -202,3 +202,7 @@ Please note trampoline hooks do not relocate instructions at the moment, which s
 * tetraxile for some help and testing
 * shadowninja108
 * marysaka for [oss-rtld](https://github.com/marysaka/oss-rtld)
+* GLOSHSEP for sail changes
+
+## License
+The LICENSE file applies to all parts of the project except the addons/ExpHeap subdirectory

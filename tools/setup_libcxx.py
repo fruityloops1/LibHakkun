@@ -50,6 +50,28 @@ def downloadAndCompileMusl():
 
     subprocess.run(["./configure", "--disable-shared", "--target", target], env=env)
 
+    empty_files = [
+        'src/malloc/mallocng/malloc.c',
+        'src/malloc/mallocng/aligned_alloc.c',
+        'src/malloc/mallocng/free.c',
+        'src/malloc/mallocng/realloc.c',
+        'src/malloc/oldmalloc/aligned_alloc.c',
+        'src/malloc/oldmalloc/malloc.c',
+        'src/malloc/free.c',
+        'src/malloc/realloc.c',
+        'src/malloc/calloc.c',
+        'src/malloc/replaced.c',
+        'src/malloc/reallocarray.c',
+        'src/malloc/posix_memalign.c',
+        'src/malloc/memalign.c',
+        'src/malloc/lite_malloc.c',
+        'src/malloc/lite_calloc.c',
+    ]
+
+    for file in empty_files:
+        with open(file, 'w') as f:
+            f.write('')
+
     subprocess.run(["make", "-j", f"{multiprocessing.cpu_count()}"])
 
     os.chdir(root_dir)

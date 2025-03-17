@@ -5,6 +5,7 @@
 
 section(.bss.rtldmodule) nn::ro::detail::RoModule hkRtldModule;
 
+#undef HK_ASSERT
 #define HK_ASSERT(_EXPR)                    \
     {                                       \
         if ((_EXPR) == false) {             \
