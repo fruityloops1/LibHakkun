@@ -6,6 +6,9 @@ set(SOURCES
 
     src/hk/gfx/ShaderImpl.cpp
     src/hk/gfx/TextureImpl.cpp
+    src/hk/gfx/UboImpl.cpp
+
+    src/hk/gfx/NvnBootstrapOverride.cpp
     )
 add_library(Nvn ${SOURCES})
 
@@ -17,4 +20,4 @@ apply_config(Nvn)
 target_compile_definitions(Nvn PRIVATE)
 target_include_directories(Nvn PRIVATE include/hk ${CMAKE_CURRENT_BINARY_DIR})
 
-set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../)

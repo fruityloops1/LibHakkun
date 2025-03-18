@@ -1,19 +1,18 @@
 #pragma once
 
+#include "hk/gfx/Ubo.h"
 #include "hk/types.h"
 
 namespace hk::gfx {
 
     class ShaderImpl;
-    constexpr static size cShaderImplSize = // This needs to GO
-#ifdef __aarch64__
-        552
-#else
-        544
-#endif
-        ;
+    constexpr static size cShaderImplSize = 568; // This needs to GO
+
     class Shader {
         u8 mStorage[cShaderImplSize];
+        Ubo* mUbo = nullptr;
+        u32 mUboBinding = 0;
+        u32 mReserved;
 
     public:
         ShaderImpl* get() { return reinterpret_cast<ShaderImpl*>(mStorage); }
@@ -22,6 +21,11 @@ namespace hk::gfx {
         ~Shader();
 
         void use(void* nvnCommandBuffer);
+
+        void setUbo(Ubo* ubo, u32 binding) {
+            mUbo = ubo;
+            mUboBinding = binding;
+        }
     };
 
 } // namespace hk::gfx

@@ -24,4 +24,4 @@ apply_config(DebugRenderer)
 target_compile_definitions(DebugRenderer PRIVATE)
 target_include_directories(DebugRenderer PRIVATE include/hk ${CMAKE_CURRENT_BINARY_DIR})
 
-set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../)

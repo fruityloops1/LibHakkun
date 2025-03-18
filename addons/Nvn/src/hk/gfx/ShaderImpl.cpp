@@ -90,8 +90,12 @@ namespace hk::gfx {
         get()->~ShaderImpl();
     }
 
-    void Shader::use(void* nvnCommandBuffer) { get()->use(static_cast<nvn::CommandBuffer*>(nvnCommandBuffer)); }
+    void Shader::use(void* nvnCommandBuffer) {
+        get()->use(static_cast<nvn::CommandBuffer*>(nvnCommandBuffer));
+        if (mUbo)
+            mUbo->bind(nvnCommandBuffer, mUboBinding);
+    }
 
-    static_assert(sizeof(ShaderImpl) == sizeof(Shader));
+    static_assert(sizeof(ShaderImpl) + sizeof(Ubo*) + sizeof(u32) + sizeof(u32) == sizeof(Shader));
 
 } // namespace hk::gfx

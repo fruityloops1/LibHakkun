@@ -38,6 +38,7 @@ namespace hk::gfx {
         nvn::CommandBuffer* mCurCommandBuffer;
         nvn::TexturePool* mPrevTexturePool = nullptr;
         nvn::SamplerPool* mPrevSamplerPool = nullptr;
+        nvn::Sync mBuffersSync;
         util::Storage<Shader> mShader;
         hk::util::Storage<Texture> mDefaultTexture;
         util::Storage<Font> mFont;
@@ -68,10 +69,10 @@ namespace hk::gfx {
         void setCursor(const util::Vector2f& pos) { mCursor = pos; }
         void setPrintColor(u32 color) { mPrintColor = color; }
 
-        void setTexturePool(nvn::CommandBuffer* cmdBuf, nvn::TexturePool* pool) { mPrevTexturePool = pool; }
-        void setSamplerPool(nvn::CommandBuffer* cmdBuf, nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
+        void setPrevTexturePool(nvn::TexturePool* pool) { mPrevTexturePool = pool; }
+        void setPrevSamplerPool(nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
 
-        bool tryInitializeProgram() {
+        bool tryInitialize() {
             if (mInitialized)
                 return false;
             initialize((u8*)shader_bin);
@@ -105,6 +106,8 @@ namespace hk::gfx {
                 mGlyphSize = mFontTextureGlyphSize;
             }
 
+            HK_ASSERT(mBuffersSync.Initialize(mDevice));
+
             hkDebugRendererAfterInit(mDevice);
         }
 
@@ -119,6 +122,7 @@ namespace hk::gfx {
 
         void begin(nvn::CommandBuffer* cmdBuffer) {
             mCurCommandBuffer = cmdBuffer;
+            mBuffersSync.Wait(UINT64_MAX);
 
             mShader.get()->use(cmdBuffer);
 
@@ -249,7 +253,7 @@ namespace hk::gfx {
 
             bindDefaultTexture();
 
-            return curPos;
+            return curPos * mResolution;
         }
 
         void printf(const char* fmt, std::va_list arg) {
@@ -261,6 +265,7 @@ namespace hk::gfx {
         }
 
         void end() {
+            mCurCommandBuffer->FenceSync(&mBuffersSync, nvn::SyncCondition::ALL_GPU_COMMANDS_COMPLETE, nvn::SyncFlagBits());
             mCurCommandBuffer->SetTexturePool(mPrevTexturePool);
             mCurCommandBuffer->SetSamplerPool(mPrevSamplerPool);
         }
