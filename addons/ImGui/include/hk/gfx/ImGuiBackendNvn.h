@@ -5,7 +5,7 @@
 
 namespace hk::gfx {
     class ImGuiBackendNvnImpl;
-    constexpr static size cImGuiBackendNvnImplSize = 2168; // This needs to GO
+    constexpr static size cImGuiBackendNvnImplSize = 2232; // This needs to GO
 
     class ImGuiBackendNvn {
         u8 mStorage[cImGuiBackendNvnImplSize];

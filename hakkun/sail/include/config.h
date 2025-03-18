@@ -15,4 +15,6 @@ namespace sail {
     void clearDestinationSymbols();
     bool addDestinationSymbolAndCheckDuplicate(const std::string& symbol);
 
+    bool& is32Bit();
+
 } // namespace sail

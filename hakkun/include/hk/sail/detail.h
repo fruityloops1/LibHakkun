@@ -90,7 +90,7 @@ namespace hk::sail {
         };
 
         struct SymbolMultipleCandidate : Symbol {
-            const uintptr_t offsetToCandidates;
+            const u64 offsetToCandidates;
             const u64 numCandidates;
 
             _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
@@ -98,9 +98,13 @@ namespace hk::sail {
 
         constexpr size cSymbolEntrySize = util::max(sizeof(SymbolDataBlock), sizeof(SymbolDynamic), sizeof(SymbolImmediate), sizeof(SymbolReadADRPGlobal), sizeof(SymbolArithmetic), sizeof(SymbolMultipleCandidate));
 
-#ifdef __aarch64__
         static_assert(cSymbolEntrySize == 32);
-#endif
+        static_assert(__builtin_offsetof(Symbol, destNameMurmur) == 0);
+        static_assert(__builtin_offsetof(Symbol, type) == 4);
+        static_assert(__builtin_offsetof(Symbol, symbolPtrCache) == 8);
+        static_assert(__builtin_offsetof(SymbolMultipleCandidate, offsetToCandidates) == 16);
+        static_assert(__builtin_offsetof(SymbolMultipleCandidate, numCandidates) == 24);
+        static_assert(__builtin_offsetof(SymbolArithmetic, symIdx) == 24);
 
         class SymbolEntry {
             union {
@@ -155,10 +159,10 @@ namespace hk::sail {
 
     extern size gNumSymbols;
     extern detail::SymbolEntry gSymbols[];
-    extern uintptr_t gVersions[];
+    extern uint32_t gVersions[];
 
     _HK_SAIL_PRECALC_TEMPLATE
-    ptr lookupSymbolFromDb(const T* symbol) {
+    ptr lookupSymbolFromDb(const T* symbol, bool abort = true) {
         u32 destHash;
         if constexpr (IsPreCalc)
             destHash = *symbol;
@@ -173,11 +177,16 @@ namespace hk::sail {
             },
                 0, gNumSymbols - 1, destHash);
 
-        if constexpr (IsPreCalc) {
-            HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %08x\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", *symbol);
-        } else {
-            HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %s\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", symbol);
+        if (abort) {
+            if constexpr (IsPreCalc) {
+                HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %08x\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", *symbol);
+            } else {
+                HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %s\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", symbol);
+            }
         }
+
+        if (idx == -1)
+            return 0;
 
         ptr out = 0;
         auto& entry = gSymbols[idx];

@@ -91,8 +91,9 @@ namespace hk::sail {
                         Elf_Addr* ptr = (Elf_Addr*)(aslrBase + entry->r_offset);
                         Elf_Xword symIndex = ELF_R_SYM(entry->r_info);
                         const Elf_Sym& sym = dynsym[symIndex];
+
                         if (sym.st_name)
-                            callback(ptr, dynstr + sym.st_name);
+                            callback(ptr, dynstr + sym.st_name, ELF_ST_BIND(sym.st_info) != STB_WEAK);
                         break;
                     }
                     }
@@ -115,7 +116,7 @@ namespace hk::sail {
                         Elf_Xword symIndex = ELF_R_SYM(entry->r_info);
                         const Elf_Sym& sym = dynsym[symIndex];
                         if (sym.st_name)
-                            callback(ptr, dynstr + sym.st_name);
+                            callback(ptr, dynstr + sym.st_name, ELF_ST_BIND(sym.st_info) != STB_WEAK);
                         break;
                     }
                     }
@@ -133,7 +134,7 @@ namespace hk::sail {
 
         sTimeElapsedLoadSymbols = svc::getSystemTick();
 
-        iterateDynSyms([](Elf_Addr* ptr, const char* symbol) -> void {
+        iterateDynSyms([](Elf_Addr* ptr, const char* symbol, bool abort) -> void {
             if constexpr (sail::sUsePrecalcHashes)
                 *ptr = lookupSymbolFromDb<true>(cast<const u32*>(symbol));
             else

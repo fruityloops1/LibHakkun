@@ -1,6 +1,6 @@
 # <span style="font-size: 48px">Hakkun</span> ![goober](https://mario.wiki.gallery/images/0/0e/Ninji_PMSS.png)
 
-Code modification framework for 64-bit RTLD-based userspace Nintendo Switch programs. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
+Code modification framework for RTLD-based userspace Nintendo Switch programs with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
 
 ## Features
 * Clang/LLVM toolchain, linking musl libc + LLVM libc++
@@ -16,12 +16,12 @@ Code modification framework for 64-bit RTLD-based userspace Nintendo Switch prog
 #### Prerequisites
 * CMake + GNUMake or Ninja
 * cURL
-* Clang, LLVM, LLD 18 or later
-* Python 3.10, `pyelftools` and `mmh` packages
+* Clang, LLVM, LLD 19 or later
+* Python 3.10, `pyelftools`, `mmh`, and `lz4` packages
 * [switch-tools](https://github.com/switchbrew/switch-tools) bin path in `SWITCHTOOLS` env variable, or devkitPro distribution of switch-tools
 #### Compile stdlibs and sail
 
-You can either use a prepackaged stdlib, or compile one yourself:
+You can either use a prepackaged stdlib, or compile one yourself (pass 'aarch32' as argument to either of the scripts if using 32-bit):
 ##### Using prepackaged stdlib
 Run `tools/setup_libcxx_prepackaged.py` from your repository's root to download a pre-packaged stdlib. (~20MiB)
 ##### Compiling stdlib yourself
@@ -67,6 +67,7 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `DEFINITIONS`: Preprocessor definitions
 * `INCLUDES`: Include directories
 * `ASM_OPTIONS`, `C_OPTIONS`, `CXX_OPTIONS`: Various compiler options
+* `IS_32_BIT`: Whether or not target is 32-bit 
 * `TARGET_IS_STATIC`: Whether or not target program has statically linked rtld/sdk. Usually sysmodules or applets do this, Applications do not. Enabling this will also add a dummy RTLD module, to work around an unfortunate decision in `loader`
 * `MODULE_NAME`: Name of your output RTLD module
 * `TITLE_ID`: Title ID of the target program
@@ -75,6 +76,7 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
 * `TRAMPOLINE_POOL_SIZE`: Maximum amount of trampoline hooks
 * `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols to hashes, reducing binary size at the expense of harder debugging
+* `HAKKUN_ADDONS`: List of Hakkun addons to enable
 #### Sail
 Sail reads 2 configuration files:
 ##### ModuleList.sym
@@ -109,6 +111,11 @@ The following SVC permissions are used and need to be allowed for Hakkun to func
 "svcOutputDebugString": "0x27",
 "svcGetInfo": "0x29",
 "svcMapProcessMemory": "0x74",
+```
+Additionally, the following SVC permissions are needed in 32-bit mode:
+```
+"svcInvalidateProcessDataCache": "0x5d",
+"svcFlushProcessDataCache": "0x5f",
 ```
 
 ## Symbol Language
@@ -195,3 +202,7 @@ Please note trampoline hooks do not relocate instructions at the moment, which s
 * tetraxile for some help and testing
 * shadowninja108
 * marysaka for [oss-rtld](https://github.com/marysaka/oss-rtld)
+* GLOSHSEP for sail changes
+
+## License
+The LICENSE file applies to all parts of the project except the addons/ExpHeap subdirectory

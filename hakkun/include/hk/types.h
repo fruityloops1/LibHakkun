@@ -11,6 +11,14 @@
 #define STRINGIFY(X) #X
 #define STR(X) STRINGIFY(X)
 
+#define NON_COPYABLE(CLASS)       \
+    CLASS(const CLASS&) = delete; \
+    CLASS& operator=(const CLASS&) = delete
+
+#define NON_MOVABLE(CLASS)   \
+    CLASS(CLASS&&) = delete; \
+    CLASS& operator=(CLASS&&) = delete
+
 #ifdef HK_RELEASE
 #define ralwaysinline hk_alwaysinline
 #else
@@ -76,6 +84,11 @@ namespace hk {
     constexpr T alignUpPage(T from) { return alignUp(from, cPageSize); }
     template <typename T>
     constexpr T alignDownPage(T from) { return alignDown(from, cPageSize); }
+
+    template <typename T>
+    constexpr bool isAligned(T from, size alignment) { return alignDown(from, alignment) == from; }
+    template <typename T>
+    constexpr bool isAlignedPage(T from) { return alignDown(from, cPageSize) == from; }
 
 } // namespace hk
 

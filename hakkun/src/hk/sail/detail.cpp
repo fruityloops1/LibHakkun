@@ -225,6 +225,7 @@ namespace hk::sail {
             ptr at;
             entry.apply(abort, &at, &sym->destNameMurmur);
 
+#ifdef __aarch64__
             if (abort) {
                 if (IsPreCalc) {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %x", *destSymbol);
@@ -232,6 +233,9 @@ namespace hk::sail {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
                 }
             }
+#else
+            HK_ABORT("ReadADRPGlobal not implemented for this architecture", 0);
+#endif
         }
 
         void SymbolReadADRPGlobal::apply(bool abort, ptr* out, const char* destSymbol) {

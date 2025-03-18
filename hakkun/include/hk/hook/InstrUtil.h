@@ -44,38 +44,6 @@ namespace hk::hook {
 
     } // namespace detail
 
-#define _HK_HOOK_DETAIL_WRITEFUNC(NAME, IMPLFUNC, ...)                                               \
-    template <typename Func>                                                                         \
-    hk_alwaysinline Result write##NAME(const ro::RoModule* module, ptr offset, Func* branchToFunc) { \
-        return IMPLFUNC(__VA_ARGS__);                                                                \
-    }                                                                                                \
-    template <typename Func>                                                                         \
-    hk_alwaysinline Result write##NAME##AtPtr(ptr addr, Func* branchToFunc) {                        \
-        auto* module = ro::getModuleContaining(addr);                                                \
-        ptr offset = addr - module->range().start();                                                 \
-        return write##NAME(module, offset, branchToFunc);                                            \
-    }                                                                                                \
-    template <util::TemplateString Symbol, typename Func>                                            \
-    hk_alwaysinline Result write##NAME##AtSym(Func* branchToFunc) {                                  \
-        ptr addr;                                                                                    \
-        if constexpr (sail::sUsePrecalcHashes) {                                                     \
-            constexpr u32 symMurmur = util::hashMurmur(Symbol.value);                                \
-            addr = sail::lookupSymbolFromDb<true>(&symMurmur);                                       \
-        } else {                                                                                     \
-            addr = sail::lookupSymbolFromDb<false>(Symbol.value);                                    \
-        }                                                                                            \
-                                                                                                     \
-        return write##NAME##AtPtr(addr, branchToFunc);                                               \
-    }
-
-    _HK_HOOK_DETAIL_WRITEFUNC(Branch, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::Branch, module, offset, ptr(branchToFunc));
-    _HK_HOOK_DETAIL_WRITEFUNC(BranchLink, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::BranchLink, module, offset, ptr(branchToFunc));
-
-    constexpr Instr makeB(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::Branch, pcAddr, branchToAddr); }
-    constexpr Instr makeBL(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::BranchLink, pcAddr, branchToAddr); }
-
-#undef _HK_HOOK_DETAIL_WRITEFUNC
-
     hk_alwaysinline inline Result readADRPGlobal(ptr* out, Instr* at, s32 loInstrOffset = 1) {
         ptr pc = ptr(at);
         Instr adrpInstr = at[0];
@@ -123,8 +91,71 @@ namespace hk::hook {
         return ResultSuccess();
     }
 
+#elif __arm__
+    using Instr = u32;
+
+    namespace detail {
+
+        enum UnconditionalBranchOp
+        {
+            Branch = 0b11101010,
+            BranchLink = 0b11101011,
+        };
+
+        constexpr u32 cImm24Mask = 0b111111111111111111111111;
+
+        constexpr Instr makeUnconditionalBranchRelative(UnconditionalBranchOp operand, s32 branchToRelativeAddress) {
+            branchToRelativeAddress -= 8;
+            branchToRelativeAddress /= 4;
+
+            return (branchToRelativeAddress & cImm24Mask) | (operand << 24);
+        }
+
+        constexpr Instr makeUnconditionalBranch(UnconditionalBranchOp operand, ptr pcAddr, ptr branchToAddr) {
+            s32 branchToRelativeAddress = branchToAddr - pcAddr;
+
+            return makeUnconditionalBranchRelative(operand, branchToRelativeAddress);
+        }
+
+        inline Result writeUnconditionalBranch(UnconditionalBranchOp operand, const ro::RoModule* module, ptr offset, ptr branchToAddr) {
+            return module->writeRo(offset, makeUnconditionalBranch(operand, module->range().start() + offset, branchToAddr));
+        }
+
+    } // namespace detail
+
 #else
-#error unsupported architecture
+#error "unsupported architecture"
 #endif
+
+#define _HK_HOOK_DETAIL_WRITEFUNC(NAME, IMPLFUNC, ...)                                               \
+    template <typename Func>                                                                         \
+    hk_alwaysinline Result write##NAME(const ro::RoModule* module, ptr offset, Func* branchToFunc) { \
+        return IMPLFUNC(__VA_ARGS__);                                                                \
+    }                                                                                                \
+    template <typename Func>                                                                         \
+    hk_alwaysinline Result write##NAME##AtPtr(ptr addr, Func* branchToFunc) {                        \
+        auto* module = ro::getModuleContaining(addr);                                                \
+        ptr offset = addr - module->range().start();                                                 \
+        return write##NAME(module, offset, branchToFunc);                                            \
+    }                                                                                                \
+    template <util::TemplateString Symbol, typename Func>                                            \
+    hk_alwaysinline Result write##NAME##AtSym(Func* branchToFunc) {                                  \
+        ptr addr;                                                                                    \
+        if constexpr (sail::sUsePrecalcHashes) {                                                     \
+            constexpr u32 symMurmur = util::hashMurmur(Symbol.value);                                \
+            addr = sail::lookupSymbolFromDb<true>(&symMurmur);                                       \
+        } else {                                                                                     \
+            addr = sail::lookupSymbolFromDb<false>(Symbol.value);                                    \
+        }                                                                                            \
+                                                                                                     \
+        return write##NAME##AtPtr(addr, branchToFunc);                                               \
+    }
+
+    _HK_HOOK_DETAIL_WRITEFUNC(Branch, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::Branch, module, offset, ptr(branchToFunc));
+    _HK_HOOK_DETAIL_WRITEFUNC(BranchLink, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::BranchLink, module, offset, ptr(branchToFunc));
+
+    constexpr Instr makeB(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::Branch, pcAddr, branchToAddr); }
+    constexpr Instr makeBL(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::BranchLink, pcAddr, branchToAddr); }
+#undef _HK_HOOK_DETAIL_WRITEFUNC
 
 } // namespace hk::hook

@@ -39,6 +39,8 @@ namespace hk::gfx {
         constexpr static size cInitialVtxBufferSize = 0x1000 * sizeof(ImDrawVert);
         constexpr static size cInitialIdxBufferSize = (cInitialVtxBufferSize / sizeof(ImDrawVert)) * 3 * sizeof(ImDrawIdx);
 
+        constexpr static size cVtxIdxBuffering = 3;
+
         ImGuiBackendNvn::Allocator mAllocator;
 
         nvn::Device* mDevice = nullptr;
@@ -49,6 +51,7 @@ namespace hk::gfx {
         void* mFontTextureMemory = nullptr;
         nvn::TexturePool* mPrevTexturePool = nullptr;
         nvn::SamplerPool* mPrevSamplerPool = nullptr;
+        nvn::Sync mBuffersSync;
 
         bool mInitialized = false;
 
@@ -73,7 +76,7 @@ namespace hk::gfx {
                 mVtxBuffer.finalize();
             }
             if (mIdxBuffer.isInitialized()) {
-                mAllocator.free(mVtxBuffer.getMemory());
+                mAllocator.free(mIdxBuffer.getMemory());
                 mIdxBuffer.finalize();
             }
 
@@ -88,6 +91,7 @@ namespace hk::gfx {
 
             mVtxBuffer.initialize(vtxBuffer, vertSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
             mIdxBuffer.initialize(idxBuffer, idxSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
+            HK_ASSERT(mBuffersSync.Initialize(mDevice));
         }
 
         void initTexture(bool useLinearFilter = true) {
@@ -98,7 +102,7 @@ namespace hk::gfx {
             u8* pixels;
             int width, height;
 
-            io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+            io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
             size texSize = width * height * sizeof(u32);
             size texMemorySize = Texture::calcMemorySize(mDevice, texSize);
@@ -117,8 +121,9 @@ namespace hk::gfx {
                 nvn::TextureBuilder tex;
                 tex.SetDefaults()
                     .SetTarget(nvn::TextureTarget::TARGET_2D)
-                    .SetFormat(nvn::Format::RGBA8)
-                    .SetSize2D(width, height);
+                    .SetFormat(nvn::Format::R8)
+                    .SetSize2D(width, height)
+                    .SetSwizzle(nvn::TextureSwizzle::ONE, nvn::TextureSwizzle::ONE, nvn::TextureSwizzle::ONE, nvn::TextureSwizzle::R);
                 mFontTexture.create(mDevice, &samp, &tex, texSize, pixels, mFontTextureMemory);
             }
         }
@@ -195,10 +200,10 @@ namespace hk::gfx {
         void draw(const ImDrawData& drawData, nvn::CommandBuffer* cmdBuffer) {
             if (drawData.TotalVtxCount == 0)
                 return;
+            mBuffersSync.Wait(UINT64_MAX);
             if (drawData.TotalVtxCount > mVtxBuffer.getSize() / sizeof(ImDrawVert) or drawData.TotalIdxCount > mIdxBuffer.getSize() / sizeof(ImDrawIdx)) {
                 initBuffers(drawData.TotalVtxCount * sizeof(ImDrawVert), drawData.TotalIdxCount * sizeof(ImDrawIdx));
             }
-
             setDrawState(cmdBuffer);
 
             ImDrawVert* curVtx = reinterpret_cast<ImDrawVert*>(mVtxBuffer.map());
@@ -218,6 +223,8 @@ namespace hk::gfx {
                     curVtx[j].pos.y /= dispSize.y;
                 }
                 memcpy(curIdx, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+                mVtxBuffer.flush(vtxGpuAddr - mVtxBuffer.getAddress(), cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+                mIdxBuffer.flush(idxGpuAddr - mIdxBuffer.getAddress(), cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
 
                 cmdBuffer->BindVertexBuffer(0, vtxGpuAddr, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
 
@@ -243,6 +250,8 @@ namespace hk::gfx {
                 vtxGpuAddr += cmdList->VtxBuffer.Size * sizeof(ImDrawVert);
                 idxGpuAddr += cmdList->IdxBuffer.Size * sizeof(ImDrawIdx);
             }
+
+            cmdBuffer->FenceSync(&mBuffersSync, nvn::SyncCondition::ALL_GPU_COMMANDS_COMPLETE, nvn::SyncFlagBits());
 
             cmdBuffer->SetTexturePool(mPrevTexturePool);
             cmdBuffer->SetSamplerPool(mPrevSamplerPool);

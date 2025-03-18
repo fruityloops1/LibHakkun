@@ -1,3 +1,4 @@
+#include "gfx/DebugRendererSettings.h"
 #include "hk/diag/diag.h"
 #include "hk/gfx/Font.h"
 #include "hk/gfx/Shader.h"
@@ -22,6 +23,9 @@
 #include "embed_font.h"
 #include "embed_shader.h"
 
+__attribute__((weak)) hk::gfx::DebugRendererSettings hkDebugRendererSettings;
+extern "C" __attribute__((weak)) void hkDebugRendererAfterInit(nvn::Device* device) { }
+
 namespace hk::gfx {
     class DebugRendererImpl {
         constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
@@ -34,6 +38,7 @@ namespace hk::gfx {
         nvn::CommandBuffer* mCurCommandBuffer;
         nvn::TexturePool* mPrevTexturePool = nullptr;
         nvn::SamplerPool* mPrevSamplerPool = nullptr;
+        nvn::Sync mBuffersSync;
         util::Storage<Shader> mShader;
         hk::util::Storage<Texture> mDefaultTexture;
         util::Storage<Font> mFont;
@@ -59,6 +64,7 @@ namespace hk::gfx {
         void setResolution(const util::Vector2f& res) { mResolution = res; }
         void setGlyphSize(const util::Vector2f& size) { mGlyphSize = size; }
         void setGlyphSize(float scale) { mGlyphSize = mFontTextureGlyphSize * scale; }
+        void setGlyphHeight(float height) { setGlyphSize(height / mFontTextureGlyphSize.y); }
         void setFont(Font* font) { mCurrentFont = font; }
         void setCursor(const util::Vector2f& pos) { mCursor = pos; }
         void setPrintColor(u32 color) { mPrintColor = color; }
@@ -99,6 +105,10 @@ namespace hk::gfx {
                 mFontTextureGlyphSize = mFont.get()->getGlyphSize();
                 mGlyphSize = mFontTextureGlyphSize;
             }
+
+            HK_ASSERT(mBuffersSync.Initialize(mDevice));
+
+            hkDebugRendererAfterInit(mDevice);
         }
 
         void checkVtxBuffer() {
@@ -112,35 +122,36 @@ namespace hk::gfx {
 
         void begin(nvn::CommandBuffer* cmdBuffer) {
             mCurCommandBuffer = cmdBuffer;
+            mBuffersSync.Wait(UINT64_MAX);
 
             mShader.get()->use(cmdBuffer);
 
             nvn::PolygonState polyState;
             polyState.SetDefaults();
-            polyState.SetPolygonMode(nvn::PolygonMode::FILL);
-            polyState.SetFrontFace(nvn::FrontFace::CCW);
+            polyState.SetPolygonMode(hkDebugRendererSettings.polygonMode);
+            polyState.SetFrontFace(hkDebugRendererSettings.frontFace);
             cmdBuffer->BindPolygonState(&polyState);
 
             nvn::ColorState colorState;
             colorState.SetDefaults();
-            colorState.SetLogicOp(nvn::LogicOp::COPY);
-            colorState.SetAlphaTest(nvn::AlphaFunc::ALWAYS);
+            colorState.SetLogicOp(hkDebugRendererSettings.logicOp);
+            colorState.SetAlphaTest(hkDebugRendererSettings.alphaFunc);
             for (int i = 0; i < 8; ++i) {
-                colorState.SetBlendEnable(i, true);
+                colorState.SetBlendEnable(i, hkDebugRendererSettings.blendEnable[i]);
             }
             cmdBuffer->BindColorState(&colorState);
 
             nvn::BlendState blendState;
             blendState.SetDefaults();
-            blendState.SetBlendFunc(nvn::BlendFunc::SRC_ALPHA,
-                nvn::BlendFunc::ONE_MINUS_SRC_ALPHA,
-                nvn::BlendFunc::ONE, nvn::BlendFunc::ZERO);
-            blendState.SetBlendEquation(nvn::BlendEquation::ADD, nvn::BlendEquation::ADD);
+            blendState.SetBlendFunc(hkDebugRendererSettings.srcBlendFunc,
+                hkDebugRendererSettings.dstBlendFunc,
+                hkDebugRendererSettings.srcBlendFuncAlpha, hkDebugRendererSettings.dstBlendFuncAlpha);
+            blendState.SetBlendEquation(hkDebugRendererSettings.blendEquationColor, hkDebugRendererSettings.blendEquationAlpha);
             cmdBuffer->BindBlendState(&blendState);
 
             nvn::DepthStencilState depthStencilState;
             depthStencilState.SetDefaults();
-            depthStencilState.SetDepthWriteEnable(false);
+            depthStencilState.SetDepthWriteEnable(hkDebugRendererSettings.depthWriteEnable);
             cmdBuffer->BindDepthStencilState(&depthStencilState);
 
             cmdBuffer->BindVertexBuffer(0, mVtxBuffer.getAddress(), cVtxBufferSize);
@@ -254,6 +265,7 @@ namespace hk::gfx {
         }
 
         void end() {
+            mCurCommandBuffer->FenceSync(&mBuffersSync, nvn::SyncCondition::ALL_GPU_COMMANDS_COMPLETE, nvn::SyncFlagBits());
             mCurCommandBuffer->SetTexturePool(mPrevTexturePool);
             mCurCommandBuffer->SetSamplerPool(mPrevSamplerPool);
         }

@@ -57,6 +57,7 @@ namespace hk::nvn {
         nvn::BufferAddress getAddress() const { return mBuffer.GetAddress(); }
         size getSize() const { return mPool.GetSize(); }
         void* map() const { return mPool.Map(); }
+        void flush(uintptr_t offset, size size) { mPool.FlushMappedRange(offset, size); }
     };
 
 } // namespace hk::nvn

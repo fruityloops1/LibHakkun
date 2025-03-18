@@ -10,7 +10,13 @@
 namespace sail {
     static void compile(const char* outPath, const char* clangBinary, const std::string& source, const std::string& flags, const char* filename) {
         std::string cmd = clangBinary;
-        cmd.append(" --target=aarch64-none-elf -march=armv8-a -mtune=cortex-a57 -nodefaultlibs -o ");
+
+        if (is32Bit()) {
+            cmd.append(" --target=armv7a-none-eabi -march=armv7-a");
+        } else
+            cmd.append(" --target=aarch64-none-elf -march=armv8-a");
+        cmd.append(" -mtune=cortex-a57 -nodefaultlibs -o ");
+
         cmd.append(outPath);
         cmd.append("/");
         cmd.append(filename);
@@ -273,10 +279,11 @@ namespace sail {
         {
             int i = 0;
             for (auto module : getVersionList()) {
+
                 if (module.empty())
-                    asmFile.append("\n.quad 0x0");
+                    asmFile.append("\n.word 0x0");
                 else {
-                    asmFile.append("\n.quad module_versions_");
+                    asmFile.append("\n.word module_versions_");
                     asmFile.append(std::to_string(i));
                     asmFile.append(" - _ZN2hk4sail9gVersionsE");
                 }

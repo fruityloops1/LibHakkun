@@ -49,4 +49,9 @@ namespace sail {
         return true;
     }
 
+    bool& is32Bit() {
+        static bool sIs32Bit = false;
+        return sIs32Bit;
+    }
+
 } // namespace sail

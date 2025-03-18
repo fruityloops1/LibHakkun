@@ -2,11 +2,12 @@
 
 #include "hk/diag/diag.h"
 #include "hk/gfx/Texture.h"
+#include "hk/util/Math.h"
 #include "nvn/nvn_Cpp.h"
 
 namespace hk::gfx {
 
-    inline nvn::Format getAstcFormat(void* tex) {
+    inline nvn::Format getAstcFormat(const void* tex) {
         const AstcHeader* header = reinterpret_cast<const AstcHeader*>(tex);
         nvn::Format format = nvn::Format::NONE;
         if (header->block_x == 4 && header->block_y == 4)
@@ -41,6 +42,11 @@ namespace hk::gfx {
             HK_ABORT("Unknown ASTC block type %d %d", header->block_x, header->block_y);
 
         return format;
+    }
+
+    inline util::Vector2i getAstcSize(const void* tex) {
+        const AstcHeader* header = reinterpret_cast<const AstcHeader*>(tex);
+        return { header->getWidth(), header->getHeight() };
     }
 
 } // namespace hk::gfx
