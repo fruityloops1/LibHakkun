@@ -24,7 +24,7 @@
 #include "embed_shader.h"
 
 __attribute__((weak)) hk::gfx::DebugRendererSettings hkDebugRendererSettings;
-extern "C" __attribute__((weak)) void hkDebugRendererAfterInit(nvn::Device* device);
+extern "C" __attribute__((weak)) void hkDebugRendererAfterInit(nvn::Device* device) { }
 
 namespace hk::gfx {
     class DebugRendererImpl {
@@ -105,8 +105,7 @@ namespace hk::gfx {
                 mGlyphSize = mFontTextureGlyphSize;
             }
 
-            if (hkDebugRendererAfterInit)
-                hkDebugRendererAfterInit(mDevice);
+            hkDebugRendererAfterInit(mDevice);
         }
 
         void checkVtxBuffer() {
