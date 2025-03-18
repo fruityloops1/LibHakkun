@@ -39,7 +39,8 @@ namespace hk::mem {
 
         void* newPtr = allocate(size);
         if (newPtr) {
-            __builtin_memcpy(newPtr, oldPtr, size);
+            auto copySize = getAllocationSize(oldPtr);
+            __builtin_memcpy(newPtr, oldPtr, copySize);
             free(oldPtr);
         }
         return newPtr;
@@ -47,10 +48,6 @@ namespace hk::mem {
 
     void ExpHeap::free(void* ptr) {
         ams::lmem::FreeToExpHeap(getHeapHandle(), ptr);
-    }
-
-    size ExpHeap::getTotalSize() const {
-        return mHeapSize;
     }
 
     size ExpHeap::getFreeSize() const {

@@ -37,7 +37,7 @@ namespace hk::mem {
         void* reallocate(void* ptr, size size);
         void free(void* ptr);
 
-        size getTotalSize() const; 
+        size getTotalSize() const { return mHeapSize; }
         size getFreeSize() const;
         size getAllocatableSize() const;
 
