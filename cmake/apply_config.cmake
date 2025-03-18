@@ -42,4 +42,6 @@ function(apply_config project)
     )
     
     target_link_options(${project} PRIVATE ${LINKFLAGS} ${OPTIMIZE_OPTIONS})
+    
+    target_compile_definitions(${project} PRIVATE HK_TITLE_ID=${TITLE_ID})
 endfunction()
