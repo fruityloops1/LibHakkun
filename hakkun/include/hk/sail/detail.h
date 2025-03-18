@@ -162,7 +162,7 @@ namespace hk::sail {
     extern uint32_t gVersions[];
 
     _HK_SAIL_PRECALC_TEMPLATE
-    ptr lookupSymbolFromDb(const T* symbol) {
+    ptr lookupSymbolFromDb(const T* symbol, bool abort = true) {
         u32 destHash;
         if constexpr (IsPreCalc)
             destHash = *symbol;
@@ -177,11 +177,16 @@ namespace hk::sail {
             },
                 0, gNumSymbols - 1, destHash);
 
-        if constexpr (IsPreCalc) {
-            HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %08x\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", *symbol);
-        } else {
-            HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %s\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", symbol);
+        if (abort) {
+            if constexpr (IsPreCalc) {
+                HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %08x\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", *symbol);
+            } else {
+                HK_ABORT_UNLESS(idx != -1, "UnresolvedSymbol: %s\nTo use dynamic linking, add the symbols you intend to access to the symbol database.", symbol);
+            }
         }
+
+        if (idx == -1)
+            return 0;
 
         ptr out = 0;
         auto& entry = gSymbols[idx];
