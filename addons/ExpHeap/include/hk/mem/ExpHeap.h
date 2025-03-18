@@ -18,6 +18,7 @@ namespace hk::mem {
 
     class ExpHeap {
         void* mHeapHandle = nullptr;
+        size mHeapSize = 0;
 
     public:
         using HeapVisitor = void (*)(void* ptr, ExpHeap& heap, void* userData);
@@ -36,6 +37,7 @@ namespace hk::mem {
         void* reallocate(void* ptr, size size);
         void free(void* ptr);
 
+        size getTotalSize() const; 
         size getFreeSize() const;
         size getAllocatableSize() const;
 

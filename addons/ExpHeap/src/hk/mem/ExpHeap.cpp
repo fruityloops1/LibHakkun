@@ -12,12 +12,14 @@ namespace hk::mem {
 
     void ExpHeap::initialize(void* arena, size size) {
         destroy();
+        mHeapSize = size;
         mHeapHandle = ams::lmem::CreateExpHeap(arena, size, 0);
     }
 
     void ExpHeap::destroy() {
         if (mHeapHandle) {
             ams::lmem::DestroyExpHeap(getHeapHandle());
+            mHeapSize = 0;
             mHeapHandle = nullptr;
         }
     }
@@ -45,6 +47,10 @@ namespace hk::mem {
 
     void ExpHeap::free(void* ptr) {
         ams::lmem::FreeToExpHeap(getHeapHandle(), ptr);
+    }
+
+    size ExpHeap::getTotalSize() const {
+        return mHeapSize;
     }
 
     size ExpHeap::getFreeSize() const {
