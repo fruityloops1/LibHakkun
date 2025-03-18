@@ -19,6 +19,7 @@ namespace hk::mem {
     void ExpHeap::destroy() {
         if (mHeapHandle) {
             ams::lmem::DestroyExpHeap(getHeapHandle());
+            mHeapSize = 0;
             mHeapHandle = nullptr;
         }
     }
@@ -49,7 +50,7 @@ namespace hk::mem {
     }
 
     size ExpHeap::getTotalSize() const {
-        return ExpHeapmHeapSize;
+        return mHeapSize;
     }
 
     size ExpHeap::getFreeSize() const {
