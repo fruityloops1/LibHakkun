@@ -226,7 +226,8 @@ namespace hk::gfx {
                     continue;
                 }
                 if (*str == '\t') {
-                    curPos.x += glyphSize.x * 4;
+                    unsigned int initialOffset = (curPos.x - initialX) / glyphSize.x;
+                    curPos.x = initialX + (float)(initialOffset + 4 & ~3) * glyphSize.x;
                     str++;
                     continue;
                 }
