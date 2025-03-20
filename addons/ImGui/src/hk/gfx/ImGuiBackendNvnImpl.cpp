@@ -104,7 +104,7 @@ namespace hk::gfx {
 
             io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
-            size texSize = width * height * sizeof(u32);
+            size texSize = width * height * sizeof(u8);
             size texMemorySize = Texture::calcMemorySize(mDevice, texSize);
             if (mFontTextureMemory)
                 mAllocator.free(mFontTextureMemory);
