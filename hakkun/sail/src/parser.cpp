@@ -347,6 +347,12 @@ namespace sail {
         std::vector<std::vector<std::pair<std::string, std::vector<u8>>>> versions;
         int currentModuleIndex = 0;
 
+        int numModules = moduleList.size();
+        for (auto module : moduleList)
+            numModules = std::max(numModules, module.second + 1);
+
+        versions.resize(numModules);
+
         while (std::getline(ss, line, '\n')) {
             lineNumber++;
 
@@ -362,8 +368,6 @@ namespace sail {
 
                 std::string currentModule = parts[0];
                 currentModuleIndex = getModuleIndex(currentModule);
-
-                versions.resize(currentModuleIndex + 1);
                 continue;
             }
 
