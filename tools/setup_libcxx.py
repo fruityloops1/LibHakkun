@@ -66,6 +66,8 @@ def downloadAndCompileMusl():
         'src/malloc/memalign.c',
         'src/malloc/lite_malloc.c',
         'src/malloc/lite_calloc.c',
+        'src/stdio/stdout.c',
+        'src/stdio/stdin.c',
     ]
 
     for file in empty_files:
