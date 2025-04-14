@@ -40,7 +40,12 @@ namespace hk::gfx {
         void clear();
         void begin(void* commandBuffer /* nvn::CommandBuffer* */);
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c);
-        void drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl);
+        void drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl, f32 round = 0.0f, u32 numSides = 4);
+        void drawLine(const Vertex& a, const Vertex& b, f32 width);
+        void drawCircle16(const Vertex& center, f32 radius, f32 width = 1.0f);
+        void drawCircle32(const Vertex& center, f32 radius, f32 width = 1.0f);
+        void drawDisk16(const Vertex& center, f32 radius);
+        void drawDisk32(const Vertex& center, f32 radius);
         util::Vector2f drawString(const util::Vector2f& pos, const char* str, u32 color);
         util::Vector2f drawString(const util::Vector2f& pos, const char16_t* str, u32 color);
         void printf(const char* fmt, ...);
