@@ -109,7 +109,7 @@ namespace hk::util {
         }
 
         T length() {
-            return sqrt(x * x + y * y);
+            return std::sqrt(x * x + y * y);
         }
 
         Vector2& normalize() {

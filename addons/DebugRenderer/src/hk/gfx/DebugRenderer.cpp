@@ -40,10 +40,8 @@ namespace hk::gfx {
     void DebugRenderer::drawTri(const Vertex& a, const Vertex& b, const Vertex& c) { get()->drawTri(a, b, c); }
     void DebugRenderer::drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl, f32 round, u32 numSides) { get()->drawQuad(tl, tr, br, bl, round, numSides); }
     void DebugRenderer::drawLine(const Vertex& a, const Vertex& b, f32 width) { get()->drawLine(a, b, width); }
-    void DebugRenderer::drawCircle16(const Vertex& center, f32 radius, f32 width) { get()->drawCircle(center, radius, width, 16); }
-    void DebugRenderer::drawCircle32(const Vertex& center, f32 radius, f32 width) { get()->drawCircle(center, radius, width, 32); }
-    void DebugRenderer::drawDisk16(const Vertex& center, f32 radius) { get()->drawDisk(center, radius, 16); }
-    void DebugRenderer::drawDisk32(const Vertex& center, f32 radius) { get()->drawDisk(center, radius, 32); }
+    void DebugRenderer::drawCircle(const Vertex& center, f32 radius, f32 width, u32 numSides) { get()->drawCircle(center, radius, width, numSides); }
+    void DebugRenderer::drawDisk(const Vertex& center, f32 radius, u32 numSides) { get()->drawDisk(center, radius, numSides); }
     util::Vector2f DebugRenderer::drawString(const util::Vector2f& pos, const char* str, u32 color) { return get()->drawString(pos, str, color); }
     util::Vector2f DebugRenderer::drawString(const util::Vector2f& pos, const char16_t* str, u32 color) { return get()->drawString(pos, str, color); }
     void DebugRenderer::printf(const char* fmt, ...) {
