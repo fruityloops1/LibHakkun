@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include "hk/types.h"
 
 namespace hk::util {
@@ -105,6 +106,20 @@ namespace hk::util {
         Vector2& operator/=(T v) {
             x /= v;
             y /= v;
+        }
+
+        T length() {
+            return std::sqrt(x * x + y * y);
+        }
+
+        Vector2& normalize() {
+            const T len = length();
+            if (len > 0) {
+                const T invLen = 1 / len;
+                *this *= invLen;
+            }
+
+            return *this;
         }
 
         operator Vector2<f32>() const {

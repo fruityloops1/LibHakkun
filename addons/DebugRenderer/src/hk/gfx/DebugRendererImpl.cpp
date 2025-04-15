@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <initializer_list>
-#include <string>
+#include <numbers>
 
 #include "nvn/nvn_Cpp.h"
 #include "nvn/nvn_CppFuncPtrBase.h"
@@ -111,8 +111,8 @@ namespace hk::gfx {
             hkDebugRendererAfterInit(mDevice);
         }
 
-        void checkVtxBuffer() {
-            HK_ABORT_UNLESS(mVtxOffset < cVtxBufferSize, "Vertex Buffer full!", 0);
+        void checkVtxBuffer(u32 addSize = 0) {
+            HK_ABORT_UNLESS(mVtxOffset + addSize < cVtxBufferSize, "Vertex Buffer full!", 0);
         }
 
         void clear() {
@@ -170,7 +170,7 @@ namespace hk::gfx {
         }
 
         void drawTri(const Vertex& a, const Vertex& b, const Vertex& c) {
-            checkVtxBuffer();
+            checkVtxBuffer(3);
 
             Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
             {
@@ -184,8 +184,8 @@ namespace hk::gfx {
             mVtxOffset += 3;
         }
 
-        void drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl) {
-            checkVtxBuffer();
+        void drawQuadImpl(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl) {
+            checkVtxBuffer(4);
 
             Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
             {
@@ -197,6 +197,111 @@ namespace hk::gfx {
             mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::QUADS, mVtxOffset, 4);
 
             mVtxOffset += 4;
+        }
+
+        void drawQuadRoundImpl(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl, f32 round, u32 numSides) {
+            HK_ABORT_UNLESS(tl.pos.y == tr.pos.y && bl.pos.y == br.pos.y && tl.pos.x == bl.pos.x && tr.pos.x == br.pos.x, "Quads with rounded corners must be axis aligned!", 0);
+
+            const u32 numVertices = 10 + 4 * numSides;
+
+            checkVtxBuffer(numVertices);
+
+            Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
+            {
+                Vertex corners[4] = {tl, tr, br, bl};
+                util::Vector2f quadrants[4] = { {1, -1}, {1, 1}, {-1, 1}, {-1, -1} };
+                const f32 halfPi = std::numbers::pi / 2.0f;
+
+                s32 v = 0;
+                const util::Vector2f centerPos = (tl.pos + tr.pos + bl.pos + br.pos) / 4;
+                cur[v++] = { centerPos / mResolution, { 0.0f, 0.0f }, tl.color };
+
+                for (s32 i = 0; i < 4; i++) {
+                    const Vertex& a = corners[i];
+                    const Vertex& b = corners[(i + 1) & 3];
+                    const util::Vector2f vecAB = (b.pos - a.pos).normalize() * round;
+
+                    cur[v++] = { (a.pos + vecAB) / mResolution, a.uv, a.color };
+                    cur[v++] = { (b.pos - vecAB) / mResolution, b.uv, b.color };
+
+                    const util::Vector2f center = b.pos - quadrants[i] * round;
+
+                    for (f32 j = 0; j < numSides; j += 1.0f) {
+                        const f32 angle = (j / numSides + i) * halfPi;
+                        const util::Vector2f pos = center + util::Vector2f(std::sinf(angle), -std::cosf(angle)) * round;
+                        cur[v++] = { pos / mResolution, b.uv, b.color };
+                    }
+                }
+
+                cur[v++] = cur[1];
+            }
+
+            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::TRIANGLE_FAN, mVtxOffset, numVertices);
+
+            mVtxOffset += numVertices;
+        }
+
+        void drawQuad(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl, f32 round, u32 numSides) {
+            if (round <= 0.0f)
+                drawQuadImpl(tl, tr, br, bl);
+            else
+                drawQuadRoundImpl(tl, tr, br, bl, round, numSides);
+        }
+
+        void drawLine(const Vertex& a, const Vertex& b, f32 width) {
+            checkVtxBuffer(2);
+
+            Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
+            {
+                int i = 0;
+                for (const Vertex* vtx : { &a, &b })
+                    cur[i++] = { vtx->pos / mResolution, vtx->uv, vtx->color };
+            }
+
+            mCurCommandBuffer->SetLineWidth(width);
+            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::LINES, mVtxOffset, 2);
+
+            mVtxOffset += 2;
+        }
+
+        void drawCircle(const Vertex& center, f32 radius, f32 width, u32 numSides) {
+            const u32 numVertices = numSides + 1;
+
+            checkVtxBuffer(numVertices);
+
+            Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
+            {
+                const f32 twicePi = 2.0f * std::numbers::pi;
+                for (s32 i = 0; i <= numSides; i++) {
+                    util::Vector2f point = { center.pos.x + (radius * std::cosf(i * twicePi / numSides)), center.pos.y + (radius * std::sinf(i * twicePi / numSides)) };
+                    cur[i] = { point / mResolution, center.uv, center.color };
+                }
+            }
+
+            mCurCommandBuffer->SetLineWidth(width);
+            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::LINE_LOOP, mVtxOffset, numVertices);
+
+            mVtxOffset += numVertices;
+        }
+
+        void drawDisk(const Vertex& center, f32 radius, u32 numSides) {
+            const u32 numVertices = numSides + 2;
+
+            checkVtxBuffer(numVertices);
+
+            Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
+            {
+                const f32 twicePi = 2.0f * std::numbers::pi;
+                cur[0] = { center.pos / mResolution, center.uv, center.color };
+                for (s32 i = 0; i <= numSides; i++) {
+                    util::Vector2f point = { center.pos.x + (radius * std::cosf(i * twicePi / numSides)), center.pos.y + (radius * std::sinf(i * twicePi / numSides)) };
+                    cur[i+1] = { point / mResolution, center.uv, center.color };
+                }
+            }
+
+            mCurCommandBuffer->DrawArrays(nvn::DrawPrimitive::TRIANGLE_FAN, mVtxOffset, numVertices);
+
+            mVtxOffset += numVertices;
         }
 
         template <typename Char>
@@ -247,6 +352,8 @@ namespace hk::gfx {
                 str++;
                 curPos.x += glyphSize.x;
             }
+
+            checkVtxBuffer();
 
             bindTexture(mCurrentFont->getTexture().getTextureHandle());
 
