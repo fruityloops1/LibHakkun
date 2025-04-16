@@ -19,7 +19,7 @@ namespace hk::util {
             : mBuffer(cast<T*>(buffer)) { }
 
         s32 allocateIdx() {
-            for (size i = 0; i < Capacity; i++) {
+            for (size i = 0; i < Capacity - 1; i++) {
                 if (mAllocations[i] == false) {
                     mAllocations[i] = true;
                     return i;
