@@ -47,19 +47,19 @@ File: %s:%d
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+        char userMsgBuf[0x80];
+        va_list arg;
+        va_start(arg, msgFmt);
+        vsnprintf(userMsgBuf, sizeof(userMsgBuf), msgFmt, arg);
+        va_end(arg);
+
+        char headerMsgBuf[0x80];
+        snprintf(headerMsgBuf, sizeof(headerMsgBuf), sAbortFormat, file, line);
+        svc::OutputDebugString(headerMsgBuf, std::strlen(headerMsgBuf));
+        svc::OutputDebugString(userMsgBuf, std::strlen(userMsgBuf));
+
         auto* module = ro::getSelfModule();
         if (module) {
-            char userMsgBuf[0x80];
-            va_list arg;
-            va_start(arg, msgFmt);
-            vsnprintf(userMsgBuf, sizeof(userMsgBuf), msgFmt, arg);
-            va_end(arg);
-
-            char headerMsgBuf[0x80];
-            snprintf(headerMsgBuf, sizeof(headerMsgBuf), sAbortFormat, file, line);
-            svc::OutputDebugString(headerMsgBuf, std::strlen(headerMsgBuf));
-            svc::OutputDebugString(userMsgBuf, std::strlen(userMsgBuf));
-
             void* headerSym = setAbortMsg(module, headerMsgBuf, 0);
             void* userSym = setAbortMsg(module, userMsgBuf, 1);
             svc::hkBreakWithMessage(reason, &result, sizeof(result), headerSym, userSym);
