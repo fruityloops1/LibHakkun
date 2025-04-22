@@ -85,6 +85,8 @@ namespace hk::sail {
                     Elf_Rela* entry = (Elf_Rela*)(rela + (i * rela_entry_size));
 
                     switch (ELF_R_TYPE(entry->r_info)) {
+                    case ARCH_ABS32:
+                    case ARCH_ABS64:
                     case ARCH_JUMP_SLOT:
                     case ARCH_RELATIVE:
                     case ARCH_GLOB_DAT: {
@@ -109,6 +111,8 @@ namespace hk::sail {
                         break;
 
                     switch (ELF_R_TYPE(entry->r_info)) {
+                    case ARCH_ABS32:
+                    case ARCH_ABS64:
                     case ARCH_JUMP_SLOT:
                     case ARCH_RELATIVE:
                     case ARCH_GLOB_DAT: {

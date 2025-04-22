@@ -18,6 +18,8 @@ using Elf_Xword = Elf64_Xword;
 #define ARCH_RELATIVE R_AARCH64_RELATIVE
 #define ARCH_JUMP_SLOT R_AARCH64_JUMP_SLOT
 #define ARCH_GLOB_DAT R_AARCH64_GLOB_DAT
+#define ARCH_ABS32 R_AARCH64_ABS32
+#define ARCH_ABS64 R_AARCH64_ABS64
 #define ARCH_IS_REL_ABSOLUTE(type) \
     (type == R_AARCH64_ABS32 || type == R_AARCH64_ABS64)
 #else
@@ -36,6 +38,8 @@ using Elf_Xword = Elf32_Xword;
 #define ARCH_RELATIVE R_ARM_RELATIVE
 #define ARCH_JUMP_SLOT R_ARM_JUMP_SLOT
 #define ARCH_GLOB_DAT R_ARM_GLOB_DAT
+#define ARCH_ABS32 R_ARM_ABS32
+#define ARCH_ABS64 R_ARM_ABS32
 #define ARCH_IS_REL_ABSOLUTE(type) \
     (type == R_ARM_ABS32)
 #endif
