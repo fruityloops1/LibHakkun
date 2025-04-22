@@ -18,9 +18,16 @@ namespace hk::util {
             mData[mSize++] = value;
         }
 
+        T& operator[](size index) {
+            return mData[index];
+        }
+        const T& operator[](size index) const {
+            return mData[index];
+        }
+
         template <typename Callback>
         void forEach(Callback func) {
-            for (size i = 0; i < mSize; i++)
+            for (::size i = 0; i < mSize; i++)
                 func(mData[i]);
         }
 
@@ -34,6 +41,9 @@ namespace hk::util {
         void sort(Compare comp) {
             std::sort(mData.begin(), mData.begin() + mSize, comp);
         }
+
+        ::size size() { return mSize; }
+        constexpr static ::size capacity() { return Capacity; }
     };
 
 } // namespace hk::util
