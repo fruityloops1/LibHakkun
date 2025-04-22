@@ -1,3 +1,4 @@
+#include "hk/diag/diag.h"
 #include "hk/os/Mutex.h"
 
 struct Guard {
@@ -21,5 +22,13 @@ void hk_guard_release(Guard* guard) {
 
 void hk_atexit(void (*)()) {
     // ...
+}
+
+/*void abort_message(const char* msg) {
+    HK_ABORT("abort_message: %s", msg);
+}*/
+
+void abort() {
+    HK_ABORT("abort() called", 0);
 }
 }

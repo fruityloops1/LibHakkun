@@ -14,7 +14,7 @@ is_aarch32 = len(sys.argv) > 1 and sys.argv[1] == 'aarch32'
 
 target = 'armv7-none-eabi' if is_aarch32 else 'aarch64-none-elf'
 
-musl_ver = 'musl-1.2.4'
+musl_ver = 'musl-1.2.5'
 musl_source_tar_name = musl_ver + '.tar.gz'
 musl_source = "https://musl.libc.org/releases/" + musl_source_tar_name
 
@@ -68,6 +68,7 @@ def downloadAndCompileMusl():
         'src/malloc/lite_calloc.c',
         'src/stdio/stdout.c',
         'src/stdio/stdin.c',
+        'src/exit/abort.c',
     ]
 
     for file in empty_files:

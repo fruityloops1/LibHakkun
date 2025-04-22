@@ -8,7 +8,7 @@ import sys
 is_aarch32 = len(sys.argv) > 1 and sys.argv[1] == 'aarch32'
 
 prepackaged_source_tar_name = "stdlib-aarch32-19.1.0_clang_19.1.7.tar.xz" if is_aarch32 else "stdlib-19.1.0_clang_19.1.7.tar.xz"
-prepackaged_source = "https://github.com/fruityloops1/LibHakkun/releases/download/stdlib-19.1.0-2/" + prepackaged_source_tar_name
+prepackaged_source = "https://github.com/fruityloops1/LibHakkun/releases/download/stdlib-19.1.0-3/" + prepackaged_source_tar_name
 
 root_dir = os.getcwd()
 
