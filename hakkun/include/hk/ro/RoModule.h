@@ -37,6 +37,15 @@ namespace hk::ro {
             return writeRo(offset, &value, sizeof(T));
         }
 
+        const char* getModuleName() const {
+            struct {
+                u32 _0;
+                u32 nameLength;
+                char name[];
+            }* name { (typeof(name))rodata.start() };
+            return name->name;
+        }
+
     private:
         Range textRw;
         Range rodataRw;

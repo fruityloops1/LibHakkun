@@ -2,6 +2,7 @@
 
 #include "hk/diag/results.h"
 #include "hk/svc/types.h"
+#include <cstdarg>
 
 namespace hk::diag {
 
@@ -107,6 +108,12 @@ ResultAbort (%04d-%04d) [from %s]
         }                                             \
     } while (0)
 
+#endif
+
+#if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
+    inline void debugLog(const char* fmt, ...) { }
+#else
+    void debugLog(const char* fmt, ...);
 #endif
 
 } // namespace hk::diag

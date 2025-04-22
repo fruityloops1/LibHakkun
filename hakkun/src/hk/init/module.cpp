@@ -1,4 +1,5 @@
 #include "hk/init/module.h"
+#include "hk/diag/diag.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/sail/init.h"
 #include "hk/svc/api.h"
@@ -29,11 +30,12 @@ namespace hk::init {
     extern "C" void hkMain();
 
     extern "C" void __module_entry__(void* x0, void* x1) {
-        constexpr char msg[] = "Hakkun __module_entry__";
-        svc::OutputDebugString(msg, sizeof(msg));
+        diag::debugLog("Hakkun __module_entry__");
 
         ro::initModuleList();
-#ifndef HK_DISABLE_SAIL
+#ifdef HK_DISABLE_SAIL
+        diag::debugLog("hk::sail: disabled");
+#else
         sail::loadSymbols();
 #endif
 #ifdef HK_ADDON_HeapSourceBss

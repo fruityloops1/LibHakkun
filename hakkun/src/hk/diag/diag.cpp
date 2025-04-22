@@ -55,8 +55,9 @@ File: %s:%d
 
         char headerMsgBuf[0x80];
         snprintf(headerMsgBuf, sizeof(headerMsgBuf), sAbortFormat, file, line);
-        svc::OutputDebugString(headerMsgBuf, std::strlen(headerMsgBuf));
-        svc::OutputDebugString(userMsgBuf, std::strlen(userMsgBuf));
+
+        debugLog(headerMsgBuf);
+        debugLog(userMsgBuf);
 
         auto* module = ro::getSelfModule();
         if (module) {
@@ -67,5 +68,18 @@ File: %s:%d
 #endif
             svc::Break(reason, &result, sizeof(result));
     }
+
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+    void debugLog(const char* fmt, ...) {
+        std::va_list args;
+        va_start(args, fmt);
+        size len = vsnprintf(nullptr, 0, fmt, args);
+        char buf[len + 1];
+        vsnprintf(buf, len + 1, fmt, args);
+        va_end(args);
+
+        svc::OutputDebugString(buf, len + 1);
+    }
+#endif
 
 } // namespace hk::diag

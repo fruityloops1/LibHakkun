@@ -14,13 +14,16 @@ namespace hk::sail {
         static s32 sModuleVersions[ro::sMaxModuleNum] {};
 
         void loadVersions() {
+            diag::debugLog("hk::sail: loading module versions");
             for (int i = 0; i < ro::getNumModules(); i++) {
                 sModuleVersions[i] = -1;
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
                 uintptr_t versionsOffset = gVersions[i];
-                if (versionsOffset == 0)
+                if (versionsOffset == 0) {
+                    diag::debugLog("hk::sail: Module[%d] VersionIndex: Skipped", i);
                     continue;
+                }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
 
                 u8 curBuildId[ro::sBuildIdSize];
@@ -34,13 +37,19 @@ namespace hk::sail {
                     u8 data[ro::sBuildIdSize];
                 }* buildIds { decltype(buildIds)(versions) };
 
+                bool found = false;
                 for (int versionIndex = 0; versionIndex < numVersions; versionIndex++) {
-
                     if (__builtin_memcmp(buildIds[versionIndex].data, curBuildId, sizeof(curBuildId)) == 0) {
                         sModuleVersions[i] = versionIndex;
+                        found = true;
                         break;
                     }
                 }
+
+                if (found)
+                    diag::debugLog("hk::sail: Module[%d] VersionIndex: %d", i, sModuleVersions[i]);
+                else
+                    diag::debugLog("hk::sail: Module[%d] VersionIndex: NotFound", i);
             }
         }
 
@@ -145,6 +154,12 @@ namespace hk::sail {
                 } else {
                     HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (DataBlock)", destSymbol);
                 }
+            } else if (address == 0) {
+                if (IsPreCalc) {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
+                } else {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (DataBlock)", destSymbol);
+                }
             }
 
             address += sym->offsetToFoundBlock;
@@ -169,6 +184,12 @@ namespace hk::sail {
                     HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
                 } else {
                     HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (Dynamic)", destSymbol);
+                }
+            } else if (address == 0) {
+                if (IsPreCalc) {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
+                } else {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (Dynamic)", destSymbol);
                 }
             }
 
@@ -196,6 +217,12 @@ namespace hk::sail {
                     HK_ABORT("UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
                 } else {
                     HK_ABORT("UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
+                }
+            } else {
+                if (IsPreCalc) {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
+                } else {
+                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
                 }
             }
         }
@@ -231,6 +258,12 @@ namespace hk::sail {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %x", *destSymbol);
                 } else {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
+                }
+            } else if (hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).failed()) {
+                if (IsPreCalc) {
+                    diag::debugLog("hk::sail: ReadADRPGlobal symbol failed %x", *destSymbol);
+                } else {
+                    diag::debugLog("hk::sail: ReadADRPGlobal symbol failed %s", destSymbol);
                 }
             }
 #else
