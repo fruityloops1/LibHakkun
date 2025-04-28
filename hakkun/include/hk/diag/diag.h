@@ -9,6 +9,7 @@ namespace hk::diag {
     Result setCurrentThreadName(const char* name);
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
+    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 
     constexpr char cAssertionFailFormat[] =
         R"(
