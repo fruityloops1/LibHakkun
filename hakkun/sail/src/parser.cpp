@@ -221,7 +221,8 @@ namespace sail {
                 symbols.push_back(newSymbol);
             } else if (parts.size() == 5 || parts.size() == 7) { // data block
                 std::vector<u8> bytes;
-                if (!hexStringToBytes(bytes, parts[2]))
+                std::vector<u8> bytesMask;
+                if (!hexStringToBytesWithMatch(bytes, bytesMask, parts[2]))
                     SYNTAX_ERROR("failed parsing bytes '%s'", parts[2].c_str());
 
                 if (parts[3] != "@")
@@ -293,6 +294,7 @@ namespace sail {
                 newSymbol.type = Symbol::Type::DataBlock;
                 newSymbol.name = parts[0];
                 newSymbol.dataDataBlock.data = bytes;
+                newSymbol.dataDataBlock.dataMask = bytesMask;
                 newSymbol.dataDataBlock.boundary = boundary;
                 newSymbol.dataDataBlock.versionBoundary = versionIndex;
                 newSymbol.dataDataBlock.sectionLimit = section;

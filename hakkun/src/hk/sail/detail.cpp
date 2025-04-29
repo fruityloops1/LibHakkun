@@ -87,7 +87,7 @@ namespace hk::sail {
 
             HK_ABORT_UNLESS(module != nullptr, "UnknownModule with idx %d", sym->moduleIdx);
 
-            const SymbolDataBlock::DataBlock* block = cast<const SymbolDataBlock::DataBlock*>(uintptr_t(gSymbols) + sym->offsetToDataBlock);
+            const SymbolDataBlock::SearchFunction search = cast<const SymbolDataBlock::SearchFunction>(uintptr_t(gSymbols) + sym->offsetToSearchFunction);
 
             s32 loadedVer = sModuleVersions[sym->moduleIdx];
 
@@ -120,33 +120,7 @@ namespace hk::sail {
                 range = module->range();
             }
 
-            ptr address = 0;
-#define DBSIZE(SIZE)                                       \
-    case SIZE:                                             \
-        address = findDataBlock<SIZE>(range, block->data); \
-        break
-
-            switch (block->size) {
-                DBSIZE(4);
-                DBSIZE(8);
-                DBSIZE(12);
-                DBSIZE(16);
-                DBSIZE(20);
-                DBSIZE(24);
-                DBSIZE(28);
-                DBSIZE(32);
-                DBSIZE(36);
-                DBSIZE(40);
-                DBSIZE(44);
-                DBSIZE(48);
-                DBSIZE(52);
-                DBSIZE(56);
-                DBSIZE(60);
-                DBSIZE(64); // starts using normal memcmp after this
-            default:
-                address = findDataBlockVariableSize(range, block->data, block->size);
-            }
-#undef DBSIZE
+            ptr address = search(range.start(), range.size());
 
             if (abort) {
                 if (IsPreCalc) {

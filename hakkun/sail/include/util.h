@@ -82,4 +82,41 @@ namespace sail {
         return true;
     }
 
+    inline bool hexStringToBytesWithMatch(std::vector<uint8_t>& out, std::vector<uint8_t>& outMask, const std::string& hex) {
+        size_t length = hex.length();
+        if (length % 2 != 0)
+            return false;
+
+        out.clear();
+        outMask.clear();
+
+        for (size_t i = 0; i < length; i += 2) {
+            uint8_t byte = 0;
+            uint8_t mask = 0xFF;
+
+            if (hex[i] == '?') {
+                mask &= 0x0F;
+            } else if (isxdigit(hex[i])) {
+                uint8_t value = isdigit(hex[i]) ? (hex[i] - '0') : (tolower(hex[i]) - 'a' + 10);
+                byte |= (value << 4);
+            } else {
+                return false;
+            }
+
+            if (hex[i + 1] == '?') {
+                mask &= 0xF0;
+            } else if (isxdigit(hex[i + 1])) {
+                uint8_t value = isdigit(hex[i + 1]) ? (hex[i + 1] - '0') : (tolower(hex[i + 1]) - 'a' + 10);
+                byte |= value;
+            } else {
+                return false;
+            }
+
+            out.push_back(byte);
+            outMask.push_back(mask);
+        }
+
+        return true;
+    }
+
 } // namespace sail

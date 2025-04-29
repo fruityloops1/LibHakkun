@@ -42,10 +42,18 @@ namespace sail {
         struct {
             int moduleIdx;
             std::vector<u8> data;
-            u32 offs = 0;
+            std::vector<u8> dataMask;
+            s32 offs = 0;
             DataBlockVersionBoundary boundary = None;
             Section sectionLimit;
             u32 versionBoundary = 0;
+
+            bool hasMatches() const {
+                for (u8 b : dataMask)
+                    if (b != 0xFF)
+                        return true;
+                return false;
+            }
         } dataDataBlock;
         struct {
             std::string atSymbol;
@@ -56,7 +64,7 @@ namespace sail {
             s32 offset;
         } dataArithmetic;
 
-        std::string getDataBlockName() const {
+        std::string getDataBlockSearchFunctionName() const {
             std::string name = "__sail_datablock_";
             name.append(std::to_string(dataDataBlock.versionBoundary));
             name.append("_");

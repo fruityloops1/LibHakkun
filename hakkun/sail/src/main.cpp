@@ -1,3 +1,4 @@
+#include "clock.h"
 #include "config.h"
 #include "fakelib.h"
 #include "parser.h"
@@ -5,16 +6,20 @@
 #include <filesystem>
 
 int main(int argc, char* argv[]) {
-    if (argc < 7)
-        sail::fail<1>("%s <ModuleList> <VersionList> <OutFolder> <ClangBinary> <Is32Bit> <SymbolTraversePaths>\n", argv[0]);
+    if (argc < 8)
+        sail::fail<1>("%s <ModuleList> <VersionList> <OutFolder> <ClangBinary> <Is32Bit> <Version> <SymbolTraversePaths>\n", argv[0]);
 
     const char* moduleListPath = argv[1];
     const char* versionListPath = argv[2];
     const char* outFolder = argv[3];
     const char* clangBinary = argv[4];
     sail::is32Bit() = std::string(argv[5]) == "1";
+    if (*argv[6] != 'A') {
+        printf("Wrong sail version! Have you run setup_sail.py after updating?\n");
+        return 1;
+    }
     std::vector<const char*> symbolTraversePaths;
-    for (int i = 6; i < argc; i++) {
+    for (int i = 7; i < argc; i++) {
         symbolTraversePaths.push_back(argv[i]);
     }
 
