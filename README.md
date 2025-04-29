@@ -144,6 +144,7 @@ _ZN2nn3abc8OneThingEv = "_ZN2nn3abc12AnotherThingEv" // different
 // version doesn't matter for data search
 some_cool_sead_thingy = 0123456789ABCDEF @ game + 0x20 // < some instructions
 some_other_sead_thingy = 0123456789ABCDEF @ game - 0x20
+some_another_sead_thingy = 0?23????89AB???F @ game - 0x20 // masking
 
 // data may change
 some_other_sead_thingy2 = FEDCBA9876543210 @ game<110 - 0x20 // before 910
