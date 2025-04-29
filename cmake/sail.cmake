@@ -1,6 +1,7 @@
 set(SAIL_BIN ${CMAKE_CURRENT_SOURCE_DIR}/sys/hakkun/sail/build/sail)
 set(SAIL_LIBS
     ${CMAKE_CURRENT_BINARY_DIR}/symboldb.o
+    ${CMAKE_CURRENT_BINARY_DIR}/datablocks.o
     ${CMAKE_CURRENT_BINARY_DIR}/fakesymbols.so
     )
 
@@ -27,7 +28,7 @@ function (usesail lib)
 
         watch(${lib} ${SYMDEPENDS})
         
-        set(SAIL_CMD ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0> ${CMAKE_CURRENT_SOURCE_DIR}/syms)
+        set(SAIL_CMD ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0> A ${CMAKE_CURRENT_SOURCE_DIR}/syms)
         
         file(GLOB_RECURSE ADDONS_SYMS_EMPTY_TEST ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms/*.sym)
         if (ADDONS_SYMS_EMPTY_TEST)
