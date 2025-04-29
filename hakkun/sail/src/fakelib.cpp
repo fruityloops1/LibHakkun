@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 namespace sail {
-    static void compile(const char* outPath, const char* clangBinary, const std::string& source, const std::string& flags, const char* filename) {
+    static void compile(const char* outPath, const char* clangBinary, const char* language, const std::string& source, const std::string& flags, const char* filename) {
         std::string cmd = clangBinary;
 
         if (is32Bit()) {
@@ -22,7 +22,9 @@ namespace sail {
         cmd.append(filename);
         cmd.append(" ");
         cmd.append(flags);
-        cmd.append(" -x assembler -");
+        cmd.append(" -x ");
+        cmd.append(language);
+        cmd.append(" -");
 
         // printf("   - %s\n", cmd.c_str());
         // printf("Source\n%s\n", source.c_str());
@@ -67,7 +69,7 @@ namespace sail {
             asmFile.append(":\n\t.quad 0x0\n");
         }
 
-        compile(outPath, clangBinary, asmFile, "-Wl,--shared -s", "fakesymbols.so");
+        compile(outPath, clangBinary, "assembler", asmFile, "-Wl,--shared -s", "fakesymbols.so");
     }
 
     template <typename T>
@@ -75,6 +77,43 @@ namespace sail {
         std::stringstream ss;
         ss << std::hex << std::uppercase << value;
         return ss.str();
+    }
+
+    static void generateDataBlockSearchFunction(std::string& outSrcCpp, const Symbol& _symbol) {
+        const auto& sym = _symbol.dataDataBlock;
+
+        outSrcCpp.append(
+            "\nextern \"C\" uintptr_t ");
+        outSrcCpp.append(_symbol.getDataBlockSearchFunctionName());
+        outSrcCpp.append("(uintptr_t start, size_t len) {");
+
+        struct Block {
+            int bitCount = 0;
+        };
+
+        const auto addArr = [&](const char* name, const std::vector<u8>& data) {
+            outSrcCpp.append("\nconstexpr uint8_t ");
+            outSrcCpp.append(name);
+            outSrcCpp.append("[] {");
+            for (size_t i = 0; i < sym.data.size(); i++) {
+                outSrcCpp.append("0x");
+                outSrcCpp.append(toHexString(u32(data[i])));
+                outSrcCpp.append(",");
+            }
+            outSrcCpp.append("};");
+        };
+
+        addArr("cData", sym.data);
+        addArr("cDataMask", sym.dataMask);
+
+        outSrcCpp.append("\nconst uintptr_t end = start + len - sizeof(cData);");
+
+        outSrcCpp.append("\nfor (uintptr_t search = start; search < end; search += 4)");
+        outSrcCpp.append("\nif (compareMask((const uint8_t*)search, cData, cDataMask, sizeof(cData)))");
+        outSrcCpp.append("\nreturn search;");
+        outSrcCpp.append("\nreturn 0;");
+
+        outSrcCpp.append("}");
     }
 
     void generateSymbolDb(const std::vector<Symbol>& symbols, const char* outPath, const char* clangBinary) {
@@ -87,6 +126,7 @@ namespace sail {
 
         size_t bufSize = 0x1000 + symbols.size() * 0x80;
         size_t curNumSymbols = 0;
+        size_t numDataBlocks = 0;
 
         std::string asmFile;
         asmFile.reserve(bufSize);
@@ -103,7 +143,7 @@ namespace sail {
             "\n.align 8\n"
             "_ZN2hk4sail8gSymbolsE:\n");
 
-        auto insertSymbol = [&](std::string& out, Symbol& sym) {
+        auto insertSymbol = [&](std::string& out, const Symbol& sym) {
             u32 hash = hashMurmur(sym.name.c_str());
 
             out.append("\n.word 0x");
@@ -114,9 +154,11 @@ namespace sail {
             out.append(sym.useCache ? "0" : "1");
 
             if (sym.type == Symbol::Type::DataBlock) {
+                const auto funcName = sym.getDataBlockSearchFunctionName();
                 out.append("\n.quad ");
-                out.append(sym.getDataBlockName());
-                out.append(" - _ZN2hk4sail8gSymbolsE");
+                out.append(funcName);
+                out.append("- _ZN2hk4sail8gSymbolsE");
+                numDataBlocks++;
             } else if (sym.type == Symbol::Type::Dynamic) {
                 out.append("\n.quad 0x");
                 out.append(toHexString(rtldElfHash(sym.dataDynamic.name.c_str())));
@@ -176,7 +218,7 @@ namespace sail {
                 out.append("\n.word 0x");
                 out.append(toHexString(foundIdx - sorted.begin()));
                 out.append("\n.word 0x");
-                out.append(toHexString(*reinterpret_cast<u32*>(&sym.dataArithmetic.offset)));
+                out.append(toHexString(*reinterpret_cast<const u32*>(&sym.dataArithmetic.offset)));
                 break;
             }
             case Symbol::ReadADRPGlobal: {
@@ -195,7 +237,7 @@ namespace sail {
                 out.append("\n.word 0x");
                 out.append(toHexString(foundIdx - sorted.begin()));
                 out.append("\n.word 0x");
-                out.append(toHexString(*reinterpret_cast<u32*>(&sym.dataReadADRPGlobal.offsetToLoInstr)));
+                out.append(toHexString(*reinterpret_cast<const u32*>(&sym.dataReadADRPGlobal.offsetToLoInstr)));
                 break;
             }
             default:
@@ -213,7 +255,7 @@ namespace sail {
         std::string candidateSyms;
 
         // symbols
-        for (auto sym : sorted) {
+        for (const auto& sym : sorted) {
             u32 hash = hashMurmur(sym.name.c_str());
             auto& group = hashGroups[hash];
             if (group.empty())
@@ -241,36 +283,6 @@ namespace sail {
         asmFile.append("\n.quad 0x" + toHexString(curNumSymbols));
 
         asmFile.append(candidateSyms);
-
-        // data blocks
-
-        for (auto sym : sorted) {
-            if (sym.type != Symbol::Type::DataBlock)
-                continue;
-
-            std::string name = sym.getDataBlockName();
-
-            asmFile.append("\n.global ");
-            asmFile.append(name);
-            asmFile.append("\n.align 8\n");
-            asmFile.append(name);
-            asmFile.append(":\n\t.quad 0x");
-            asmFile.append(toHexString(sym.dataDataBlock.data.size()));
-
-            asmFile.append("\n\t.byte ");
-
-            {
-                int i = 0;
-                for (u8 byte : sym.dataDataBlock.data) {
-                    if (i != 0)
-                        asmFile.append(",");
-                    char buf[4] { 0 };
-                    snprintf(buf, 4, "%3u", byte);
-                    asmFile.append(buf);
-                    i++;
-                }
-            }
-        }
 
         // module version list
 
@@ -321,7 +333,32 @@ namespace sail {
             }
         }
 
-        compile(outPath, clangBinary, asmFile, "-c", "symboldb.o");
+        // data blocks
+
+        std::string dataBlockSearchCppSource = R"(
+            using uintptr_t = unsigned long;
+            using size_t = unsigned long;
+            using uint8_t = unsigned char;
+
+            static bool compareMask(const uint8_t* compareData, const uint8_t* data, const uint8_t* maskData, size_t n)
+            {
+                for (size_t i = 0; i < n; i++)
+                {
+                    const uint8_t mask = maskData[i];
+                    if ((compareData[i] & mask) != (data[i] & mask))
+                        return false;
+                }
+                return true;
+            }
+        )";
+        dataBlockSearchCppSource.reserve(0x1000 + numDataBlocks * 0x100);
+
+        for (const Symbol& sym : sorted)
+            if (sym.type == Symbol::Type::DataBlock)
+                generateDataBlockSearchFunction(dataBlockSearchCppSource, sym);
+
+        compile(outPath, clangBinary, "c++", dataBlockSearchCppSource, "-c -O3", "datablocks.o");
+        compile(outPath, clangBinary, "assembler", asmFile, "-c", "symboldb.o");
     }
 
 } // namespace sail

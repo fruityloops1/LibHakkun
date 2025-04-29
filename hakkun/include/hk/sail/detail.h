@@ -44,11 +44,9 @@ namespace hk::sail {
         };
 
         struct SymbolDataBlock : Symbol {
-            struct DataBlock {
-                size size;
-                u8 data[];
-            };
-            const uintptr_t offsetToDataBlock;
+            using SearchFunction = ptr (*)(ptr start, size len);
+
+            const ptrdiff_t offsetToSearchFunction;
 
             const u8 moduleIdx;
             const u8 versionBoundaryType;
