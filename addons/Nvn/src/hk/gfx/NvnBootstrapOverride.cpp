@@ -96,11 +96,8 @@ namespace hk::gfx {
     void nvnWindowSetCrop(nvn::Window* window, int x, int y, int width, int height) {
         sNvnOverrides[5].getOrigFunc<nvn::WindowSetCropFunc>()(window, x, y, width, height);
 
-#ifdef HK_ADDON_DebugRenderer
-        // DebugRenderer::instance()->setResolution({ f32(width), f32(height) });
-#endif
 #ifdef HK_ADDON_ImGui
-        // ImGuiBackendNvn::instance()->setResolution({ f32(width), f32(height) });
+        ImGuiBackendNvn::instance()->setResolution({ f32(width), f32(height) });
 #endif
     }
 
