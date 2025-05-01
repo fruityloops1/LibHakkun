@@ -13,6 +13,35 @@ namespace hk::os {
 
         static u32 getCurrentThreadHandle() { return hk::svc::getTLS()->nnsdk_thread_ptr->handle; }
 
+        class Lock {
+            hk::os::Mutex& mMutex;
+
+        public:
+            Lock(Mutex& mutex)
+                : mMutex(mutex) {
+                mMutex.lock();
+            }
+
+            ~Lock() {
+                mMutex.unlock();
+            }
+
+            Lock(const Lock&) = delete;
+            Lock& operator=(const Lock&) = delete;
+
+            Lock(Lock&& other) noexcept
+                : mMutex(other.mMutex) {
+            }
+
+            Lock& operator=(Lock&& other) noexcept {
+                if (this != &other) {
+                    mMutex.unlock();
+                    mMutex = other.mMutex;
+                }
+                return *this;
+            }
+        };
+
     public:
         void lock() {
             const Handle currentThread = getCurrentThreadHandle();
@@ -80,6 +109,8 @@ namespace hk::os {
         bool isLockedByCurrentThread() const {
             return (mValue & ~cWaitMask) == getCurrentThreadHandle();
         }
+
+        Lock lockScoped() { return { *this }; }
     };
 
 } // namespace hk::os
