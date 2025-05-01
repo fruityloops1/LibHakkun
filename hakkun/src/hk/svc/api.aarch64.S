@@ -30,6 +30,11 @@ SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc15SendSyncRequestEj
+    svc 0x21
+    ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvm
 	svc 0x26
 	ret
@@ -50,6 +55,14 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
 	svc 0x29
 	ldr x2, [sp], #16
 	str x1, [x2]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
+    str x0, [sp, #-16]!
+	svc 0x65
+	ldr x2, [sp], #16
+	str w1, [x2]
 	ret
 SVC_END
 

@@ -109,13 +109,19 @@ namespace hk::svc {
     }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
+    Result CloseHandle(Handle handle);
+    Result ResetSignal(Handle handle);
     Result ArbitrateLock(Handle threadHandle, uintptr_t addr, u32 tag);
     Result ArbitrateUnlock(uintptr_t addr);
+    Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
+    Result CancelSynchronization(Handle handle);
+    Result SendSyncRequest(Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
+    Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
     Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
 
     hk_noreturn Result hkBreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
