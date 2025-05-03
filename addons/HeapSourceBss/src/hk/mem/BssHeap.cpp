@@ -9,7 +9,7 @@ namespace hk::mem {
 #ifndef HAKKUN_MAIN_HEAP_USER_ARENA
     __attribute__((aligned(cPageSize))) static u8 sMainHeapMem[cHeapSize] { 0 };
 
-    __attribute__((weak)) void initializeMainHeap() {
+    void initializeMainHeap() {
         sMainHeap.initialize(sMainHeapMem, cHeapSize);
     }
 #endif

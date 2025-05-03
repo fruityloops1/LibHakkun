@@ -39,8 +39,7 @@ namespace hk::init {
         sail::loadSymbols();
 #endif
 #ifdef HK_ADDON_HeapSourceBss
-        if (mem::initializeMainHeap)
-            mem::initializeMainHeap();
+        mem::initializeMainHeap();
 #endif
         callInitializers();
 

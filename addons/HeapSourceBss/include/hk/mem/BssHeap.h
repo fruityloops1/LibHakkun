@@ -6,6 +6,6 @@ namespace hk::mem {
 
     extern ExpHeap sMainHeap;
 
-    __attribute__((weak)) void initializeMainHeap();
+    void initializeMainHeap();
 
 } // namespace hk::mem
