@@ -339,10 +339,47 @@ namespace sail {
             using uintptr_t = unsigned long;
             using size_t = unsigned long;
             using uint8_t = unsigned char;
+            using uint16_t = unsigned short;
+            using uint32_t = unsigned int;
+            using uint64_t = unsigned long long;
 
             static bool compareMask(const uint8_t* compareData, const uint8_t* data, const uint8_t* maskData, size_t n)
             {
-                for (size_t i = 0; i < n; i++)
+                size_t n8 = n / sizeof(uint64_t);
+                for (size_t i = 0; i < n8; i++) {
+                    const uint64_t* compare64 = reinterpret_cast<const uint64_t*>(compareData + i * sizeof(uint64_t));
+                    const uint64_t* data64 = reinterpret_cast<const uint64_t*>(data + i * sizeof(uint64_t));
+                    const uint64_t* mask64 = reinterpret_cast<const uint64_t*>(maskData + i * sizeof(uint64_t));
+
+                    if ((*compare64 & *mask64) != (*data64 & *mask64))
+                        return false;
+                }
+
+                size_t processed = n8 * sizeof(uint64_t);
+
+                if ((n - processed) >= sizeof(uint32_t)) {
+                    const uint32_t* compare32 = reinterpret_cast<const uint32_t*>(compareData + processed);
+                    const uint32_t* data32 = reinterpret_cast<const uint32_t*>(data + processed);
+                    const uint32_t* mask32 = reinterpret_cast<const uint32_t*>(maskData + processed);
+
+                    if ((*compare32 & *mask32) != (*data32 & *mask32))
+                        return false;
+
+                    processed += sizeof(uint32_t);
+                }
+
+                if ((n - processed) >= sizeof(uint16_t)) {
+                    const uint16_t* compare16 = reinterpret_cast<const uint16_t*>(compareData + processed);
+                    const uint16_t* data16 = reinterpret_cast<const uint16_t*>(data + processed);
+                    const uint16_t* mask16 = reinterpret_cast<const uint16_t*>(maskData + processed);
+
+                    if ((*compare16 & *mask16) != (*data16 & *mask16))
+                        return false;
+
+                    processed += sizeof(uint16_t);
+                }
+
+                for (size_t i = processed; i < n; i++)
                 {
                     const uint8_t mask = maskData[i];
                     if ((compareData[i] & mask) != (data[i] & mask))

@@ -7,6 +7,7 @@ set(SAIL_LIBS
 
 include(config/config.cmake)
 include(sys/cmake/watch.cmake)
+set(SAIL_REVISION B)
 
 function (usesail lib)
     if (USE_SAIL)
@@ -28,7 +29,7 @@ function (usesail lib)
 
         watch(${lib} ${SYMDEPENDS})
         
-        set(SAIL_CMD ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0> A ${CMAKE_CURRENT_SOURCE_DIR}/syms)
+        set(SAIL_CMD ${SAIL_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/config/ModuleList.sym ${CMAKE_CURRENT_SOURCE_DIR}/config/VersionList.sym ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_ASM_COMPILER} $<IF:$<BOOL:${IS_32_BIT}>,1,0> ${SAIL_REVISION} ${CMAKE_CURRENT_SOURCE_DIR}/syms)
         
         file(GLOB_RECURSE ADDONS_SYMS_EMPTY_TEST ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms/*.sym)
         if (ADDONS_SYMS_EMPTY_TEST)
