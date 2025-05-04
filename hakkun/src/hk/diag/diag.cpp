@@ -48,8 +48,8 @@ File: %s:%d
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...) {
         va_list arg;
         va_start(arg, msgFmt);
-        va_end(arg);
         abortImpl(reason, result, file, line, msgFmt, arg);
+        va_end(arg);
     }
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
