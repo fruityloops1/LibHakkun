@@ -7,6 +7,10 @@
 #include <cstdio>
 #include <cstring>
 
+#ifdef HK_ADDON_LogManager
+#include "hk/nn/diag.h"
+#endif
+
 namespace hk::diag {
 
     Result setCurrentThreadName(const char* name) {
@@ -73,6 +77,8 @@ File: %s:%d
             svc::Break(reason, &result, sizeof(result));
     }
 
+    extern "C" void __attribute__((weak)) hkLogSink(const char* msg, size len) { }
+
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void debugLog(const char* fmt, ...) {
         std::va_list args;
@@ -83,6 +89,20 @@ File: %s:%d
         va_end(args);
 
         svc::OutputDebugString(buf, len + 1);
+        hkLogSink(buf, len + 1);
+#ifdef HK_ADDON_LogManager
+        {
+            nn::diag::LogMetaData metaData;
+            metaData.file = __FILE__;
+            metaData.line = __LINE__;
+            metaData.function = __PRETTY_FUNCTION__;
+
+            // In case the symbol is not yet applied
+            volatile auto put = nn::diag::detail::PutImpl;
+            if (put != nullptr)
+                put(metaData, buf, len + 1);
+        }
+#endif
     }
 #endif
 
