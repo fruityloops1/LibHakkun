@@ -81,10 +81,18 @@ File: %s:%d
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void debugLog(const char* fmt, ...) {
+        constexpr size bufSizeAddend =
+#ifdef HK_ADDON_LogManager
+            2
+#else
+            1
+#endif
+            ;
+
         std::va_list args;
         va_start(args, fmt);
         size len = vsnprintf(nullptr, 0, fmt, args);
-        char buf[len + 1];
+        char buf[len + bufSizeAddend];
         vsnprintf(buf, len + 1, fmt, args);
         va_end(args);
 
@@ -96,6 +104,9 @@ File: %s:%d
             metaData.file = __FILE__;
             metaData.line = __LINE__;
             metaData.function = __PRETTY_FUNCTION__;
+
+            buf[len] = '\n';
+            buf[len + 1] = '\0';
 
             // In case the symbol is not yet applied
             volatile auto put = nn::diag::detail::PutImpl;
