@@ -10,6 +10,8 @@
 #define section(SECTION) __attribute__((section(#SECTION)))
 #define STRINGIFY(X) #X
 #define STR(X) STRINGIFY(X)
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
 
 #define NON_COPYABLE(CLASS)       \
     CLASS(const CLASS&) = delete; \
@@ -89,6 +91,42 @@ namespace hk {
     constexpr bool isAligned(T from, size alignment) { return alignDown(from, alignment) == from; }
     template <typename T>
     constexpr bool isAlignedPage(T from) { return alignDown(from, cPageSize) == from; }
+
+    template <typename L>
+    class ScopeGuard {
+        L mFunc;
+        bool mExec = true;
+
+    public:
+        hk_alwaysinline explicit constexpr ScopeGuard(L func, bool exec)
+            : mFunc(func)
+            , mExec(exec) {
+        }
+
+        hk_alwaysinline constexpr ~ScopeGuard() {
+            if (mExec)
+                mFunc();
+        }
+
+        ScopeGuard(const ScopeGuard&) = delete;
+        ScopeGuard& operator=(const ScopeGuard&) = delete;
+    };
+
+    class ScopeGuardOnExit {
+        bool mExec = false;
+
+    public:
+        hk_alwaysinline constexpr ScopeGuardOnExit(bool condition)
+            : mExec(condition) { }
+
+        template <typename L>
+        hk_alwaysinline ScopeGuard<L> constexpr operator+(L&& func) {
+            return ScopeGuard(func, mExec);
+        }
+    };
+
+#define defer auto CONCAT(CONCAT(scope_exit_guard_, __LINE__), __COUNTER__) = ::hk::ScopeGuardOnExit(true) + [&]()
+#define defer_if(COND) auto CONCAT(CONCAT(scope_exit_guard_, __LINE__), __COUNTER__) = ::hk::ScopeGuardOnExit(COND) + [&]()
 
 } // namespace hk
 
