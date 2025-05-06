@@ -61,7 +61,10 @@ namespace nn::ro::detail {
         size_t nro_size;
         bool cannot_revert_symbols;
 #endif
+    private:
+        char m_Padding[0x40]; // Not sure what they added, but this is in older versions of RTLD too.
 
+    public:
         void Initialize(char* aslr_base, Elf_Dyn* dynamic);
         void Relocate();
         Elf_Sym* GetSymbolByName(const char* name) const;
