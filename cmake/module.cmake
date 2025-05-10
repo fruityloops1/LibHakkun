@@ -22,15 +22,26 @@ set(CMAKE_EXECUTABLE_SUFFIX ".nss")
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(sys/cmake/watch.cmake)
+
+set(VERSION_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/visibility.txt")
+set(USER_VERSION_SCRIPT "${CMAKE_SOURCE_DIR}/config/visibility.txt")
+if (EXISTS ${USER_VERSION_SCRIPT})
+    set(USER_VERSION_SCRIPT_ARG "-Wl,--version-script=${USER_VERSION_SCRIPT}")
+else()
+    set(USER_VERSION_SCRIPT_ARG "")
+endif()
+
 if (IS_32_BIT)
     set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/link.armv7a.ld")
 else()
     set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/link.aarch64.ld")
 endif()
-set(MISC_LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/misc.ld")
 watch(${PROJECT_NAME} "${LINKER_SCRIPT};${MISC_LINKER_SCRIPT}")
+
+set(MISC_LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/misc.ld")
+
 target_link_options(${PROJECT_NAME} PRIVATE -T${LINKER_SCRIPT} -T${MISC_LINKER_SCRIPT})
-target_link_options(${PROJECT_NAME} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--export-dynamic-symbol=_ZN2nn2ro6detail15g_pAutoLoadListE)
+target_link_options(${PROJECT_NAME} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--version-script=${VERSION_SCRIPT} ${USER_VERSION_SCRIPT_ARG})
 
 apply_config(${PROJECT_NAME})
 

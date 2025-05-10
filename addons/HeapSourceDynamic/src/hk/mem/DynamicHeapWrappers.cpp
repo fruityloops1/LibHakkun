@@ -75,4 +75,7 @@ void* calloc(std::size_t nmemb, std::size_t size) {
     __builtin_memset(ptr, 0, nmemb * size);
     return ptr;
 }
+void* __libc_calloc(std::size_t nmemb, std::size_t size) {
+    return calloc(nmemb, size);
+}
 }
