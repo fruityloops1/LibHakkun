@@ -95,3 +95,5 @@ namespace hk::hook {
 
 template <typename Ret, typename... Args>
 using HkTrampoline = hk::hook::TrampolineHook<Ret (*)(Args...)>;
+template <typename Ret, typename... Args>
+using HkTrampolineVarArgs = hk::hook::TrampolineHook<Ret (*)(Args..., ...)>;
