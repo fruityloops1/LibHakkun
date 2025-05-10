@@ -90,3 +90,5 @@ namespace hk::hook {
 
 template <typename Ret, typename... Args>
 using HkReplace = hk::hook::ReplaceHook<Ret (*)(Args...)>;
+template <typename Ret, typename... Args>
+using HkReplaceVarArgs = hk::hook::ReplaceHook<Ret (*)(Args..., ...)>;
