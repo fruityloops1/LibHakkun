@@ -1,0 +1,37 @@
+name: build
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip git wget
+          python sys/tools/setup_libcxx_prepackaged.py
+          python sys/tools/setup_sail.py
+          git clone https://github.com/switchbrew/switch-tools && cd switch-tools && ./autogen.sh && ./configure && make -j $(nproc) && cd ..
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -y clang-19 llvm-19 lld-19
+          python3 -m pip install pyelftools mmh lz4
+      - name: Build
+        run: |
+          export SWITCHTOOLS=$(pwd)/switch-tools
+          cmake -B build -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_ASM_COMPILER=clang-19 -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-19" -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld-19" -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld-19"
+          cmake --build build -j $(nproc)
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            build/*.nss
+            build/main.npdm
+            build/*.nso
