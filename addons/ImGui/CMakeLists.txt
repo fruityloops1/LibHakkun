@@ -27,7 +27,7 @@ if (HAS_NVN EQUAL -1)
     message(FATAL_ERROR "Enable Nvn addon to use DebugRenderer")
 endif()
 
-embed_file(ImGui ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader)
+embed_file(ImGui ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader 0x1000 TRUE)
 
 apply_config(ImGui)
 
