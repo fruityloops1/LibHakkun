@@ -147,9 +147,10 @@ namespace hk::sail {
 
         sTimeElapsedLoadSymbols = svc::getSystemTick() - sTimeElapsedLoadSymbols;
 
-        float ms = sTimeElapsedLoadSymbols / 192000000.f;
-        u64 µs = sTimeElapsedLoadSymbols / 192.f;
-        diag::debugLog("hk::sail: loaded symbols in: %zutix / %.2fms / %zuµs", sTimeElapsedLoadSymbols, ms, µs);
+        float s = sTimeElapsedLoadSymbols / float(svc::getSystemTickFrequency());
+        float ms = s * 1000.f;
+        u64 µs = ms * 1000.f;
+        diag::debugLog("hk::sail: loaded symbols in: %zutix / %.2fms / %zuus", sTimeElapsedLoadSymbols, ms, µs);
     }
 
 } // namespace hk::sail
