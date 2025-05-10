@@ -11,6 +11,17 @@ Code modification framework for RTLD-based userspace Nintendo Switch programs wi
 * Abort/Assert util that prints text visible in Atmosphère crash reports
 * Symbols imported dynamically can be stripped from final binary
 * Framework and user code clearly separated with a submodule to prevent messy codebases and forks
+* Multiple addons with additional functionality:
+    * Rendering:
+        * [Nvn](https://github.com/fruityloops1/LibHakkun/tree/main/addons/Nvn)
+        * [DebugRenderer](https://github.com/fruityloops1/LibHakkun/tree/main/addons/DebugRenderer)
+        * [ImGui](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ImGui)
+    * Memory Allocation:
+        * [ExpHeap](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ExpHeap)
+        * [HeapSourceBss](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceBss)
+        * [HeapSourceDynamic](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceDynamic)
+    * Logging:
+        * [LogManager](https://github.com/fruityloops1/LibHakkun/tree/main/addons/LogManager)
 
 ## Setup
 #### Prerequisites
@@ -20,6 +31,8 @@ Code modification framework for RTLD-based userspace Nintendo Switch programs wi
 * Python 3.10, `pyelftools`, `mmh`, and `lz4` packages
 * [switch-tools](https://github.com/switchbrew/switch-tools) bin path in `SWITCHTOOLS` env variable, or devkitPro distribution of switch-tools
 #### Compile stdlibs and sail
+
+This part can be skipped, since these scripts are ran automatically when needed.
 
 You can either use a prepackaged stdlib, or compile one yourself (pass 'aarch32' as argument to either of the scripts if using 32-bit):
 ##### Using prepackaged stdlib
