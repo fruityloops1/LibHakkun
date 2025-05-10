@@ -9,10 +9,12 @@ if (IS_32_BIT)
     set(TARGET_TRIPLE "armv7-none-eabi")
     set(MARCH "armv7-a")
     set(CMAKE_SYSTEM_PROCESSOR armv7-a)
+    set(ARCH_NAME "aarch32")
 else()
     set(TARGET_TRIPLE "aarch64-none-elf")
     set(MARCH "armv8-a")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
+    set(ARCH_NAME "aarch64")
 endif()
 
 set(CMAKE_SYSTEM_NAME Generic)
@@ -69,6 +71,26 @@ else()
     )
 endif()
 
+set(STDLIB_FOUND TRUE)
+foreach (item IN LISTS DEFAULTLIBS)
+    if (NOT EXISTS ${item})
+        set(STDLIB_FOUND FALSE)
+    endif()
+endforeach()
+foreach (item IN LISTS DEFAULTINCLUDES)
+    if (NOT EXISTS ${item})
+        set(STDLIB_FOUND FALSE)
+    endif()
+endforeach()
+
+if (NOT STDLIB_FOUND)
+    message(WARNING "Standard library not found! Running setup_libcxx_prepackaged.py")
+    execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/sys/tools/setup_libcxx_prepackaged.py ${ARCH_NAME}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE result
+    )
+endif()
+
 set(DEFAULTINCLUDES_F "")
 foreach(item IN LISTS DEFAULTINCLUDES)
     set(DEFAULTINCLUDES_F "${DEFAULTINCLUDES_F} -isystem ${item}")
@@ -96,4 +118,3 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ARCH_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${DEFAULTLIBS_F}")
 
 add_definitions(${DEFAULTDEFINES})
-

@@ -14,7 +14,11 @@ function (usesail lib)
         target_link_options(${lib} PRIVATE ${SAIL_LIBS})
 
         if(NOT EXISTS ${SAIL_BIN})
-            message(FATAL_ERROR "Sail binary not found! Did you run setup_sail.py?")
+            message(WARNING "Sail binary not found! Running setup_sail.py")
+            execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/sys/tools/setup_sail.py
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE result
+            )
         endif()
 
         file(GLOB_RECURSE SYM_FILES ${CMAKE_CURRENT_SOURCE_DIR}/syms/*.sym ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms/*.sym)
