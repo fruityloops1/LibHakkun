@@ -68,6 +68,8 @@ If following environment variables are set, Hakkun will automatically attempt to
 * `HAKKUN_FTP_PORT`: Port (optional, 5000 by default)
 * `HAKKUN_FTP_USER`: User (optional)
 * `HAKKUN_FTP_PASS`: Password (optional)
+#### GitHub workflow
+A GitHub workflow template can be found in .github/workflow_templates/build.yml.
 
 ## Configuration
 #### config.cmake
