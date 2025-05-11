@@ -36,12 +36,12 @@ if (IS_32_BIT)
 else()
     set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/link.aarch64.ld")
 endif()
-watch(${PROJECT_NAME} "${LINKER_SCRIPT};${MISC_LINKER_SCRIPT}")
-
 set(MISC_LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/misc.ld")
 
+watch(${PROJECT_NAME} "${LINKER_SCRIPT};${MISC_LINKER_SCRIPT}")
+
 target_link_options(${PROJECT_NAME} PRIVATE -T${LINKER_SCRIPT} -T${MISC_LINKER_SCRIPT})
-target_link_options(${PROJECT_NAME} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--version-script=${VERSION_SCRIPT} ${USER_VERSION_SCRIPT_ARG})
+target_link_options(${PROJECT_NAME} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--export-dynamic-symbol=_ZN2nn2ro6detail15g_pAutoLoadListE -Wl,--version-script=${VERSION_SCRIPT} ${USER_VERSION_SCRIPT_ARG})
 
 apply_config(${PROJECT_NAME})
 
