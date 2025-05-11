@@ -47,10 +47,10 @@ namespace hk::hook {
     }
 
     Result mapRoToRw(ptr addr, size mapSize, ptr* outRw) {
-        size uppedSize = alignUpPage(mapSize);
-
         ptr srcAligned = alignDownPage(addr);
         ptrdiff ptrToAlignedDiff = addr - srcAligned;
+
+        size uppedSize = alignUpPage(mapSize + ptrToAlignedDiff);
         ptr dest = findAslr(uppedSize);
 
         Handle curProcess;

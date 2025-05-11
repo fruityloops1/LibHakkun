@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/BitArray.h"
 
@@ -11,6 +12,7 @@ namespace hk::util {
         T* mBuffer = nullptr;
 
         T* getData(size index) const {
+            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator: invalid index (%d not in buffer)", index);
             return mBuffer + index;
         }
 
@@ -19,7 +21,7 @@ namespace hk::util {
             : mBuffer(cast<T*>(buffer)) { }
 
         s32 allocateIdx() {
-            for (size i = 0; i < Capacity - 1; i++) {
+            for (size i = 0; i < Capacity; i++) {
                 if (mAllocations[i] == false) {
                     mAllocations[i] = true;
                     return i;
@@ -41,7 +43,7 @@ namespace hk::util {
         }
 
         void free(T* data) {
-            size index = ptr(data) - ptr(mBuffer);
+            size index = data - mBuffer;
             HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator: invalid free (%p not in buffer)", data);
             HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator: double free (ptr %p, idx %d)", data, index);
 
