@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <initializer_list>
 #include <numbers>
+#include <string>
 
 #include "nvn/nvn_Cpp.h"
 #include "nvn/nvn_CppFuncPtrBase.h"
@@ -29,8 +30,8 @@ extern "C" __attribute__((weak)) void hkDebugRendererAfterInit(nvn::Device* devi
 namespace hk::gfx {
     class DebugRendererImpl {
         constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
-        constexpr static size cVtxBufferSize = alignUpPage(0x1000 * sizeof(Vertex));
-        constexpr static size cIdxBufferSize = alignUpPage(0x3000 * sizeof(u16));
+        constexpr static size cVtxBufferSize = alignUpPage(HAKKUN_DEBUGRENDERER_VTXBUFFER_SIZE * sizeof(Vertex));
+        // constexpr static size cIdxBufferSize = alignUpPage(0x3000 * sizeof(u16));
         constexpr static size cDefaultTextureMemorySize = cPageSize * 2;
         constexpr static size cDefaultFontMemorySize = 0x8000;
 
@@ -47,7 +48,7 @@ namespace hk::gfx {
         hk::nvn::MemoryBuffer mVtxBuffer;
         hk::nvn::MemoryBuffer mIdxBuffer;
         u8 mVtxBufferData[cVtxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
-        u8 mIdxBufferData[cIdxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
+        // u8 mIdxBufferData[cIdxBufferSize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mDefaultTextureBuffer[cDefaultTextureMemorySize] __attribute__((aligned(cPageSize))) { 0 };
         u8 mFontBuffer[cDefaultFontMemorySize] __attribute__((aligned(cPageSize))) { 0 };
 
@@ -84,7 +85,7 @@ namespace hk::gfx {
             mShader.create(program, cShaderBufferSize, mDevice, nullptr, 0, nullptr, "hk::gfx::DebugRenderer");
 
             mVtxBuffer.initialize(mVtxBufferData, cVtxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
-            mIdxBuffer.initialize(mIdxBufferData, cIdxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
+            // mIdxBuffer.initialize(mIdxBufferData, cIdxBufferSize, mDevice, nvn::MemoryPoolFlags::CPU_UNCACHED | nvn::MemoryPoolFlags::GPU_CACHED);
 
             {
                 nvn::SamplerBuilder samp;
@@ -112,7 +113,7 @@ namespace hk::gfx {
         }
 
         void checkVtxBuffer(u32 addSize = 0) {
-            HK_ABORT_UNLESS(mVtxOffset + addSize < cVtxBufferSize, "Vertex Buffer full!", 0);
+            HK_ABORT_UNLESS((mVtxOffset + addSize) * sizeof(Vertex) < cVtxBufferSize, "Vertex Buffer full!", 0);
         }
 
         void clear() {
@@ -208,8 +209,8 @@ namespace hk::gfx {
 
             Vertex* cur = reinterpret_cast<Vertex*>(mCurVtxMap + mVtxOffset * sizeof(Vertex));
             {
-                Vertex corners[4] = {tl, tr, br, bl};
-                util::Vector2f quadrants[4] = { {1, -1}, {1, 1}, {-1, 1}, {-1, -1} };
+                Vertex corners[4] = { tl, tr, br, bl };
+                util::Vector2f quadrants[4] = { { 1, -1 }, { 1, 1 }, { -1, 1 }, { -1, -1 } };
                 const f32 halfPi = std::numbers::pi / 2.0f;
 
                 s32 v = 0;
@@ -295,7 +296,7 @@ namespace hk::gfx {
                 cur[0] = { center.pos / mResolution, center.uv, center.color };
                 for (s32 i = 0; i <= numSides; i++) {
                     util::Vector2f point = { center.pos.x + (radius * std::cosf(i * twicePi / numSides)), center.pos.y + (radius * std::sinf(i * twicePi / numSides)) };
-                    cur[i+1] = { point / mResolution, center.uv, center.color };
+                    cur[i + 1] = { point / mResolution, center.uv, center.color };
                 }
             }
 
@@ -306,7 +307,7 @@ namespace hk::gfx {
 
         template <typename Char>
         util::Vector2f drawString(const util::Vector2f& pos, const Char* str, u32 color) {
-            checkVtxBuffer();
+            checkVtxBuffer(std::char_traits<Char>::length(str) * 4);
 
             Vertex* vertices = reinterpret_cast<Vertex*>(mCurVtxMap);
 
@@ -316,10 +317,10 @@ namespace hk::gfx {
             float charWidthUv = mCurrentFont->getCharWidthUv();
             float charHeightUv = mCurrentFont->getCharHeightUv();
 
-            auto adjustmentTL = mGlyphSize / mResolution / 15;
-            auto adjustmentTR = adjustmentTL * util::Vector2f(-1, 1);
-            auto adjustmentBR = adjustmentTL * util::Vector2f(-1, -1);
-            auto adjustmentBL = adjustmentTL * util::Vector2f(1, -1);
+            const auto adjustmentTL = mGlyphSize / mResolution / 15;
+            const auto adjustmentTR = adjustmentTL * util::Vector2f(-1, 1);
+            const auto adjustmentBR = adjustmentTL * util::Vector2f(-1, -1);
+            const auto adjustmentBL = adjustmentTL * util::Vector2f(1, -1);
 
             util::Vector2f curPos = pos / mResolution;
             float initialX = curPos.x;
@@ -332,7 +333,7 @@ namespace hk::gfx {
                 }
                 if (*str == '\t') {
                     unsigned int initialOffset = (curPos.x - initialX) / glyphSize.x;
-                    curPos.x = initialX + (float)(initialOffset + 4 & ~3) * glyphSize.x;
+                    curPos.x = initialX + float(initialOffset + 4 & ~3) * glyphSize.x;
                     str++;
                     continue;
                 }
@@ -352,8 +353,6 @@ namespace hk::gfx {
                 str++;
                 curPos.x += glyphSize.x;
             }
-
-            checkVtxBuffer();
 
             bindTexture(mCurrentFont->getTexture().getTextureHandle());
 

@@ -7,7 +7,12 @@
 namespace hk::gfx {
 
     class DebugRendererImpl;
-    constexpr static size cDebugRendererImplSize = 155648; // This needs to GO
+#ifdef HAKKUN_DEBUGRENDERER_VTXBUFFER_SIZE
+    constexpr static size cVtxBufferSize = alignUpPage(HAKKUN_DEBUGRENDERER_VTXBUFFER_SIZE * sizeof(Vertex));
+    constexpr static size cDebugRendererImplSize = 49152 + cVtxBufferSize; // This needs to GO
+#else
+    constexpr static size cDebugRendererImplSize = 0;
+#endif
 
     class Texture;
 
