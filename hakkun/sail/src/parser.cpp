@@ -14,13 +14,17 @@ namespace sail {
 
     static std::deque<std::string> splitByWhitespaceAndRemoveComments(const std::string& data) {
         auto parts = split(data, ' ');
-
         std::deque<std::string> newParts;
+        std::string braceBuf;
 
         for (auto& part : parts) {
             auto pos = part.find("//");
             if (pos != std::string::npos) {
                 part.resize(pos);
+                if (braceBuf.size() > 1) {
+                    newParts.push_back(braceBuf.substr(1));
+                }
+
                 if (!part.empty())
                     newParts.push_back(part);
                 break;
@@ -28,9 +32,42 @@ namespace sail {
             pos = part.find("#");
             if (pos != std::string::npos) {
                 part.resize(pos);
+                if (braceBuf.size() > 1) {
+                    newParts.push_back(braceBuf.substr(1));
+                }
+
                 if (!part.empty())
                     newParts.push_back(part);
                 break;
+            }
+
+            if (!braceBuf.empty()) {
+                pos = part.find('}');
+                if (pos != std::string::npos) {
+                    braceBuf += part.substr(0, pos);
+                    part = part.substr(pos + 1);
+                    if (braceBuf.size() > 1) {
+                        newParts.push_back(braceBuf.substr(1));
+                    }
+
+                    braceBuf.clear();
+                    if (part.empty()) {
+                        continue;
+                    }
+                } else {
+                    braceBuf += part;
+                    continue;
+                }
+            }
+
+            pos = part.find('{');
+            if (pos != std::string::npos) {
+                braceBuf = part.substr(pos);
+                part.resize(pos);
+                if (!part.empty()) {
+                    newParts.push_back(part);
+                }
+                continue;
             }
 
             newParts.push_back(part);
