@@ -73,6 +73,10 @@ namespace hk::hook {
 
             return ResultSuccess();
         }
+
+        Result installAtMainOffset(ptr offset) {
+            return installAtOffset(ro::getMainModule(), offset);
+        }
     };
 
     /*template <typename Return, typename... Args>
