@@ -1,9 +1,11 @@
 #pragma once
 
-#include <cmath>
 #include "hk/types.h"
+#include <cmath>
 
 namespace hk::util {
+
+    // Misc
 
     template <typename T>
     constexpr T min(T first) {
@@ -31,6 +33,8 @@ namespace hk::util {
     constexpr size arraySize(T (&array)[N]) {
         return N;
     }
+
+    // Vectors
 
     template <typename T>
     struct Vector2 {
@@ -136,5 +140,104 @@ namespace hk::util {
     using Vector2f = Vector2<f32>;
     using Vector2f64 = Vector2<f64>;
     using Vector2i = Vector2<int>;
+
+    // Bit math
+
+    template <typename T>
+    class IntBuilder {
+        T mValue = 0;
+
+    public:
+        constexpr IntBuilder& set(int upperIdx, int lowerIdx, T value) {
+            mValue |= (value << lowerIdx) & ((1ull << (upperIdx + 1)) - (1ull << lowerIdx));
+            return *this;
+        }
+
+        constexpr operator T() const { return mValue; }
+    };
+
+    template <typename T>
+    constexpr int countSetBits(T n) {
+        int count = 0;
+        while (n) {
+            count += n & 1;
+            n >>= 1;
+        }
+        return count;
+    }
+
+    template <typename T>
+    constexpr bool isRepeatingBitPattern(T value, int elemSize) {
+        if (elemSize == sizeof(T) * 8)
+            return true;
+
+        T pattern = value & ((T(1) << elemSize) - 1);
+        for (int i = elemSize; i < sizeof(T) * 8; i += elemSize) {
+            if ((value & ((T(1) << elemSize) - 1)) != pattern) {
+                return false;
+            }
+            value >>= elemSize;
+        }
+        return true;
+    }
+
+    template <typename T>
+    constexpr int countTrailingOnes(T value) {
+        int count = 0;
+        while ((value & 1) && count < sizeof(T) * 8) {
+            count++;
+            value >>= 1;
+        }
+        return count;
+    }
+
+    template <typename T>
+    constexpr int countLeadingZeros(T value, int width) {
+        int count = 0;
+        for (int i = width - 1; i >= 0; i--) {
+            if ((value & (T(1) << i)) == 0) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }
+
+    template <typename T>
+    constexpr int countLeadingZeros(T value) {
+        return __builtin_clz(value);
+    }
+
+    template <typename T>
+    constexpr int calcHighestSetBit(T value) {
+        for (int i = sizeof(T) * 8 - 1; i >= 0; i--) {
+            if (value & (T(1) << i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    template <typename T>
+    constexpr T ror(T value, int shift, int width) {
+        shift = shift % width;
+        if (shift == 0)
+            return value;
+
+        T mask = (T(1) << width) - 1;
+        value &= mask;
+        return ((value >> shift) | (value << (width - shift))) & mask;
+    }
+
+    template <size Width, size NumShift>
+    constexpr bool isRepresentable(u64 value) {
+        for (size i = 0; i < NumShift; i++) {
+            if ((value & (bits(Width) << (i * Width))) == value) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 } // namespace hk::util
