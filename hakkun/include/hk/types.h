@@ -92,6 +92,14 @@ namespace hk {
     template <typename T>
     constexpr bool isAlignedPage(T from) { return alignDown(from, cPageSize) == from; }
 
+    constexpr u64 bit(u8 n) { return 1ULL << n; }
+
+    constexpr u64 bits(u8 n) {
+        if (n == 64)
+            return 0xFFFFFFFFFFFFFFFF;
+        return bit(n) - 1;
+    }
+
     template <typename L>
     class ScopeGuard {
         L mFunc;

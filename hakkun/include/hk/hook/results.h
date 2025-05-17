@@ -12,5 +12,6 @@ namespace hk::hook {
     HK_DEFINE_RESULT(OutOfBounds, 22)
     HK_DEFINE_RESULT(MismatchedInstruction, 23)
     HK_DEFINE_RESULT(InvalidRead, 24)
+    HK_DEFINE_RESULT(NotUninstallable, 25)
 
 } // namespace hk::hook

@@ -70,11 +70,15 @@ namespace hk::ro {
         HK_UNLESS(roPtr >= text.start(), ResultOutOfRange());
         HK_UNLESS(roPtr + writeSize <= rodata.end(), ResultOutOfRange());
 
-        ptr rwPtr = roPtr >= rodata.start() ? ptr(rodataRw.start() + offset - text.size()) : ptr(textRw.start() + offset);
+        bool isText = !(roPtr >= rodata.start());
+
+        ptr rwPtr = isText ? ptr(textRw.start() + offset) : ptr(rodataRw.start() + offset - text.size());
 
         if (sRoWriteCallback)
             sRoWriteCallback(this, offset, source, writeSize);
         __builtin_memcpy(cast<void*>(rwPtr), source, writeSize);
+        if (isText)
+            svc::clearCache(roPtr, writeSize);
 
         return ResultSuccess();
     }
