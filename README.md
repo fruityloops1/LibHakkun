@@ -8,6 +8,7 @@ Code modification framework for RTLD-based userspace Nintendo Switch programs wi
 * Compatible with programs that statically link RTLD into their main executable
 * Runtime Replace, Trampoline, B/BL hooking, RW access to code memory
 * Sophisticated symbol sourcing system with proper error reporting and compatibility across multiple program target versions
+* Constexpr AArch64 assembler
 * Abort/Assert util that prints text visible in Atmosphère crash reports
 * Symbols imported dynamically can be stripped from final binary
 * Framework and user code clearly separated with a submodule to prevent messy codebases and forks
@@ -181,11 +182,11 @@ some_global_variable = readAdrpGlobal($some_adrp_ldr_instruction, 0x2) // 0x2 in
 ```
 Symbols can be accessed directly through linking, or through hk::util::lookupSymbol.
 
-## Hooking
-Hakkun provides multiple utils for hooking:
+## Feature Examples
 ```cpp
 using namespace hk;
 
+// trampoline hook
 HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
     int value = myHook.orig(something); // call original function
     // do something ...
@@ -194,8 +195,9 @@ HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
 
 static void test() { }
 
+// executed at boot
 extern "C" void hkMain() {
-    // tramopline/replace
+    // trampoline/replace
     myHook.installAtSym<"SomeFunction">(); // install to symbol provided by sail
     myHook.uninstall(); // hooks can be uninstalled
     myHook.installAtOffset(ro::getMainModule(), 0x1234); // by offset (not recommended)
@@ -210,6 +212,16 @@ extern "C" void hkMain() {
 
     // writing to module
     ro::getMainModule()->writeRo<u32>(/* offset */ 0x12345678, /* u32 value */ 0xfefefefe);
+
+    // constexpr AArch64 assembler
+    hook::a64::assemble<"add x0, x0, {}">()
+        .arg(1234)
+        .installAtMainOffset(0x007feb88)
+        .installAtSym<"Blablablabla">();
+
+    hook::a64::assemble<"nop", true /* Uninstallable */>()
+        .installAtMainOffset(0x12345678)
+        .uninstall();
 }
 ```
 Please note trampoline hooks do not relocate instructions at the moment, which should not be a problem as long as you hook at instructions that do not need to be relocated (avoid branches, adrp, etc.)
