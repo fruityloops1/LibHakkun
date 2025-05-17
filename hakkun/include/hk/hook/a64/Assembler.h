@@ -975,7 +975,7 @@ namespace hk::hook::a64 {
         size mNumArgs = 0;
 
         ptr mOffset = 0;
-        Instr mOrigInstrs[NumInstrs] { 0 };
+        Instr mOrigInstrs[NumInstrs] {};
         const ro::RoModule* mModule = nullptr;
 
     public:
@@ -1101,7 +1101,7 @@ namespace hk::hook::a64 {
     };
 
     template <Expr E, bool Uninstallable = false, int N = E.calcNumInstrs()>
-    constexpr AsmBlock<Uninstallable, N> assemble() {
+    consteval AsmBlock<Uninstallable, N> assemble() {
         Expr e(E.value);
 
         std::array<IInstr, N> instrs;
