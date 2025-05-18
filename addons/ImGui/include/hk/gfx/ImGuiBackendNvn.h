@@ -38,6 +38,7 @@ namespace hk::gfx {
         void setPrevTexturePool(void* pool /* nvn::TexturePool* */);
         void setPrevSamplerPool(void* pool /* nvn::SamplerPool* */);
         void setResolution(const util::Vector2f& res);
+        void* /* nvn::Device* */ getDevice();
 
         static ImGuiBackendNvn* instance() { return &sInstance; }
     };

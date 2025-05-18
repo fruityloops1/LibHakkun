@@ -32,6 +32,7 @@ namespace hk::gfx {
     void ImGuiBackendNvn::setDevice(void* device) { get()->setDevice(static_cast<nvn::Device*>(device)); }
     void ImGuiBackendNvn::setPrevTexturePool(void* pool) { get()->setPrevTexturePool(static_cast<nvn::TexturePool*>(pool)); }
     void ImGuiBackendNvn::setPrevSamplerPool(void* pool) { get()->setPrevSamplerPool(static_cast<nvn::SamplerPool*>(pool)); }
+    void* ImGuiBackendNvn::getDevice() { return get()->getDevice(); }
 
     void ImGuiBackendNvn::setResolution(const util::Vector2f& res) {
         ImGui::GetIO().DisplaySize = ImVec2(res.x, res.y);

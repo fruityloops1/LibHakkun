@@ -60,6 +60,7 @@ namespace hk::gfx {
         void setDevice(nvn::Device* device) { mDevice = device; }
         void setPrevTexturePool(nvn::TexturePool* pool) { mPrevTexturePool = pool; }
         void setPrevSamplerPool(nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
+        nvn::Device* getDevice() { return mDevice; }
 
         bool tryInitialize() {
             if (mInitialized)
@@ -237,6 +238,13 @@ namespace hk::gfx {
                     const util::Vector2f size = max - min;
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
+
+                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TextureId);
+                    if (texHandle != nullptr) {
+                        bindTexture(cmdBuffer, *texHandle);
+                    } else {
+                        bindTexture(cmdBuffer, mFontTexture.get()->getTextureHandle());
+                    }
 
                     cmdBuffer->DrawElementsBaseVertex(
                         nvn::DrawPrimitive::TRIANGLES,
