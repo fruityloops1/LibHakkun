@@ -7,7 +7,7 @@ namespace hk::util {
 
     template <typename T>
     class Storage {
-        u8 mStorage[sizeof(T)] { 0 };
+        alignas(alignof(T)) u8 mStorage[sizeof(T)] { 0 };
         bool mAlive = false;
 
         T* getUnsafe() { return cast<T*>(mStorage); }
