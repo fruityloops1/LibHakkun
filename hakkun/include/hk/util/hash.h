@@ -171,6 +171,13 @@ namespace hk::util {
         return h;
     }
 
+    constexpr u32 djb2Hash(const char* name) {
+        u32 h = 5381;
+        for (const char* p = name; *p; p++)
+            h = h * 33 + static_cast<uint8_t>(*p);
+        return h;
+    }
+
     static_assert(hashMurmur("meow meow meow") == 0x1a1888b6);
     static_assert(hashMurmur("Haiiiiiiiiiiii") == 0x6726fccb);
     static_assert(hashMurmur(":333333333", 0xB00B1E5) == 0x4f39bed5);

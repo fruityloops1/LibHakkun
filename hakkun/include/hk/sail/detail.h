@@ -60,6 +60,7 @@ namespace hk::sail {
         struct SymbolDynamic : Symbol {
             const u64 lookupNameRtldHash;
             const u32 lookupNameMurmur;
+            const u32 lookupNameDjb2;
 
             _HK_SAIL_DETAIL_SYMBOL_APPLY_FUNC;
         };

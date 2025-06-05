@@ -99,7 +99,7 @@ namespace sail {
         return detail::hashMurmurImpl<T, detail::ReadDefault<T>>(data, len, seed);
     }
 
-    inline u64 rtldElfHash(const char* name) {
+    constexpr u64 rtldElfHash(const char* name) {
         u64 h = 0;
         u64 g;
 
@@ -109,6 +109,13 @@ namespace sail {
                 h ^= g >> 24;
             h &= ~g;
         }
+        return h;
+    }
+
+    constexpr u32 djb2Hash(const char* name) {
+        u32 h = 5381;
+        for (const char* p = name; *p; p++)
+            h = h * 33 + static_cast<uint8_t>(*p);
         return h;
     }
 

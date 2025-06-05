@@ -26,6 +26,6 @@ namespace hk::ro {
     Result getModuleBuildIdByIndex(int idx, u8* out);
 
     ptr lookupSymbol(const char* symbol);
-    ptr lookupSymbol(uint64_t bucketHash, uint32_t murmurHash);
+    ptr lookupSymbol(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash);
 
 } // namespace hk::ro

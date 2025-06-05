@@ -148,10 +148,10 @@ namespace hk::ro {
         return 0;
     }
 
-    ptr lookupSymbol(uint64_t bucketHash, uint32_t murmurHash) {
+    ptr lookupSymbol(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash) {
         for (int i = 0; i < sNumModules; i++) {
             auto* module = sModules[i].module;
-            Elf_Sym* sym = module->GetSymbolByHashes(bucketHash, murmurHash);
+            Elf_Sym* sym = module->GetSymbolByHashes(bucketHash, djb2Hash, murmurHash);
             if (sym) {
                 ptr value = module->m_Base + sym->st_value;
                 return value;

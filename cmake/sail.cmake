@@ -7,7 +7,7 @@ set(SAIL_LIBS
 
 include(config/config.cmake)
 include(sys/cmake/watch.cmake)
-set(SAIL_REVISION C)
+set(SAIL_REVISION D)
 
 function (usesail lib)
     if (USE_SAIL)
@@ -39,7 +39,7 @@ function (usesail lib)
         if (ADDONS_SYMS_EMPTY_TEST)
             set(SAIL_CMD ${SAIL_CMD} ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms)
         endif()
-
+        
         add_custom_command(TARGET ${lib} PRE_LINK
             COMMAND ${SAIL_CMD}
         )

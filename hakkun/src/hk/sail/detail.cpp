@@ -151,7 +151,7 @@ namespace hk::sail {
         // Dynamic
 
         _HK_SAIL_PRECALC_TEMPLATE hk_alwaysinline void applyDynamicSymbol(bool abort, const SymbolDynamic* sym, ptr* out, const T* destSymbol) {
-            ptr address = ro::lookupSymbol(sym->lookupNameRtldHash, sym->lookupNameMurmur);
+            ptr address = ro::lookupSymbol(sym->lookupNameRtldHash, sym->lookupNameDjb2, sym->lookupNameMurmur);
 
             if (abort) {
                 if (IsPreCalc) {
