@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     const char* outFolder = argv[3];
     const char* clangBinary = argv[4];
     sail::is32Bit() = std::string(argv[5]) == "1";
-    if (*argv[6] != 'C') {
+    if (*argv[6] != 'D') {
         printf("Wrong sail version! Have you run setup_sail.py after updating?\n");
         return 1;
     }

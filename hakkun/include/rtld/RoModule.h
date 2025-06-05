@@ -43,8 +43,16 @@ namespace nn::ro::detail {
         size_t m_PltRelSz;
         void (*m_pInit)();
         void (*m_pFini)();
-        uint32_t* m_pBuckets;
-        uint32_t* m_pChains;
+        union {
+            struct {
+                uint32_t* m_pBuckets;
+                uint32_t* m_pChains;
+            };
+            struct {
+                uint64_t* m_pGnuBloomFilter;
+                uint32_t m_GnuHashMaskwords;
+            };
+        };
         char* m_pStrTab;
         Elf_Sym* m_pDynSym;
         size_t m_StrSz;
@@ -53,22 +61,40 @@ namespace nn::ro::detail {
         size_t m_DynRelSz;
         size_t m_RelCount;
         size_t m_RelaCount;
-        size_t m_Symbols;
-        size_t m_HashSize;
+        union {
+            struct {
+                size_t m_Symbols;
+                size_t m_HashSize;
+            };
+            struct {
+                uint64_t m_GnuHashShift2;
+                uint32_t* m_pGnuHash;
+            };
+        };
         void* got_stub_ptr;
-#ifdef __RTLD_6XX__
-        Elf_Xword soname_idx;
-        size_t nro_size;
-        bool cannot_revert_symbols;
-#endif
+        uint64_t _B8;
+        uint8_t _C0[3];
+        struct {
+            bool _C3_0 : 1;
+            bool _C3_1 : 1;
+            bool _C3_2 : 1;
+            bool _C3_3 : 1;
+            bool m_IsGnuHash : 1;
+        };
+
     private:
         char m_Padding[0x40]; // Not sure what they added, but this is in older versions of RTLD too.
+
+        Elf_Sym* GetSymbolByNameElf(const char* name) const;
+        Elf_Sym* GetSymbolByHashesElf(uint64_t bucketHash, uint32_t murmurHash) const;
+        Elf_Sym* GetSymbolByNameGnu(const char* name) const;
+        Elf_Sym* GetSymbolByHashesGnu(uint32_t djb2Hash, uint32_t murmurHash) const;
 
     public:
         void Initialize(char* aslr_base, Elf_Dyn* dynamic);
         void Relocate();
         Elf_Sym* GetSymbolByName(const char* name) const;
-        Elf_Sym* GetSymbolByHashes(uint64_t bucket_hash, uint32_t murmur_hash) const;
+        Elf_Sym* GetSymbolByHashes(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash) const;
         void ResolveSymbols(bool do_lazy_got_init);
         bool ResolveSym(Elf_Addr* target_symbol_address, Elf_Sym* symbol) const;
     };

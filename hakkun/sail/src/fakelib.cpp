@@ -182,7 +182,8 @@ namespace sail {
             case Symbol::Dynamic: {
                 out.append("\n.word 0x");
                 out.append(toHexString(hashMurmur(sym.dataDynamic.name.c_str())));
-                out.append("\n.word 0x0");
+                out.append("\n.word 0x");
+                out.append(toHexString(djb2Hash(sym.dataDynamic.name.c_str())));
                 break;
             }
             case Symbol::DataBlock: {
