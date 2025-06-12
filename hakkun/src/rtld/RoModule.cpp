@@ -40,8 +40,8 @@ namespace nn::ro::detail {
         uint32_t wordIdx = (maskwords - 1) & (nameHash >> 6);
         uint64_t bloomWord = m_pGnuBloomFilter[wordIdx];
 
-        uint32_t bit1 = nameHash & 0b111111;
-        uint32_t bit2 = (nameHash >> (this->m_GnuHashShift2 & 0b11111)) & 0b111111;
+        uint32_t bit1 = nameHash & hk::bits(6);
+        uint32_t bit2 = (nameHash >> (this->m_GnuHashShift2 & hk::bits(5))) & hk::bits(6);
         uint64_t bloomMask = hk::bit(bit1) | hk::bit(bit2);
 
         if ((bloomWord & bloomMask) != bloomMask)
@@ -83,8 +83,8 @@ namespace nn::ro::detail {
         uint32_t wordIdx = (maskwords - 1) & (djb2Hash >> 6);
         uint64_t bloomWord = m_pGnuBloomFilter[wordIdx];
 
-        uint32_t bit1 = djb2Hash & 0b111111;
-        uint32_t bit2 = (djb2Hash >> (this->m_GnuHashShift2 & 0b11111)) & 0b111111;
+        uint32_t bit1 = djb2Hash & hk::bits(6);
+        uint32_t bit2 = (djb2Hash >> (this->m_GnuHashShift2 & hk::bits(5))) & hk::bits(6);
         uint64_t bloomMask = hk::bit(bit1) | hk::bit(bit2);
 
         if ((bloomWord & bloomMask) != bloomMask)
