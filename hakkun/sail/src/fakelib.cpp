@@ -15,7 +15,7 @@ namespace sail {
             cmd.append(" --target=armv7a-none-eabi -march=armv7-a");
         } else
             cmd.append(" --target=aarch64-none-elf -march=armv8-a");
-        cmd.append(" -mtune=cortex-a57 -nodefaultlibs -o ");
+        cmd.append(" -mtune=cortex-a57 -nodefaultlibs -nostartfiles -Wno-unused-command-line-argument -o ");
 
         cmd.append(outPath);
         cmd.append("/");
