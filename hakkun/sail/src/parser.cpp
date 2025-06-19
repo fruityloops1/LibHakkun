@@ -79,10 +79,10 @@ namespace sail {
         return newParts;
     }
 
-#define SYNTAX_ERROR(MSG, ...)                                                           \
+#define SYNTAX_ERROR(...)                                                                \
     {                                                                                    \
         char buf[1024];                                                                  \
-        snprintf(buf, 1024, MSG, __VA_ARGS__);                                           \
+        snprintf(buf, 1024, __VA_ARGS__);                                                \
         fail<3>("sail: syntax error at %s:%d: %s\n", filePath.c_str(), lineNumber, buf); \
     }
 
@@ -114,12 +114,12 @@ namespace sail {
             if (parts[0].starts_with('@')) {
                 parts[0] = parts[0].substr(1);
                 if (parts[0].empty())
-                    SYNTAX_ERROR("stray @", 0);
+                    SYNTAX_ERROR("stray @");
 
                 auto at = split(parts[0], ':');
 
                 if (at.size() > 2)
-                    SYNTAX_ERROR("invalid module/version marker", 0);
+                    SYNTAX_ERROR("invalid module/version marker");
 
                 std::string currentModule = at[0];
                 currentModuleIndex = getModuleIndex(currentModule);
@@ -186,7 +186,7 @@ namespace sail {
                     auto endquote = parts[2].rfind('"');
 
                     if (endquote == std::string::npos || endquote == 0)
-                        SYNTAX_ERROR("missing end of quote", 0);
+                        SYNTAX_ERROR("missing end of quote");
 
                     std::string dynamicSymbol = parts[2].substr(1, parts[2].size() - 2);
 
@@ -195,9 +195,9 @@ namespace sail {
                     std::string symbolToAddTo = parts[2];
                     auto leftBracketAt = symbolToAddTo.find('(');
                     if (leftBracketAt == std::string::npos)
-                        SYNTAX_ERROR("missing opening bracket", 0);
+                        SYNTAX_ERROR("missing opening bracket");
                     if (*(symbolToAddTo.end() - 1) != ')')
-                        SYNTAX_ERROR("missing closing bracket", 0);
+                        SYNTAX_ERROR("missing closing bracket");
                     symbolToAddTo = symbolToAddTo.substr(leftBracketAt + 1);
                     symbolToAddTo = symbolToAddTo.substr(0, symbolToAddTo.size() - 1);
 
@@ -208,7 +208,7 @@ namespace sail {
                         auto components = split(symbolToAddTo, ',');
                         symbolToAddTo = symbolToAddTo.substr(0, commaAt);
                         if (components.size() != 2)
-                            SYNTAX_ERROR("readAdrpGlobal commas invalid", 0);
+                            SYNTAX_ERROR("readAdrpGlobal commas invalid");
                         if (components[1].starts_with("0x")) { // immediate
                             std::string num = components[1].substr(2);
                             char* out;
@@ -263,7 +263,7 @@ namespace sail {
                     SYNTAX_ERROR("failed parsing bytes '%s'", parts[2].c_str());
 
                 if (parts[3] != "@")
-                    SYNTAX_ERROR("weird symbol", 0);
+                    SYNTAX_ERROR("weird symbol");
 
                 std::string module = parts[4];
                 std::deque<std::string> moduleParts = { module };
@@ -278,7 +278,7 @@ namespace sail {
                 }
 
                 if (boundary != Symbol::DataBlockVersionBoundary::None && moduleParts.size() != 2)
-                    SYNTAX_ERROR("invalid module", 0);
+                    SYNTAX_ERROR("invalid module");
 
                 auto sectionParts = split(moduleParts[0], ':');
 
@@ -306,7 +306,7 @@ namespace sail {
                     else
                         SYNTAX_ERROR("unknown section type '%s'", sectionParts[1].c_str());
                 } else
-                    SYNTAX_ERROR("invalid module section", 0);
+                    SYNTAX_ERROR("invalid module section");
 
                 s32 offset = 0;
                 if (parts.size() == 7) {
@@ -343,7 +343,7 @@ namespace sail {
                 // printf("DataBlock Symbol: %s = bytes in module %d:section%d ver %d %x offsetted %d\n", parts[0].c_str(), 0, section, boundary, versionIndex, offset);
 
             } else
-                SYNTAX_ERROR("not sure what this is", 0);
+                SYNTAX_ERROR("not sure what this is");
         }
 
         return symbols;
@@ -366,10 +366,10 @@ namespace sail {
                 continue;
 
             if (parts.size() != 3)
-                SYNTAX_ERROR("not sure what this is", 0);
+                SYNTAX_ERROR("not sure what this is");
 
             if (parts[1] != "=")
-                SYNTAX_ERROR("unknown operator", 0);
+                SYNTAX_ERROR("unknown operator");
 
             modules.push_back({ parts[0], std::stoi(parts[2]) });
         }
@@ -403,7 +403,7 @@ namespace sail {
             if (parts[0].starts_with('@')) {
                 parts[0] = parts[0].substr(1);
                 if (parts[0].empty())
-                    SYNTAX_ERROR("stray @", 0);
+                    SYNTAX_ERROR("stray @");
 
                 std::string currentModule = parts[0];
                 currentModuleIndex = getModuleIndex(currentModule);
@@ -411,16 +411,16 @@ namespace sail {
             }
 
             if (parts.size() != 3)
-                SYNTAX_ERROR("not sure what this is", 0);
+                SYNTAX_ERROR("not sure what this is");
 
             if (parts[1] != "=")
-                SYNTAX_ERROR("unknown operator", 0);
+                SYNTAX_ERROR("unknown operator");
 
             std::vector<u8> bytes;
             if (!hexStringToBytes(bytes, parts[2]))
                 SYNTAX_ERROR("failed parsing bytes '%s'", parts[2].c_str());
             if (bytes.size() > 0x20)
-                SYNTAX_ERROR("build id size cannot exceed 32 bytes", 0);
+                SYNTAX_ERROR("build id size cannot exceed 32 bytes");
             bytes.resize(0x10);
 
             versions[currentModuleIndex].push_back({ parts[0], bytes });
