@@ -1,9 +1,13 @@
 message(STATUS "Current working directory: ${CMAKE_BINARY_DIR}")
 
-string(FIND ${CMAKE_SOURCE_DIR} "TryCompile" TRYCOMPILE_IDX)
-if (TRYCOMPILE_IDX EQUAL -1) # There is no Better way to eliminate this Parasite
-    include(config/config.cmake)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostartfiles -Wno-unused-command-line-argument")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostartfiles -Wno-unused-command-line-argument")
+
+if (CMAKE_SOURCE_DIR MATCHES "TryCompile") # There is no Better way to eliminate this Parasite
+    return()
 endif()
+
+include(config/config.cmake)
 
 if (IS_32_BIT)
     set(TARGET_TRIPLE "armv7-none-eabi")
