@@ -4,8 +4,11 @@
 
 .section ".text.modulestart","a"
 __module_start__:
-    b __module_entry__
+    b __module_entrypoint__
     .word __mod0 - __module_start__
+
+__module_entrypoint__:
+    b __module_entry__
 
 .section ".rodata.mod0","a"
 .align 2
