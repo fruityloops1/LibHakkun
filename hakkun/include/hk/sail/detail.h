@@ -117,6 +117,8 @@ namespace hk::sail {
             };
 
         public:
+            Symbol::Type getType() const { return mBase.type; }
+
             _HK_SAIL_PRECALC_TEMPLATE
             void apply(bool abort, ptr* out, const T* destSymbol) {
                 if (!mBase.isCacheDisabled() && mBase.symbolPtrCache != 0) { // > 1

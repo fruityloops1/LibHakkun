@@ -61,26 +61,6 @@ namespace hk::sail {
 
         // DataBlock
 
-        template <size DataBlockSize>
-        static hk_alwaysinline ptr findDataBlock(const ro::RoModule::Range& range, const u8* searchForData) {
-            for (ptr search = range.start(); search < range.end(); search += 4) {
-                if (__builtin_memcmp((u8*)search, searchForData, DataBlockSize) == 0)
-                    return search;
-            }
-
-            return 0;
-        }
-
-        static hk_alwaysinline ptr findDataBlockVariableSize(const ro::RoModule::Range& range, const u8* searchForData, size searchForSize) {
-
-            for (ptr search = range.start(); search < range.end(); search += 4) {
-                if (__builtin_memcmp((u8*)search, searchForData, searchForSize) == 0)
-                    return search;
-            }
-
-            return 0;
-        }
-
         _HK_SAIL_PRECALC_TEMPLATE
         hk_alwaysinline void applyDataBlockSymbol(bool abort, const SymbolDataBlock* sym, ptr* out, const T* destSymbol) {
             const auto* module = ro::getModuleByIndex(sym->moduleIdx);
@@ -272,6 +252,19 @@ namespace hk::sail {
         _HK_SAIL_PRECALC_TEMPLATE
         hk_alwaysinline void applyMultipleCandidateSymbol(SymbolMultipleCandidate* sym, ptr* out, const T* destSymbol) {
             *out = 0;
+            // prioritize immediates
+            for (fs32 i = 0; i < sym->numCandidates; i++) {
+                SymbolEntry& cur = cast<SymbolEntry*>(uintptr_t(gSymbols) + sym->offsetToCandidates)[i];
+
+                if (cur.getType() != Symbol::Type_Immediate)
+                    continue;
+
+                cur.apply(false, out, destSymbol);
+                if (*out)
+                    return;
+            }
+
+            // other
             for (fs32 i = 0; i < sym->numCandidates; i++) {
                 SymbolEntry& cur = cast<SymbolEntry*>(uintptr_t(gSymbols) + sym->offsetToCandidates)[i];
                 cur.apply(false, out, destSymbol);
