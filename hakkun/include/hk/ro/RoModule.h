@@ -3,6 +3,10 @@
 #include "hk/types.h"
 #include "rtld/RoModule.h"
 
+namespace hk::sail::detail {
+    struct VersionLoader;
+} // namespace hk::sail::detail
+
 namespace hk::ro {
 
     class RoModule {
@@ -31,6 +35,11 @@ namespace hk::ro {
         Range mTextRwMapping;
         Range mRodataRwMapping;
 
+#ifndef HK_DISABLE_SAIL
+        int mVersionIndex = -1;
+        char mVersionName[9] { '\0' };
+#endif
+
     public:
         Range range() const { return { mTextRange.start(), mTextRange.size() + mRodataRange.size() + mDataRange.size() }; }
         Range text() const { return mTextRange; }
@@ -38,6 +47,11 @@ namespace hk::ro {
         Range data() const { return mDataRange; }
 
         nn::ro::detail::RoModule* getNnModule() const { return mModule; }
+
+#ifndef HK_DISABLE_SAIL
+        int getVersionIndex() const { return mVersionIndex; }
+        const char* getVersionName() const { return mVersionName; }
+#endif
 
         Result findRanges();
         Result mapRw();
@@ -59,6 +73,7 @@ namespace hk::ro {
         }
 
         friend class RoUtil;
+        friend class sail::detail::VersionLoader;
     };
 
     using RoWriteCallback = void (*)(const RoModule* module, ptr offsetIntoModule, const void* source, size writeSize);

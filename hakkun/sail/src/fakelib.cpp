@@ -4,6 +4,7 @@
 #include "hash.h"
 #include "util.h"
 #include <algorithm>
+#include <cstdio>
 #include <string>
 #include <unordered_map>
 
@@ -327,6 +328,14 @@ namespace sail {
                         snprintf(buf, 4, "%3u", byte);
                         asmFile.append(buf);
                         i++;
+                    }
+                    for (int i = 0; i < 8; i++) {
+                        if (i < version.first.size()) {
+                            asmFile.append("\n.ascii \"");
+                            asmFile += version.first.at(i);
+                            asmFile.append("\"");
+                        } else
+                            asmFile.append("\n.ascii \"\\0\"");
                     }
                 }
 

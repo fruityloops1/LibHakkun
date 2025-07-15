@@ -11,16 +11,16 @@ namespace hk::ro {
     constexpr static size cBuildIdSize = 0x10; // 0x20 but 0x10 because that's usually the minimum size and the linker Loves to not give it 0x20 space and put some SDK+MW balls garbage right into the build id instwead of letting it pad the Zeroes
 
     size getNumModules();
-    const RoModule* getModuleByIndex(int idx);
+    RoModule* getModuleByIndex(int idx);
 
-    const RoModule* getMainModule();
-    const RoModule* getSelfModule();
-    const RoModule* getRtldModule();
+    RoModule* getMainModule();
+    RoModule* getSelfModule();
+    RoModule* getRtldModule();
 #ifndef TARGET_IS_STATIC
-    const RoModule* getSdkModule();
+    RoModule* getSdkModule();
 #endif
 
-    const RoModule* getModuleContaining(ptr addr);
+    RoModule* getModuleContaining(ptr addr);
 
     Result getModuleBuildIdByIndex(int idx, u8* out);
 

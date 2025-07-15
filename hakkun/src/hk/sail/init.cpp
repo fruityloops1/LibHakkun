@@ -134,7 +134,7 @@ namespace hk::sail {
     static volatile u64 sTimeElapsedLoadSymbols;
 
     void loadSymbols() {
-        detail::loadVersions();
+        detail::VersionLoader::loadVersions();
 
         sTimeElapsedLoadSymbols = svc::getSystemTick();
 

@@ -11,12 +11,11 @@ namespace hk::sail {
 
     namespace detail {
 
-        static s32 sModuleVersions[ro::cMaxModuleNum] {};
-
-        void loadVersions() {
+        void VersionLoader::loadVersions() {
             diag::debugLog("hk::sail: loading module versions");
             for (int i = 0; i < ro::getNumModules(); i++) {
-                sModuleVersions[i] = -1;
+                auto* module = ro::getModuleByIndex(i);
+
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
                 uintptr_t versionsOffset = gVersions[i];
@@ -35,19 +34,25 @@ namespace hk::sail {
 
                 struct {
                     u8 data[ro::cBuildIdSize];
+                    char name[8];
                 }* buildIds { decltype(buildIds)(versions) };
 
                 bool found = false;
                 for (int versionIndex = 0; versionIndex < numVersions; versionIndex++) {
                     if (__builtin_memcmp(buildIds[versionIndex].data, curBuildId, sizeof(curBuildId)) == 0) {
-                        sModuleVersions[i] = versionIndex;
+                        constexpr size cNameSize = sizeof(buildIds[versionIndex].name);
+
+                        module->mVersionIndex = versionIndex;
+
+                        __builtin_memcpy(module->mVersionName, buildIds[versionIndex].name, cNameSize);
+                        module->mVersionName[cNameSize] = '\0';
                         found = true;
                         break;
                     }
                 }
 
                 if (found)
-                    diag::debugLog("hk::sail: Module[%d] VersionIndex: %d", i, sModuleVersions[i]);
+                    diag::debugLog("hk::sail: Module[%d] VersionIndex: %d", i, module->getVersionIndex());
                 else
                     diag::debugLog("hk::sail: Module[%d] VersionIndex: NotFound", i);
             }
@@ -56,7 +61,7 @@ namespace hk::sail {
         // Versioned
 
         bool SymbolVersioned::isVersion(u32 moduleIdx) const {
-            return (versionsBitset >> sModuleVersions[moduleIdx]) & 0b1;
+            return (versionsBitset >> ro::getModuleByIndex(moduleIdx)->getVersionIndex()) & 0b1;
         }
 
         // DataBlock
@@ -69,7 +74,7 @@ namespace hk::sail {
 
             const SymbolDataBlock::SearchFunction search = cast<const SymbolDataBlock::SearchFunction>(uintptr_t(gSymbols) + sym->offsetToSearchFunction);
 
-            s32 loadedVer = sModuleVersions[sym->moduleIdx];
+            s32 loadedVer = ro::getModuleByIndex(sym->moduleIdx)->getVersionIndex();
 
             switch (sym->versionBoundaryType) {
             case 1:

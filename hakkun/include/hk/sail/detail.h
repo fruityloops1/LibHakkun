@@ -154,7 +154,9 @@ namespace hk::sail {
             u32 getNameMurmur32() const { return mBase.destNameMurmur; }
         };
 
-        void loadVersions();
+        struct VersionLoader {
+            static void loadVersions();
+        };
 
     } // namespace detail
 

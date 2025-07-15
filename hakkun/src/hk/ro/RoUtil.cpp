@@ -107,20 +107,20 @@ namespace hk::ro {
 
     hk_alwaysinline size getNumModules() { return sNumModules; }
 
-    const hk_alwaysinline RoModule* getModuleByIndex(int idx) {
+    hk_alwaysinline RoModule* getModuleByIndex(int idx) {
         if (idx >= sNumModules)
             return nullptr;
         return &sModules[idx];
     }
 
-    const hk_alwaysinline RoModule* getSelfModule() { return getModuleByIndex(sSelfModuleIdx); }
-    const hk_alwaysinline RoModule* getRtldModule() { return getModuleByIndex(0); }
-    const hk_alwaysinline RoModule* getMainModule() { return getModuleByIndex(1); }
+    hk_alwaysinline RoModule* getSelfModule() { return getModuleByIndex(sSelfModuleIdx); }
+    hk_alwaysinline RoModule* getRtldModule() { return getModuleByIndex(0); }
+    hk_alwaysinline RoModule* getMainModule() { return getModuleByIndex(1); }
 #ifndef TARGET_IS_STATIC
-    const hk_alwaysinline RoModule* getSdkModule() { return getModuleByIndex(sNumModules - 1); }
+    hk_alwaysinline RoModule* getSdkModule() { return getModuleByIndex(sNumModules - 1); }
 #endif
 
-    const RoModule* getModuleContaining(ptr addr) {
+    RoModule* getModuleContaining(ptr addr) {
         for (int i = 0; i < sNumModules; i++) {
             auto* module = &sModules[i];
             if (addr >= module->range().start() && addr <= module->range().end())
