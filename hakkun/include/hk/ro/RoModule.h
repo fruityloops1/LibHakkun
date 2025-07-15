@@ -5,8 +5,13 @@
 
 namespace hk::ro {
 
-    struct RoModule {
-        struct Range {
+    class RoModule {
+    public:
+        class Range {
+            ptr mStart = 0;
+            ::size mSize = 0;
+
+        public:
             ::size size() const { return mSize; }
             ptr start() const { return mStart; }
             ptr end() const { return mStart + mSize; }
@@ -15,18 +20,25 @@ namespace hk::ro {
             Range(ptr start, ::size size)
                 : mStart(start)
                 , mSize(size) { }
-
-        private:
-            ptr mStart = 0;
-            ::size mSize = 0;
         };
 
-        nn::ro::detail::RoModule* module = nullptr;
-        Range text;
-        Range rodata;
-        Range data;
+    private:
+        nn::ro::detail::RoModule* mModule = nullptr;
+        Range mTextRange;
+        Range mRodataRange;
+        Range mDataRange;
 
-        Range range() const { return { text.start(), text.size() + rodata.size() + data.size() }; }
+        Range mTextRwMapping;
+        Range mRodataRwMapping;
+
+    public:
+        Range range() const { return { mTextRange.start(), mTextRange.size() + mRodataRange.size() + mDataRange.size() }; }
+        Range text() const { return mTextRange; }
+        Range rodata() const { return mRodataRange; }
+        Range data() const { return mDataRange; }
+
+        nn::ro::detail::RoModule* getNnModule() const { return mModule; }
+
         Result findRanges();
         Result mapRw();
 
@@ -42,13 +54,11 @@ namespace hk::ro {
                 u32 _0;
                 u32 nameLength;
                 char name[];
-            }* name { (typeof(name))rodata.start() };
+            }* name { (typeof(name))mRodataRange.start() };
             return name->name;
         }
 
-    private:
-        Range textRw;
-        Range rodataRw;
+        friend class RoUtil;
     };
 
     using RoWriteCallback = void (*)(const RoModule* module, ptr offsetIntoModule, const void* source, size writeSize);

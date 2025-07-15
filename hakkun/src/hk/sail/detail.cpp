@@ -11,7 +11,7 @@ namespace hk::sail {
 
     namespace detail {
 
-        static s32 sModuleVersions[ro::sMaxModuleNum] {};
+        static s32 sModuleVersions[ro::cMaxModuleNum] {};
 
         void loadVersions() {
             diag::debugLog("hk::sail: loading module versions");
@@ -26,7 +26,7 @@ namespace hk::sail {
                 }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
 
-                u8 curBuildId[ro::sBuildIdSize];
+                u8 curBuildId[ro::cBuildIdSize];
                 if (ro::getModuleBuildIdByIndex(i, curBuildId).failed())
                     continue;
 
@@ -34,7 +34,7 @@ namespace hk::sail {
                 versions++;
 
                 struct {
-                    u8 data[ro::sBuildIdSize];
+                    u8 data[ro::cBuildIdSize];
                 }* buildIds { decltype(buildIds)(versions) };
 
                 bool found = false;
@@ -87,13 +87,13 @@ namespace hk::sail {
 
             switch (sym->sectionLimit) {
             case 1:
-                range = module->text;
+                range = module->text();
                 break;
             case 2:
-                range = module->rodata;
+                range = module->rodata();
                 break;
             case 3:
-                range = module->data;
+                range = module->data();
                 break;
             case 0:
             default:

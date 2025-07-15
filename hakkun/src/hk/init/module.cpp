@@ -32,7 +32,7 @@ namespace hk::init {
     extern "C" void __module_entry__(void* x0, void* x1) {
         diag::debugLog("Hakkun __module_entry__");
 
-        ro::initModuleList();
+        ro::RoUtil::initModuleList();
 #ifdef HK_DISABLE_SAIL
         diag::debugLog("hk::sail: disabled");
 #else

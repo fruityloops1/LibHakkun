@@ -33,9 +33,9 @@ namespace hk::diag {
         sym.st_other = 0;
         sym.st_value = arbitraryOffset;
 
-        ptr strTab = ptr(module->module->m_pStrTab);
+        ptr strTab = ptr(module->getNnModule()->m_pStrTab);
         strTab -= module->range().start();
-        ptr dynSym = ptr(module->module->m_pDynSym);
+        ptr dynSym = ptr(module->getNnModule()->m_pDynSym);
         dynSym -= module->range().start();
 
         module->writeRo(dynSym + sizeof(Elf_Sym) * idx, &sym, sizeof(sym));
