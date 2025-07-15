@@ -46,7 +46,12 @@ def deploy_ftp():
     def upload(file, path):
         print(f'-- Uploading {file} to ftp://{ftp_ip}:{ftp_port}/{path}')
         with open(file, 'rb') as io:
-            ftp.storbinary(f'STOR {path}', io)
+            try:
+                ftp.storbinary(f'STOR {path}', io)
+            except ftplib.error_temp:
+                print(f'-- Could not upload {file} (does the path exist?)')
+                sys.exit(1)
+
 
     upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
     upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
