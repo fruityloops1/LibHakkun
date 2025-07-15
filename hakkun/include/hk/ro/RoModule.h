@@ -50,7 +50,7 @@ namespace hk::ro {
 
 #ifndef HK_DISABLE_SAIL
         int getVersionIndex() const { return mVersionIndex; }
-        const char* getVersionName() const { return mVersionName; }
+        const char* getVersionName() const { return mVersionIndex != -1 ? mVersionName : nullptr; }
 #endif
 
         Result findRanges();
