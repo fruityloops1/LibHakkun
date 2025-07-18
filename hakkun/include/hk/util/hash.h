@@ -82,6 +82,27 @@ namespace hk::util {
                 }
             }
 
+            constexpr void feedNullTerminated(const T* str) {
+                size len = 0;
+                {
+                    const T* _str = str;
+                    while (*_str) {
+                        _str++;
+                        len++;
+                    }
+                }
+
+                feed(str, len);
+
+                const fu32 tail = len & 3;
+                if (tail > 0) {
+                    T tailData[sizeof(u32)] = {};
+                    for (size i = 0; i < tail; i++)
+                        tailData[i] = str[len - tail + i];
+                    feed(tailData, sizeof(tailData));
+                }
+            }
+
             constexpr void calculateWithCallback() {
                 for (fu32 i = 0; i < nblocks(); i++) {
                     u32 k1 = getBlock<T, Read>(mData, i, mUserData);
