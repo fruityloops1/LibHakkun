@@ -218,7 +218,7 @@ namespace sail {
                 }
 
                 out.append("\n.word 0x");
-                out.append(toHexString(foundIdx - sorted.begin()));
+                out.append(toHexString(hashMurmur(foundIdx->name.c_str())));
                 out.append("\n.word 0x");
                 out.append(toHexString(*reinterpret_cast<const u32*>(&sym.dataArithmetic.offset)));
                 break;
@@ -237,7 +237,7 @@ namespace sail {
                 }
 
                 out.append("\n.word 0x");
-                out.append(toHexString(foundIdx - sorted.begin()));
+                out.append(toHexString(hashMurmur(foundIdx->name.c_str())));
                 out.append("\n.word 0x");
                 out.append(toHexString(*reinterpret_cast<const u32*>(&sym.dataReadADRPGlobal.offsetToLoInstr)));
                 break;
@@ -257,6 +257,7 @@ namespace sail {
         std::string candidateSyms;
 
         // symbols
+        int i = 0;
         for (const auto& sym : sorted) {
             u32 hash = hashMurmur(sym.name.c_str());
             auto& group = hashGroups[hash];

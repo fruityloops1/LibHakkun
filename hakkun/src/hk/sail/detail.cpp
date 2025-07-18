@@ -206,10 +206,12 @@ namespace hk::sail {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at)).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
                 }
             }*/
+            SymbolEntry* srcSym = lookupSymbolByHash(sym->srcNameMurmur);
 
-            SymbolEntry& entry = gSymbols[sym->symIdx];
+            HK_ASSERT(srcSym != nullptr);
+
             ptr at;
-            entry.apply(abort, &at, &sym->destNameMurmur);
+            srcSym->apply(abort, &at, &sym->destNameMurmur);
 
 #ifdef __aarch64__
             if (abort) {
@@ -240,9 +242,12 @@ namespace hk::sail {
 
         _HK_SAIL_PRECALC_TEMPLATE
         hk_alwaysinline void applyArithmeticSymbol(bool abort, const SymbolArithmetic* sym, ptr* out, const T* destSymbol) {
-            SymbolEntry& entry = gSymbols[sym->symIdx];
+            SymbolEntry* srcSym = lookupSymbolByHash(sym->srcNameMurmur);
+
+            HK_ASSERT(srcSym != nullptr);
+
             ptr at;
-            entry.apply(abort, &at, &sym->destNameMurmur);
+            srcSym->apply(abort, &at, &sym->destNameMurmur);
             *out = at + sym->addend;
         }
 
