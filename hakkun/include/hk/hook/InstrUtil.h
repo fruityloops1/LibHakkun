@@ -152,7 +152,7 @@ namespace hk::hook {
     }                                                                                                \
     template <typename Func>                                                                         \
     hk_alwaysinline Result write##NAME##AtMainOffset(ptr offset, Func *branchToFunc) {               \
-        return write##NAME(ro::getMainModule(), offset, branchToFunc)                                \
+        return write##NAME(ro::getMainModule(), offset, branchToFunc);                               \
     }                                                                                                \
 
     _HK_HOOK_DETAIL_WRITEFUNC(Branch, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::Branch, module, offset, ptr(branchToFunc));
