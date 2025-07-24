@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/types.h"
+#include "hk/util/hash.h"
 #include "rtld/RoModule.h"
 
 namespace hk::sail::detail {
@@ -38,6 +39,7 @@ namespace hk::ro {
 #ifndef HK_DISABLE_SAIL
         int mVersionIndex = -1;
         char mVersionName[9] { '\0' };
+        u32 mVersionNameHash = 0;
 #endif
 
     public:
@@ -51,6 +53,9 @@ namespace hk::ro {
 #ifndef HK_DISABLE_SAIL
         int getVersionIndex() const { return mVersionIndex; }
         const char* getVersionName() const { return mVersionIndex != -1 ? mVersionName : nullptr; }
+        hk_alwaysinline bool isVersion(const char* versionName) const {
+            return util::hashMurmur(versionName) == mVersionNameHash;
+        }
 #endif
 
         Result findRanges();

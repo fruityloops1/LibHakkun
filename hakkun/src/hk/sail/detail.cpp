@@ -6,6 +6,7 @@
 #include "hk/ro/RoModule.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/types.h"
+#include "hk/util/hash.h"
 
 namespace hk::sail {
 
@@ -20,7 +21,7 @@ namespace hk::sail {
 
                 uintptr_t versionsOffset = gVersions[i];
                 if (versionsOffset == 0) {
-                    diag::debugLog("hk::sail: Module[%d] VersionIndex: Skipped", i);
+                    diag::debugLog("hk::sail: Module[%d] Version: Skipped", i);
                     continue;
                 }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
@@ -46,15 +47,16 @@ namespace hk::sail {
 
                         __builtin_memcpy(module->mVersionName, buildIds[versionIndex].name, cNameSize);
                         module->mVersionName[cNameSize] = '\0';
+                        module->mVersionNameHash = util::hashMurmur(module->mVersionName);
                         found = true;
                         break;
                     }
                 }
 
                 if (found)
-                    diag::debugLog("hk::sail: Module[%d] VersionIndex: %d", i, module->getVersionIndex());
+                    diag::debugLog("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
                 else
-                    diag::debugLog("hk::sail: Module[%d] VersionIndex: NotFound", i);
+                    diag::debugLog("hk::sail: Module[%d] Version: NotFound", i);
             }
         }
 
