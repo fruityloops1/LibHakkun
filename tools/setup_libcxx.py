@@ -11,6 +11,7 @@ import urllib.request
 import sys
 
 is_aarch32 = len(sys.argv) > 1 and sys.argv[1] == 'aarch32'
+is_ounce = len(sys.argv) > 2 and sys.argv[2] == 'ounce'
 
 target = 'armv7-none-eabi' if is_aarch32 else 'aarch64-none-elf'
 
@@ -46,7 +47,7 @@ def downloadAndCompileMusl():
     env["AR"] = "llvm-ar"
     env["RANLIB"] = "llvm-ranlib"
     env["LIBCC"] = " "
-    env["CFLAGS"] = f"-ffunction-sections -fdata-sections -flto -target {target} -march={"armv7a" if is_aarch32 else "armv8-a"} -mtune=cortex-a57 {"-mfloat-abi=hard" if is_aarch32 else ""}"
+    env["CFLAGS"] = f"-ffunction-sections -fdata-sections -flto -target {target} -mcpu={"cortex-a78c" if is_ounce else "cortex-a57"} {"-mfloat-abi=hard" if is_aarch32 else ""}"
 
     subprocess.run(["./configure", "--disable-shared", "--target", target], env=env)
 
@@ -112,6 +113,7 @@ def downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt():
         -ffunction-sections
         -fdata-sections
         -target {target}
+        -mcpu={"cortex-a78c" if is_ounce else "cortex-a57"}
         -D_POSIX_C_SOURCE=200809L
         -D_LIBUNWIND_IS_BAREMETAL
         -D_LIBCPP_HAS_THREAD_API_PTHREAD

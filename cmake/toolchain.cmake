@@ -9,25 +9,42 @@ endif()
 
 include(config/config.cmake)
 
-if (IS_32_BIT)
-    set(TARGET_TRIPLE "armv7-none-eabi")
-    set(MARCH "armv7-a")
-    set(CMAKE_SYSTEM_PROCESSOR armv7-a)
-    set(ARCH_NAME "aarch32")
-else()
+if (IS_OUNCE)
+    set(CMAKE_SYSTEM_NAME Ounce)
+    set(PLATFORM_MACRO OUNCE)
+
     set(TARGET_TRIPLE "aarch64-none-elf")
-    set(MARCH "armv8-a")
+    set(CPU "cortex-a78c")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(ARCH_NAME "aarch64")
+    set(TARGET_FLAGS "-mbranch-protection=pac-ret+b-key")
+
+    if (IS_32_BIT)
+        message(FATAL_ERROR "ILP32 not supported")
+    endif()
+else()
+    set(CMAKE_SYSTEM_NAME NX)
+    set(PLATFORM_MACRO NX)
+
+    if (IS_32_BIT)
+        set(TARGET_TRIPLE "armv7-none-eabi")
+        set(CPU "cortex-a57")
+        set(CMAKE_SYSTEM_PROCESSOR armv7-a)
+        set(ARCH_NAME "aarch32")
+    else()
+        set(TARGET_TRIPLE "aarch64-none-elf")
+        set(CPU "cortex-a57")
+        set(CMAKE_SYSTEM_PROCESSOR aarch64)
+        set(ARCH_NAME "aarch64")
+    endif()
 endif()
 
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_VERSION "NX/Clang")
+set(CMAKE_SYSTEM_VERSION "${CMAKE_SYSTEM_NAME}/Clang")
 set(CMAKE_ASM_COMPILER "clang")
 set(CMAKE_C_COMPILER "clang")
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_EXECUTABLE_SUFFIX ".nss")
-set(ARCH_FLAGS "--target=${TARGET_TRIPLE} -march=${MARCH} -mtune=cortex-a57 -fPIC -nodefaultlibs")
+set(ARCH_FLAGS "--target=${TARGET_TRIPLE} -mcpu=${CPU} -fPIC -nodefaultlibs ${TARGET_FLAGS}")
 
 set(DEFAULTDEFINES
     -D_POSIX_C_SOURCE=200809L
@@ -35,6 +52,7 @@ set(DEFAULTDEFINES
     -D_LIBCPP_HAS_THREAD_API_PTHREAD
     -D_GNU_SOURCE
     -DNNSDK
+    -D${PLATFORM_MACRO}
 )
 
 set(LIBSTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/std")
