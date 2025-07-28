@@ -31,6 +31,13 @@ namespace hk::util {
                 func(mData[i]);
         }
 
+        void clear() {
+            forEach([](T& data) -> void {
+                data.~T();
+            });
+            mSize = 0;
+        }
+
         bool empty() const { return mSize == 0; }
 
         void sort() {
