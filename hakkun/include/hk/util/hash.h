@@ -2,8 +2,11 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+#include <type_traits>
 
 namespace hk::util {
+
+    /* MurmurHash3 */
 
     namespace detail {
 
@@ -179,7 +182,9 @@ namespace hk::util {
         return hashMurmur(str, seed) == literalHash;
     }
 
-    constexpr u64 rtldElfHash(const char* name) {
+    /* ELF */
+
+    constexpr u64 hashElfBucket(const char* name) {
         u64 h = 0;
         u64 g;
 
@@ -192,16 +197,40 @@ namespace hk::util {
         return h;
     }
 
-    constexpr u32 djb2Hash(const char* name) {
+    /* GNU ELF */
+
+    constexpr u32 hashDjb2(const char* name) {
         u32 h = 5381;
         for (const char* p = name; *p; p++)
-            h = h * 33 + static_cast<uint8_t>(*p);
+            h = h * 33 + static_cast<u8>(*p);
         return h;
+    }
+
+    /* IEEE 802.3 CRC32 */
+
+    template <typename T>
+    constexpr u32 hashCrc32(const T* data, const fu64 len, u32 seed = 0) {
+        static_assert(sizeof(T) == 1);
+
+        constexpr u32 cLut[256] {
+#include "hash_crc32data.h"
+        };
+
+        u32 h = seed ^ 0xFFFFFFFF;
+        for (fu64 i = 0; i < len; i++)
+            h = cLut[*data++ ^ (h & 0xFF)] ^ (h >> 8);
+
+        return h ^ 0xFFFFFFFF;
+    }
+
+    constexpr u32 hashCrc32(const char* str, u32 seed = 0) {
+        return hashCrc32<char>(str, __builtin_strlen(str), seed);
     }
 
     static_assert(hashMurmur("meow meow meow") == 0x1a1888b6);
     static_assert(hashMurmur("Haiiiiiiiiiiii") == 0x6726fccb);
     static_assert(hashMurmur(":333333333", 0xB00B1E5) == 0x4f39bed5);
     static_assert(hashMurmur("lkdjtgljkwerlkgver#g#ää5r+#ä#23ü4#2ü3420395904e3r8i9", 0xB00B1E6) == 0xcaafb947);
+    static_assert(hashCrc32("meow") == 0x8a106afe);
 
 } // namespace hk::util

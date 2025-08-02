@@ -6,7 +6,7 @@
 namespace nn::ro::detail {
 
     Elf_Sym* RoModule::GetSymbolByNameElf(const char* name) const {
-        u64 nameHash = hk::util::rtldElfHash(name);
+        u64 nameHash = hk::util::hashElfBucket(name);
 
         for (u32 i = this->m_pBuckets[nameHash % this->m_HashSize];
             i; i = this->m_pChains[i]) {
@@ -36,7 +36,7 @@ namespace nn::ro::detail {
     Elf_Sym* RoModule::GetSymbolByNameGnu(const char* name) const {
         uint32_t maskwords = m_GnuHashMaskwords;
 
-        uint32_t nameHash = hk::util::djb2Hash(name);
+        uint32_t nameHash = hk::util::hashDjb2(name);
         uint32_t wordIdx = (maskwords - 1) & (nameHash >> 6);
         uint64_t bloomWord = m_pGnuBloomFilter[wordIdx];
 
