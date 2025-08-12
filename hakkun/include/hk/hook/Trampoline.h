@@ -60,7 +60,12 @@ namespace hk::hook {
             mBackup = detail::sTrampolinePool.allocate();
             HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
             mBackup->origInstr = mOrigInstr; // TODO: Relocate instruction, or at least abort if instruction needs to be relocated
-            mBackup->bRetInstr = makeB(mBackup->getRx() + sizeof(Instr), getAt() + sizeof(Instr));
+
+            const ptr from = mBackup->getRx() + sizeof(Instr), to = getAt() + sizeof(Instr);
+            const s64 gap = to - from;
+            HK_ABORT_UNLESS(abs(gap) <= cMaxBranchDistance, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", abs(gap), cMaxBranchDistance);
+
+            mBackup->bRetInstr = makeB(from, to);
             svc::clearCache(mBackup->getRx(), sizeof(detail::TrampolineBackup));
 
             orig = getBackupFuncPtr();

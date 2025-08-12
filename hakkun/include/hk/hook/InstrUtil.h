@@ -44,6 +44,8 @@ namespace hk::hook {
 
     } // namespace detail
 
+    constexpr size cMaxBranchDistance = bit(26) * sizeof(Instr) / 2 - 1;
+
     hk_alwaysinline inline Result readADRPGlobal(ptr* out, Instr* at, s32 loInstrOffset = 1) {
         ptr pc = ptr(at);
         Instr adrpInstr = at[0];
@@ -123,6 +125,8 @@ namespace hk::hook {
 
     } // namespace detail
 
+    constexpr size cMaxBranchDistance = bit(24) * sizeof(Instr) / 2 - 1;
+
 #else
 #error "unsupported architecture"
 #endif
@@ -151,9 +155,9 @@ namespace hk::hook {
         return write##NAME##AtPtr(addr, branchToFunc);                                               \
     }                                                                                                \
     template <typename Func>                                                                         \
-    hk_alwaysinline Result write##NAME##AtMainOffset(ptr offset, Func *branchToFunc) {               \
+    hk_alwaysinline Result write##NAME##AtMainOffset(ptr offset, Func* branchToFunc) {               \
         return write##NAME(ro::getMainModule(), offset, branchToFunc);                               \
-    }                                                                                                \
+    }
 
     _HK_HOOK_DETAIL_WRITEFUNC(Branch, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::Branch, module, offset, ptr(branchToFunc));
     _HK_HOOK_DETAIL_WRITEFUNC(BranchLink, detail::writeUnconditionalBranch, detail::UnconditionalBranchOp::BranchLink, module, offset, ptr(branchToFunc));
