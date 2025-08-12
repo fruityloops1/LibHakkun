@@ -59,6 +59,20 @@ namespace hk::ro {
         return ResultSuccess();
     }
 
+    Result RoModule::findBuildId() {
+        constexpr char sGnuHashMagic[] = { 'G', 'N', 'U', '\0' };
+        ptr rodataEnd = rodata().end();
+        for (ptr search = rodataEnd; search >= rodataEnd - hk::cPageSize * 2; search--) {
+            if (__builtin_memcmp((void*)search, sGnuHashMagic, sizeof(sGnuHashMagic)) == 0) {
+                const u8* buildId = (const u8*)(search + sizeof(sGnuHashMagic));
+                mBuildId = buildId;
+                return ResultSuccess();
+            }
+        }
+
+        return ResultGnuHashMissing();
+    }
+
     static RoWriteCallback sRoWriteCallback = nullptr;
 
     Result RoModule::writeRo(ptr offset, const void* source, size writeSize) const {

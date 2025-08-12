@@ -6,35 +6,41 @@
 
 namespace sail {
 
-    static std::vector<std::pair<std::string, int>> sModuleList;
-    static std::vector<std::vector<std::pair<std::string, std::vector<u8>>>> sVersionList;
+    static ModuleList sVersionList;
 
     void loadConfig(const std::string& moduleListPath, const std::string& versionListPath) {
-        std::string data = sail::readFileString(moduleListPath.c_str());
+        std::string data = sail::readFileString(versionListPath.c_str());
 
-        sModuleList = sail::parseModuleList(data, moduleListPath);
-        data = sail::readFileString(versionListPath.c_str());
-
-        sVersionList = sail::parseVersionList(data, versionListPath, sModuleList);
+        sVersionList = sail::parseVersionList(data, versionListPath);
     }
 
-    int getModuleIndex(const std::string& module) {
-        for (const auto& pair : sModuleList)
-            if (pair.first == module)
-                return pair.second;
+    int getModuleIndex(const std::string& moduleName) {
+        int idx = 0;
+        for (const auto& module : sVersionList) {
+            if (module.first == moduleName)
+                return idx;
+            idx++;
+        }
         return -1;
     }
 
-    int getVersionIndex(int moduleIdx, const std::string& version) {
-        for (int i = 0; i < sVersionList[moduleIdx].size(); i++) {
-            if (sVersionList[moduleIdx][i].first == version)
-                return i;
+    int getVersionIndex(const std::string& moduleName, const std::string& version) {
+        if (!sVersionList.contains(moduleName))
+            return -1;
+
+        const auto& module = sVersionList.at(moduleName);
+
+        int idx = 0;
+        for (const auto& pair : module) {
+            if (pair.first == version)
+                return idx;
+            idx++;
         }
 
         return -1;
     }
 
-    const std::vector<std::vector<std::pair<std::string, std::vector<u8>>>>& getVersionList() { return sVersionList; }
+    const ModuleList& getVersionList() { return sVersionList; }
 
     static std::vector<u32> sSymbolHashes;
 

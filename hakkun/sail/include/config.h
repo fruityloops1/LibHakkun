@@ -1,5 +1,6 @@
 #pragma once
 
+#include "parser.h"
 #include "types.h"
 #include <string>
 #include <vector>
@@ -7,10 +8,10 @@
 namespace sail {
 
     void loadConfig(const std::string& moduleListPath, const std::string& versionListPath);
-    int getModuleIndex(const std::string& module);
-    int getVersionIndex(int moduleIdx, const std::string& version);
+    int getModuleIndex(const std::string& moduleName);
+    int getVersionIndex(const std::string& moduleName, const std::string& version);
 
-    const std::vector<std::vector<std::pair<std::string, std::vector<u8>>>>& getVersionList();
+    const ModuleList& getVersionList();
 
     void clearDestinationSymbols();
     bool addDestinationSymbolAndCheckDuplicate(const std::string& symbol);

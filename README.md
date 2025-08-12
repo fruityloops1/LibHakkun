@@ -91,26 +91,21 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `SDK_PAST_1900`: Enable if RTLD version of target program is from SDK 19.0.0 or later, usually the case with titles updated in or later than late 2024
 * `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
 * `TRAMPOLINE_POOL_SIZE`: Maximum amount of trampoline hooks
-* `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols to hashes, reducing binary size at the expense of harder debugging
+* `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols with hashes, reducing binary size at the expense of harder debugging
 * `HAKKUN_ADDONS`: List of Hakkun addons to enable
 #### Sail
-Sail reads 2 configuration files:
-##### ModuleList.sym
-List of modules available to sail, bound to their indices. For example:
-```
-rtld = 0
-smo = 1
-sdk = 4
-```
+Sail reads the following configuration file:
 ##### VersionList.sym
-List of versions for modules bound to NSO build IDs, if versioning is desired, for example:
+List of modules with versions bound to NSO build IDs, if versioning is desired, for example:
 ```
+@rtld
 @smo
 100 = 3ca12dfaaf9c82da064d1698df79cda1
 101 = 50ade4b5eb6e45efb170a6b230d3b0ba
 110 = 948dbbfc2fa0c60e2c30316e4c961aba
 120 = f5dccddb37e97724ebdbcccdbeb965ff
 130 = b424be150a8e7d78701cbe7a439d9ebf
+@multimedia
 @sdk
 100 = ae34e75d02925f4417b24499ad80c39412fc76db
 101 = ae34e75d02925f4417b24499ad80c39412fc76db

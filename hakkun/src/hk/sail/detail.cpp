@@ -14,9 +14,7 @@ namespace hk::sail {
 
         void VersionLoader::loadVersions() {
             diag::debugLog("hk::sail: loading module versions");
-            for (int i = 0; i < ro::getNumModules(); i++) {
-                auto* module = ro::getModuleByIndex(i);
-
+            for (int i = 0; i < gNumModules; i++) {
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
                 uintptr_t versionsOffset = gVersions[i];
@@ -26,10 +24,6 @@ namespace hk::sail {
                 }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
 
-                u8 curBuildId[ro::cBuildIdSize];
-                if (ro::getModuleBuildIdByIndex(i, curBuildId).failed())
-                    continue;
-
                 u32 numVersions = versions[0];
                 versions++;
 
@@ -38,22 +32,33 @@ namespace hk::sail {
                     char name[8];
                 }* buildIds { decltype(buildIds)(versions) };
 
-                bool found = false;
-                for (int versionIndex = 0; versionIndex < numVersions; versionIndex++) {
-                    if (__builtin_memcmp(buildIds[versionIndex].data, curBuildId, sizeof(curBuildId)) == 0) {
-                        constexpr size cNameSize = sizeof(buildIds[versionIndex].name);
+                ro::RoModule* module = nullptr;
 
-                        module->mVersionIndex = versionIndex;
+                for (int moduleIndex = 0; moduleIndex < ro::getNumModules(); moduleIndex++) {
+                    module = ro::getModuleByIndex(moduleIndex);
+                    const u8* curBuildId = module->getBuildId();
 
-                        __builtin_memcpy(module->mVersionName, buildIds[versionIndex].name, cNameSize);
-                        module->mVersionName[cNameSize] = '\0';
-                        module->mVersionNameHash = util::hashMurmur(module->mVersionName);
-                        found = true;
-                        break;
+                    if (curBuildId == nullptr)
+                        continue;
+
+                    for (int versionIndex = 0; versionIndex < numVersions; versionIndex++) {
+                        if (__builtin_memcmp(buildIds[versionIndex].data, curBuildId, ro::cBuildIdSize) == 0) {
+                            constexpr size cNameSize = sizeof(buildIds[versionIndex].name);
+
+                            module->mVersionIndex = versionIndex;
+
+                            __builtin_memcpy(module->mVersionName, buildIds[versionIndex].name, cNameSize);
+                            module->mVersionName[cNameSize] = '\0';
+                            module->mVersionNameHash = util::hashMurmur(module->mVersionName);
+
+                            gModules[i] = module;
+                            goto found;
+                        }
                     }
                 }
+            found:
 
-                if (found)
+                if (module != nullptr)
                     diag::debugLog("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
                 else
                     diag::debugLog("hk::sail: Module[%d] Version: NotFound", i);
@@ -63,20 +68,20 @@ namespace hk::sail {
         // Versioned
 
         bool SymbolVersioned::isVersion(u32 moduleIdx) const {
-            return (versionsBitset >> ro::getModuleByIndex(moduleIdx)->getVersionIndex()) & 0b1;
+            return (versionsBitset >> gModules[moduleIdx]->getVersionIndex()) & 0b1;
         }
 
         // DataBlock
 
         _HK_SAIL_PRECALC_TEMPLATE
         hk_alwaysinline void applyDataBlockSymbol(bool abort, const SymbolDataBlock* sym, ptr* out, const T* destSymbol) {
-            const auto* module = ro::getModuleByIndex(sym->moduleIdx);
+            const auto* module = gModules[sym->moduleIdx];
 
             HK_ABORT_UNLESS(module != nullptr, "UnknownModule with idx %d", sym->moduleIdx);
 
             const SymbolDataBlock::SearchFunction search = cast<const SymbolDataBlock::SearchFunction>(uintptr_t(gSymbols) + sym->offsetToSearchFunction);
 
-            s32 loadedVer = ro::getModuleByIndex(sym->moduleIdx)->getVersionIndex();
+            s32 loadedVer = module->getVersionIndex();
 
             switch (sym->versionBoundaryType) {
             case 1:
@@ -169,7 +174,9 @@ namespace hk::sail {
 
         _HK_SAIL_PRECALC_TEMPLATE
         hk_alwaysinline void applyImmediateSymbol(bool abort, const SymbolImmediate* sym, ptr* out, const T* destSymbol) {
-            auto* module = ro::getModuleByIndex(sym->moduleIdx);
+            auto* module = gModules[sym->moduleIdx];
+
+            HK_ABORT_UNLESS(module != nullptr, "UnknownModule with idx %d", sym->moduleIdx);
 
             if (sym->isVersion(sym->moduleIdx))
                 *out = module->range().start() + sym->offsetIntoModule;

@@ -138,6 +138,8 @@ namespace sail {
             ".global _ZN2hk4sail11gNumSymbolsE\n"
             ".global _ZN2hk4sail8gSymbolsE\n"
             ".global _ZN2hk4sail12gNumVersionsE\n"
+            ".global _ZN2hk4sail8gModulesE\n"
+            ".global _ZN2hk4sail11gNumModulesE\n"
             ".global _ZN2hk4sail9gVersionsE\n");
 
         asmFile.append(
@@ -287,19 +289,28 @@ namespace sail {
 
         asmFile.append(candidateSyms);
 
-        // module version list
+        // array for detected modules
+        asmFile.append("\n.align 8");
+        asmFile.append("\n_ZN2hk4sail8gModulesE:");
+        for (const auto& module : getVersionList())
+            asmFile.append("\n.quad 0x0");
+
+        asmFile.append("\n_ZN2hk4sail11gNumModulesE:");
+        asmFile.append("\n.word 0x" + toHexString(getVersionList().size()));
+
+        // module list (pointers to version lists)
 
         asmFile.append("\n.align 8");
         asmFile.append("\n_ZN2hk4sail9gVersionsE:");
         {
             int i = 0;
-            for (auto module : getVersionList()) {
+            for (const auto& module : getVersionList()) {
 
-                if (module.empty())
+                if (module.second.empty())
                     asmFile.append("\n.word 0x0");
                 else {
                     asmFile.append("\n.word module_versions_");
-                    asmFile.append(std::to_string(i));
+                    asmFile.append(module.first);
                     asmFile.append(" - _ZN2hk4sail9gVersionsE");
                 }
 
@@ -311,18 +322,19 @@ namespace sail {
 
         {
             int i = 0;
-            for (auto module : getVersionList()) {
+            for (const auto& module : getVersionList()) {
                 asmFile.append("\nmodule_versions_");
-                asmFile.append(std::to_string(i));
+                asmFile.append(module.first);
                 asmFile.append(":");
 
                 asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(module.size()));
+                asmFile.append(toHexString(module.second.size()));
 
-                for (auto version : module) {
+                for (const auto& version : module.second) {
+                    // buildid
                     asmFile.append("\n.byte ");
                     int i = 0;
-                    for (u8 byte : version.second) {
+                    for (u8 byte : version.second.id) {
                         if (i != 0)
                             asmFile.append(",");
                         char buf[4] { 0 };
@@ -330,6 +342,8 @@ namespace sail {
                         asmFile.append(buf);
                         i++;
                     }
+
+                    // name
                     for (int i = 0; i < 8; i++) {
                         if (i < version.first.size()) {
                             asmFile.append("\n.ascii \"");

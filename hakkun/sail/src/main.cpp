@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     const char* outFolder = argv[3];
     const char* clangBinary = argv[4];
     sail::is32Bit() = std::string(argv[5]) == "1";
-    if (*argv[6] != 'G') {
+    if (*argv[6] != 'H') {
         printf("Wrong sail version! Have you run setup_sail.py after updating?\n");
         return 1;
     }
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
 
     std::vector<sail::Symbol> symbols;
 
-    for (auto i : symbolTraversePaths) {
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(i)) {
+    for (auto dir : symbolTraversePaths) {
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(dir)) {
             if (!entry.path().string().ends_with(".sym"))
                 continue;
 

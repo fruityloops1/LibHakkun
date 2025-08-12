@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/diag/diag.h"
+#include "hk/ro/RoModule.h"
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
 #include "hk/util/Math.h"
@@ -160,9 +161,13 @@ namespace hk::sail {
 
     } // namespace detail
 
-    extern size gNumSymbols;
+    extern const size gNumSymbols;
     extern detail::SymbolEntry gSymbols[];
-    extern uint32_t gVersions[];
+
+    extern const uint32_t gVersions[];
+
+    extern ro::RoModule* gModules[];
+    extern const size gNumModules;
 
     namespace detail {
 

@@ -97,6 +97,7 @@ namespace sail {
         int lineNumber = 0;
 
         int currentModuleIndex = -1;
+        std::string currentModule;
         std::deque<std::string> currentVersions;
         std::vector<u32> currentVersionIndices;
 
@@ -121,7 +122,7 @@ namespace sail {
                 if (at.size() > 2)
                     SYNTAX_ERROR("invalid module/version marker");
 
-                std::string currentModule = at[0];
+                currentModule = at[0];
                 currentModuleIndex = getModuleIndex(currentModule);
                 if (currentModuleIndex == -1)
                     SYNTAX_ERROR("unknown module '%s'", currentModule.c_str());
@@ -133,7 +134,7 @@ namespace sail {
 
                 currentVersionIndices.clear();
                 for (auto version : currentVersions) {
-                    int verIndex = getVersionIndex(currentModuleIndex, version);
+                    int verIndex = getVersionIndex(currentModule, version);
                     if (verIndex == -1)
                         SYNTAX_ERROR("unknown version '%s'", version.c_str());
                     currentVersionIndices.push_back(verIndex);
@@ -288,7 +289,7 @@ namespace sail {
 
                 s32 versionIndex = 0;
                 if (moduleParts.size() > 1) {
-                    versionIndex = getVersionIndex(moduleIdx, moduleParts[1]);
+                    versionIndex = getVersionIndex(sectionParts[0], moduleParts[1]);
                     if (versionIndex == -1)
                         SYNTAX_ERROR("unknown version '%s'", moduleParts[1].c_str());
                 }
@@ -349,48 +350,14 @@ namespace sail {
         return symbols;
     }
 
-    std::vector<std::pair<std::string, int>> parseModuleList(const std::string& data, const std::string& filePath) {
+    ModuleList parseVersionList(const std::string& data, const std::string& filePath) {
         std::stringstream ss(data);
 
         std::string line;
         int lineNumber = 0;
 
-        std::vector<std::pair<std::string, int>> modules;
-
-        while (std::getline(ss, line, '\n')) {
-            lineNumber++;
-
-            auto parts = splitByWhitespaceAndRemoveComments(line);
-
-            if (parts.empty())
-                continue;
-
-            if (parts.size() != 3)
-                SYNTAX_ERROR("not sure what this is");
-
-            if (parts[1] != "=")
-                SYNTAX_ERROR("unknown operator");
-
-            modules.push_back({ parts[0], std::stoi(parts[2]) });
-        }
-
-        return modules;
-    }
-
-    std::vector<std::vector<std::pair<std::string, std::vector<u8>>>> parseVersionList(const std::string& data, const std::string& filePath, const std::vector<std::pair<std::string, int>>& moduleList) {
-        std::stringstream ss(data);
-
-        std::string line;
-        int lineNumber = 0;
-
-        std::vector<std::vector<std::pair<std::string, std::vector<u8>>>> versions;
-        int currentModuleIndex = 0;
-
-        int numModules = moduleList.size();
-        for (auto module : moduleList)
-            numModules = std::max(numModules, module.second + 1);
-
-        versions.resize(numModules);
+        ModuleList modules;
+        std::string currentModuleName;
 
         while (std::getline(ss, line, '\n')) {
             lineNumber++;
@@ -405,8 +372,7 @@ namespace sail {
                 if (parts[0].empty())
                     SYNTAX_ERROR("stray @");
 
-                std::string currentModule = parts[0];
-                currentModuleIndex = getModuleIndex(currentModule);
+                currentModuleName = parts[0];
                 continue;
             }
 
@@ -421,12 +387,12 @@ namespace sail {
                 SYNTAX_ERROR("failed parsing bytes '%s'", parts[2].c_str());
             if (bytes.size() > 0x20)
                 SYNTAX_ERROR("build id size cannot exceed 32 bytes");
-            bytes.resize(0x10);
+            bytes.resize(cBuildIdSize);
 
-            versions[currentModuleIndex].push_back({ parts[0], bytes });
+            std::memcpy(modules[currentModuleName][parts[0]].id, bytes.data(), cBuildIdSize);
         }
 
-        return versions;
+        return modules;
     }
 
 } // namespace sail

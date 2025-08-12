@@ -36,6 +36,8 @@ namespace hk::ro {
         Range mTextRwMapping;
         Range mRodataRwMapping;
 
+        const u8* mBuildId = nullptr;
+
 #ifndef HK_DISABLE_SAIL
         int mVersionIndex = -1;
         char mVersionName[9] { '\0' };
@@ -43,12 +45,14 @@ namespace hk::ro {
 #endif
 
     public:
+        nn::ro::detail::RoModule* getNnModule() const { return mModule; }
+
         Range range() const { return { mTextRange.start(), mTextRange.size() + mRodataRange.size() + mDataRange.size() }; }
         Range text() const { return mTextRange; }
         Range rodata() const { return mRodataRange; }
         Range data() const { return mDataRange; }
 
-        nn::ro::detail::RoModule* getNnModule() const { return mModule; }
+        const u8* getBuildId() const { return mBuildId; }
 
 #ifndef HK_DISABLE_SAIL
         int getVersionIndex() const { return mVersionIndex; }
@@ -60,6 +64,7 @@ namespace hk::ro {
 
         Result findRanges();
         Result mapRw();
+        Result findBuildId();
 
         Result writeRo(ptr offset, const void* source, size writeSize) const;
 

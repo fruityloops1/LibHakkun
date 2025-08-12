@@ -14,34 +14,12 @@ namespace nn::ro::detail {
 using namespace nn::ro::detail;
 
 namespace hk::ro {
-    struct BuildId {
-        Result findResult {};
-        u8 data[cBuildIdSize] { 0 };
-    };
-
-    static Result findBuildId(const RoModule& module, u8* out) {
-
-        constexpr char sGnuHashMagic[] = { 'G', 'N', 'U', '\0' };
-        ptr rodataEnd = module.rodata().end();
-        for (ptr search = rodataEnd; search >= rodataEnd - hk::cPageSize * 2; search--) {
-            if (__builtin_memcmp((void*)search, sGnuHashMagic, sizeof(sGnuHashMagic)) == 0) {
-                const u8* buildId = (const u8*)(search + sizeof(sGnuHashMagic));
-                __builtin_memcpy(out, buildId, cBuildIdSize);
-                return ResultSuccess();
-            }
-        }
-
-        return ResultGnuHashMissing();
-    }
 
     static RoModule sModules[cMaxModuleNum] {};
-    static BuildId sBuildIds[cMaxModuleNum] {};
     static size sNumModules = 0;
     static int sSelfModuleIdx = -1;
 
     void RoUtil::initModuleList() {
-        __builtin_memset(sModules, 0, sizeof(sModules));
-        __builtin_memset(sBuildIds, 0, sizeof(sBuildIds));
         sNumModules = 0;
 
         for (nn::ro::detail::RoModule* rtldModule : *nn::ro::detail::g_pAutoLoadList) {
@@ -70,9 +48,7 @@ namespace hk::ro {
 
             HK_ABORT_UNLESS_R(module.findRanges());
             HK_ABORT_UNLESS_R(module.mapRw());
-
-            auto& buildId = sBuildIds[i];
-            buildId.findResult = findBuildId(module, buildId.data);
+            module.findBuildId();
 
             {
                 const auto& range = module.range();
@@ -82,8 +58,8 @@ namespace hk::ro {
 
                 diag::debugLog("Module[%d]:", i);
                 diag::debugLog("\tName: %s", module.getModuleName());
-                if (buildId.findResult.succeeded()) {
-                    const auto& d = buildId.data;
+                if (module.getBuildId() != nullptr) {
+                    const u8* d = module.getBuildId();
 
                     static_assert(cBuildIdSize == 0x10);
                     diag::debugLog("\tBuildId: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (...)",
@@ -131,10 +107,13 @@ namespace hk::ro {
 
     Result getModuleBuildIdByIndex(int idx, u8* out) {
         // assert(idx < sNumModules);
-        auto& entry = sBuildIds[idx];
-        if (entry.findResult.succeeded())
-            __builtin_memcpy(out, entry.data, sizeof(entry.data));
-        return entry.findResult;
+
+        const u8* buildId = getModuleByIndex(idx)->getBuildId();
+        if (buildId != nullptr) {
+            __builtin_memcpy(out, buildId, cBuildIdSize);
+            return ResultSuccess();
+        }
+        return ResultGnuHashMissing();
     }
 
     ptr lookupSymbol(const char* symbol) {
