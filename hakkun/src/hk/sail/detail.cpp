@@ -19,8 +19,8 @@ namespace hk::sail {
 
                 uintptr_t versionsOffset = gVersions[i * 2];
                 uintptr_t mod0NameOffsetOrVersionIndex = gVersions[i * 2 + 1];
-                const char* mod0Name = mod0NameOffsetOrVersionIndex == 0 ? nullptr : cast<const char*>(versionsStart + mod0NameOffsetOrVersionIndex);
                 int moduleIndexOverride = mod0NameOffsetOrVersionIndex & bit(16) ? mod0NameOffsetOrVersionIndex & bits(4) : -1;
+                const char* mod0Name = mod0NameOffsetOrVersionIndex == 0 || moduleIndexOverride != -1 ? nullptr : cast<const char*>(versionsStart + mod0NameOffsetOrVersionIndex);
 
                 if (versionsOffset == 0) {
                     if (mod0Name != nullptr)
