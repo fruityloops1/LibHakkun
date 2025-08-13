@@ -96,9 +96,9 @@ Hakkun provides various options that you can configure from `config/config.cmake
 #### Sail
 Sail reads the following configuration file:
 ##### VersionList.sym
-List of modules with versions bound to NSO build IDs, if versioning is desired, for example:
+List of modules with versions bound to NSO build IDs, if versioning is desired, note for games built with sdk 20.x.x or higher module names have been stripped, if you want to list a module without using it's name you may enter a number bound to its indice, for example:
 ```
-@rtld = nnrtld
+@rtld = 0
 @smo = RedStar.nss
 100 = 3ca12dfaaf9c82da064d1698df79cda1
 101 = 50ade4b5eb6e45efb170a6b230d3b0ba
