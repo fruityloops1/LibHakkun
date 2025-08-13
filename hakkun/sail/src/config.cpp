@@ -31,7 +31,7 @@ namespace sail {
         const auto& module = sVersionList.at(moduleName);
 
         int idx = 0;
-        for (const auto& pair : module) {
+        for (const auto& pair : module.versions) {
             if (pair.first == version)
                 return idx;
             idx++;

@@ -292,13 +292,14 @@ namespace sail {
         // array for detected modules
         asmFile.append("\n.align 8");
         asmFile.append("\n_ZN2hk4sail8gModulesE:");
-        for (const auto& module : getVersionList())
+        for (const auto& module : getVersionList()) {
             asmFile.append("\n.quad 0x0");
+        }
 
         asmFile.append("\n_ZN2hk4sail11gNumModulesE:");
         asmFile.append("\n.word 0x" + toHexString(getVersionList().size()));
 
-        // module list (pointers to version lists)
+        // module list (pointers to version lists, mod0 names)
 
         asmFile.append("\n.align 8");
         asmFile.append("\n_ZN2hk4sail9gVersionsE:");
@@ -306,10 +307,18 @@ namespace sail {
             int i = 0;
             for (const auto& module : getVersionList()) {
 
-                if (module.second.empty())
+                if (module.second.versions.empty())
                     asmFile.append("\n.word 0x0");
                 else {
                     asmFile.append("\n.word module_versions_");
+                    asmFile.append(module.first);
+                    asmFile.append(" - _ZN2hk4sail9gVersionsE");
+                }
+
+                if (module.second.mod0Name.empty())
+                    asmFile.append("\n.word 0x0");
+                else {
+                    asmFile.append("\n.word module_names_");
                     asmFile.append(module.first);
                     asmFile.append(" - _ZN2hk4sail9gVersionsE");
                 }
@@ -328,9 +337,9 @@ namespace sail {
                 asmFile.append(":");
 
                 asmFile.append("\n.word 0x");
-                asmFile.append(toHexString(module.second.size()));
+                asmFile.append(toHexString(module.second.versions.size()));
 
-                for (const auto& version : module.second) {
+                for (const auto& version : module.second.versions) {
                     // buildid
                     asmFile.append("\n.byte ");
                     int i = 0;
@@ -352,6 +361,21 @@ namespace sail {
                         } else
                             asmFile.append("\n.ascii \"\\0\"");
                     }
+                }
+
+                // mod0 name
+
+                if (!module.second.mod0Name.empty()) {
+                    asmFile.append("\nmodule_names_");
+                    asmFile.append(module.first);
+                    asmFile.append(":");
+
+                    for (char c : module.second.mod0Name) {
+                        asmFile.append("\n.ascii \"");
+                        asmFile += c;
+                        asmFile.append("\"");
+                    }
+                    asmFile.append("\n.ascii \"\\0\"");
                 }
 
                 i++;

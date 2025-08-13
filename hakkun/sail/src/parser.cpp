@@ -368,11 +368,20 @@ namespace sail {
                 continue;
 
             if (parts[0].starts_with('@')) {
+                if (parts.size() != 1 && parts.size() != 3)
+                    SYNTAX_ERROR("not sure what this is");
+
                 parts[0] = parts[0].substr(1);
                 if (parts[0].empty())
                     SYNTAX_ERROR("stray @");
 
                 currentModuleName = parts[0];
+
+                if (parts.size() == 3) {
+                    if (parts[1] != "=")
+                        SYNTAX_ERROR("unknown operator");
+                    modules[currentModuleName].mod0Name = parts[2];
+                }
                 continue;
             }
 
@@ -389,7 +398,7 @@ namespace sail {
                 SYNTAX_ERROR("build id size cannot exceed 32 bytes");
             bytes.resize(cBuildIdSize);
 
-            std::memcpy(modules[currentModuleName][parts[0]].id, bytes.data(), cBuildIdSize);
+            std::memcpy(modules[currentModuleName].versions[parts[0]].id, bytes.data(), cBuildIdSize);
         }
 
         return modules;

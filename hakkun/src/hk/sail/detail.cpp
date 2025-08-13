@@ -17,9 +17,15 @@ namespace hk::sail {
             for (int i = 0; i < gNumModules; i++) {
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
-                uintptr_t versionsOffset = gVersions[i];
+                uintptr_t versionsOffset = gVersions[i * 2];
+                uintptr_t mod0NameOffset = gVersions[i * 2 + 1];
+                const char* mod0Name = mod0NameOffset == 0 ? nullptr : cast<const char*>(versionsStart + mod0NameOffset);
+
                 if (versionsOffset == 0) {
-                    diag::debugLog("hk::sail: Module[%d] Version: Skipped", i);
+                    if (mod0Name != nullptr)
+                        diag::debugLog("hk::sail: Module[%s] Version: Skipped", mod0Name);
+                    else
+                        diag::debugLog("hk::sail: Module[%d] Version: Skipped", i);
                     continue;
                 }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
@@ -34,9 +40,13 @@ namespace hk::sail {
 
                 ro::RoModule* module = nullptr;
 
+                bool versionFound = false;
                 for (int moduleIndex = 0; moduleIndex < ro::getNumModules(); moduleIndex++) {
                     module = ro::getModuleByIndex(moduleIndex);
                     const u8* curBuildId = module->getBuildId();
+
+                    if (mod0Name != nullptr && strstr(module->getModuleName(), mod0Name))
+                        gModules[i] = module;
 
                     if (curBuildId == nullptr)
                         continue;
@@ -52,16 +62,24 @@ namespace hk::sail {
                             module->mVersionNameHash = util::hashMurmur(module->mVersionName);
 
                             gModules[i] = module;
+                            versionFound = true;
                             goto found;
                         }
                     }
                 }
             found:
 
-                if (module != nullptr)
-                    diag::debugLog("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
-                else
-                    diag::debugLog("hk::sail: Module[%d] Version: NotFound", i);
+                if (mod0Name != nullptr) {
+                    if (versionFound)
+                        diag::debugLog("hk::sail: Module[%s] Version: %s (idx: %d)", mod0Name, module->getVersionName(), module->getVersionIndex());
+                    else
+                        diag::debugLog("hk::sail: Module[%s] Version: NotFound", mod0Name);
+                } else {
+                    if (versionFound)
+                        diag::debugLog("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
+                    else
+                        diag::debugLog("hk::sail: Module[%d] Version: NotFound", i);
+                }
             }
         }
 

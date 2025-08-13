@@ -7,7 +7,7 @@ set(SAIL_LIBS
 
 include(config/config.cmake)
 include(sys/cmake/watch.cmake)
-set(SAIL_REVISION H)
+set(SAIL_REVISION I)
 
 function (usesail lib)
     if (USE_SAIL)

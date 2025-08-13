@@ -98,15 +98,15 @@ Sail reads the following configuration file:
 ##### VersionList.sym
 List of modules with versions bound to NSO build IDs, if versioning is desired, for example:
 ```
-@rtld
-@smo
+@rtld = nnrtld
+@smo = RedStar.nss
 100 = 3ca12dfaaf9c82da064d1698df79cda1
 101 = 50ade4b5eb6e45efb170a6b230d3b0ba
 110 = 948dbbfc2fa0c60e2c30316e4c961aba
 120 = f5dccddb37e97724ebdbcccdbeb965ff
 130 = b424be150a8e7d78701cbe7a439d9ebf
 @multimedia
-@sdk
+@sdk = nnSdk
 100 = ae34e75d02925f4417b24499ad80c39412fc76db
 101 = ae34e75d02925f4417b24499ad80c39412fc76db
 110 = ae34e75d02925f4417b24499ad80c39412fc76db

@@ -13,7 +13,11 @@ namespace sail {
         u8 id[cBuildIdSize] { 0 };
     };
 
-    using VersionListModule = std::map<std::string, BuildId>;
+    struct VersionListModule {
+        std::string mod0Name;
+        std::map<std::string, BuildId> versions;
+    };
+
     using ModuleList = std::map<std::string, VersionListModule>;
 
     ModuleList parseVersionList(const std::string& data, const std::string& filePath);
