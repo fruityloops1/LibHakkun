@@ -380,7 +380,13 @@ namespace sail {
                 if (parts.size() == 3) {
                     if (parts[1] != "=")
                         SYNTAX_ERROR("unknown operator");
-                    modules[currentModuleName].mod0Name = parts[2];
+
+                    char* out;
+                    int index = strtoul(parts[2].c_str(), &out, 10); // < this stdlib is ASS
+                    if (out == parts[2].c_str()) // not index
+                        modules[currentModuleName].mod0Name = parts[2];
+                    else
+                        modules[currentModuleName].index = index;
                 }
                 continue;
             }

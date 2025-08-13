@@ -18,8 +18,9 @@ namespace hk::sail {
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
                 uintptr_t versionsOffset = gVersions[i * 2];
-                uintptr_t mod0NameOffset = gVersions[i * 2 + 1];
-                const char* mod0Name = mod0NameOffset == 0 ? nullptr : cast<const char*>(versionsStart + mod0NameOffset);
+                uintptr_t mod0NameOffsetOrVersionIndex = gVersions[i * 2 + 1];
+                const char* mod0Name = mod0NameOffsetOrVersionIndex == 0 ? nullptr : cast<const char*>(versionsStart + mod0NameOffsetOrVersionIndex);
+                int moduleIndexOverride = mod0NameOffsetOrVersionIndex & bit(16) ? mod0NameOffsetOrVersionIndex & bits(4) : -1;
 
                 if (versionsOffset == 0) {
                     if (mod0Name != nullptr)
@@ -43,10 +44,13 @@ namespace hk::sail {
                 bool versionFound = false;
                 for (int moduleIndex = 0; moduleIndex < ro::getNumModules(); moduleIndex++) {
                     module = ro::getModuleByIndex(moduleIndex);
-                    const u8* curBuildId = module->getBuildId();
 
                     if (mod0Name != nullptr && strstr(module->getModuleName(), mod0Name))
                         gModules[i] = module;
+                    if (moduleIndex == moduleIndexOverride)
+                        gModules[i] = module;
+
+                    const u8* curBuildId = module->getBuildId();
 
                     if (curBuildId == nullptr)
                         continue;

@@ -15,6 +15,7 @@ namespace sail {
 
     struct VersionListModule {
         std::string mod0Name;
+        int index = -1;
         std::map<std::string, BuildId> versions;
     };
 

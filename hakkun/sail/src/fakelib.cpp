@@ -315,7 +315,10 @@ namespace sail {
                     asmFile.append(" - _ZN2hk4sail9gVersionsE");
                 }
 
-                if (module.second.mod0Name.empty())
+                if (module.second.index != -1) {
+                    asmFile.append("\n.word ");
+                    asmFile.append(toHexString(module.second.index | (1 << 16)));
+                } else if (module.second.mod0Name.empty())
                     asmFile.append("\n.word 0x0");
                 else {
                     asmFile.append("\n.word module_names_");
