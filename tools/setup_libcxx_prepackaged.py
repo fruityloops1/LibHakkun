@@ -12,7 +12,7 @@ prepackaged_source = "https://github.com/fruityloops1/LibHakkun/releases/downloa
 
 root_dir = os.getcwd()
 
-def downloadAndCompilePrepackaged():
+def downloadAndExtractPrepackaged():
     print(f"Downloading pre-packaged stdlib")
 
     subprocess.run(['curl', '-O', '-L', prepackaged_source])
@@ -25,4 +25,4 @@ def downloadAndCompilePrepackaged():
 
     os.remove(prepackaged_source_tar_name)
 
-downloadAndCompilePrepackaged()
+downloadAndExtractPrepackaged()
