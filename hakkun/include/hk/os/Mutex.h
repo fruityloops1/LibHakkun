@@ -11,7 +11,7 @@ namespace hk::os {
         static constexpr Handle cInvalidHandle = 0;
         static constexpr Handle cWaitMask = 1 << 30;
 
-        static u32 getCurrentThreadHandle() { return hk::svc::getTLS()->nnsdk_thread_ptr->handle; }
+        static u32 getCurrentThreadHandle() { return hk::svc::getTLS()->nnsdkThread->handle; }
 
         class Lock {
             hk::os::Mutex& mMutex;

@@ -15,7 +15,7 @@ namespace hk::diag {
 
     Result setCurrentThreadName(const char* name) {
         auto* tls = svc::getTLS();
-        auto* thread = tls->nnsdk_thread_ptr;
+        auto* thread = tls->nnsdkThread;
         HK_UNLESS(thread != nullptr, ResultNotAnNnsdkThread());
         thread->threadNamePtr = thread->threadName;
         std::strncpy(thread->threadName, name, sizeof(thread->threadName));

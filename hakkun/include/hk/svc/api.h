@@ -111,8 +111,8 @@ namespace hk::svc {
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
     Result CloseHandle(Handle handle);
     Result ResetSignal(Handle handle);
-    Result ArbitrateLock(Handle threadHandle, uintptr_t addr, u32 tag);
-    Result ArbitrateUnlock(uintptr_t addr);
+    Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
+    Result ArbitrateUnlock(ptr addr);
     Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
     Result CancelSynchronization(Handle handle);
     Result SendSyncRequest(Handle sessionHandle);
@@ -136,7 +136,7 @@ namespace hk::svc {
 
     inline hk_alwaysinline void clearCache(ptr addr, ptrdiff size) {
         auto* tls = getTLS();
-        tls->cache_maintanence_flag = 1;
+        tls->cacheMaintanenceFlag = true;
 #ifdef __aarch64__
         __builtin___clear_cache((char*)addr, (char*)addr + size);
 #else // ILP32 userland cannot flush by itself
@@ -148,7 +148,7 @@ namespace hk::svc {
         svc::FlushProcessDataCache(process, addr, size);
         svc::InvalidateProcessDataCache(process, addr, size);
 #endif
-        tls->cache_maintanence_flag = 0;
+        tls->cacheMaintanenceFlag = false;
     }
 
 } // namespace hk::svc

@@ -330,25 +330,25 @@ namespace hk::svc {
     };
 
     struct ThreadLocalRegion {
-        u8 ipc_message_buffer[0x100];
-        u16 disable_counter;
-        u16 interrupt_flag;
-        u8 cache_maintanence_flag;
-        u8 reserved[0x7B];
+        u8 ipcMessageBuffer[0x100];
+        u16 disableCounter;
+        u16 interruptFlag;
+        bool cacheMaintanenceFlag;
+        u8 _105[0x7B];
         union {
             u8 tls[0x50];
             struct {
                 u8 _0[0x40];
-                ptr dying_message_region_address;
-                ptr dying_message_region_size;
+                ptr dyingMessageRegionAddr;
+                ptr dyingMessageRegionSize;
             };
         };
-        ptr locale_ptr;
-        u64 errno_val;
-        u64 thread_data;
-        u64 exception_header_globals;
-        ptr thread_ptr;
-        ThreadType* nnsdk_thread_ptr;
+        ptr localePtr;
+        u64 errnoValue;
+        u64 threadData;
+        u64 exceptionHeaderGlobals;
+        ptr threadPtr;
+        ThreadType* nnsdkThread;
     };
 
 } // namespace hk::svc
