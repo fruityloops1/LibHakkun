@@ -108,8 +108,9 @@ namespace hk::util {
 
         template <typename T>
         T read() {
-            T value;
-            read(&value, sizeof(T));
+            alignas(alignof(T)) u8 storage[sizeof(T)];
+            read(storage, sizeof(T));
+            return *cast<T*>(storage);
         }
 
         template <typename T>
