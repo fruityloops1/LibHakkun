@@ -2,6 +2,7 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+#include "hk/util/FixedCapacityArray.h"
 #include <type_traits>
 
 namespace hk::util {
@@ -114,6 +115,17 @@ namespace hk::util {
         template <typename T>
         bool tryRead(T* out) {
             return tryRead(out, sizeof(T));
+        }
+
+        template <typename T, size Capacity>
+        FixedCapacityArray<T, Capacity> readArray(size amount) {
+            HK_ABORT_UNLESS(amount <= Capacity, "hk::util::Stream::readArray: size exceeds capacity (%zu/%zu)", size, Capacity);
+            FixedCapacityArray<T, Capacity> arr;
+
+            for (size i = 0; i < amount; i++)
+                arr.add(read<T>());
+
+            return arr;
         }
 
         static constexpr bool isReadOnly() { return cIsReadOnly; }
