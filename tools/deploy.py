@@ -48,8 +48,8 @@ def deploy_ftp():
         with open(file, 'rb') as io:
             try:
                 ftp.storbinary(f'STOR {path}', io)
-            except ftplib.error_temp:
-                print(f'-- Could not upload {file} (does the path exist?)')
+            except ftplib.error_temp as e:
+                print(f'-- Could not upload file: {str(e).split(None, 1)}')
                 sys.exit(1)
 
 
