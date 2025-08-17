@@ -37,7 +37,7 @@ namespace hk::util {
 
         size tell() const { return mCursor; }
 
-        bool tryWrite(void* data, size dataSize) {
+        bool tryWrite(const void* data, size dataSize) {
             checkReadonly();
 
             if (hasSize() && mCursor + dataSize > mSize)
@@ -49,7 +49,7 @@ namespace hk::util {
             return true;
         }
 
-        void write(void* data, size dataSize) {
+        void write(const void* data, size dataSize) {
             checkReadonly();
 
             if (hasSize())
