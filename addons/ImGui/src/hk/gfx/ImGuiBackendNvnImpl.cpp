@@ -239,7 +239,7 @@ namespace hk::gfx {
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
 
-                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TextureId);
+                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexId());
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {
