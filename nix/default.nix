@@ -12,7 +12,7 @@ with pkgs; rec {
   in [
     localPackages.switch-tools
     python3
-    llvmPackages.clangUseLlvm
+    llvmPackages.clang-unwrapped
     llvmPackages.bintools-unwrapped
     lld
     curl
