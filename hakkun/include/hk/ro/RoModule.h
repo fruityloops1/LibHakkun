@@ -73,13 +73,65 @@ namespace hk::ro {
             return writeRo(offset, &value, sizeof(T));
         }
 
+        enum RodataAttribute
+        {
+            RodataAttribute_ModuleName,
+            RodataAttribute_Unknown,
+
+            RodataAttribute_Max,
+        };
+
+        struct ModuleNameRodataAttribute {
+            u32 nameLength;
+            char name[];
+        };
+
+        struct UnknownRodataAttribute {
+            u32 _0;
+            u32 _4;
+        };
+
+        template <typename T>
+        const T* findRodataAttribute(RodataAttribute type) const {
+            ptr iter = mRodataRange.start();
+            RodataAttribute current = RodataAttribute(*cast<const u32*>(iter));
+
+            if (*cast<const u32*>(iter) >= RodataAttribute_Max) // Probably not attribute array
+                return nullptr;
+
+            while (true) {
+                iter += sizeof(RodataAttribute);
+
+                if (current == type)
+                    return cast<const T*>(iter);
+
+                if (current == RodataAttribute_ModuleName) // end
+                    break;
+
+                switch (current) {
+                /*case RodataAttribute_ModuleName: {
+                    const ModuleNameRodataAttribute* name = cast<const ModuleNameRodataAttribute*>(iter);
+                    iter += sizeof(*name) + name->nameLength;
+                    break;
+                }*/
+                case RodataAttribute_Unknown:
+                    iter += sizeof(UnknownRodataAttribute);
+                    break;
+                default:
+                    *(ptr*)iter = ptr(mModule);
+                    HK_ABORT("Unknown RodataAttribute: %d %p", current, mModule);
+                }
+
+                current = RodataAttribute(*cast<const u32*>(iter));
+            }
+
+            return nullptr;
+        }
+
         const char* getModuleName() const {
-            struct {
-                u32 _0;
-                u32 nameLength;
-                char name[];
-            }* name { (typeof(name))mRodataRange.start() };
-            return name->name;
+            auto* name = findRodataAttribute<ModuleNameRodataAttribute>(RodataAttribute_ModuleName);
+
+            return name != nullptr ? name->name : nullptr;
         }
 
         friend class RoUtil;

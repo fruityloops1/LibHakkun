@@ -8,7 +8,7 @@ namespace hk::init {
 #define MODULE_NAME_STR STR(MODULE_NAME) ".nss"
 
     struct ModuleName {
-        u32 _0 = 0;
+        u32 attribType = 0;
         u32 nameLen = sizeof(MODULE_NAME_STR) - 1;
         char name[sizeof(MODULE_NAME_STR)] = MODULE_NAME_STR;
     };

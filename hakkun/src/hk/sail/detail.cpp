@@ -45,7 +45,8 @@ namespace hk::sail {
                 for (int moduleIndex = 0; moduleIndex < ro::getNumModules(); moduleIndex++) {
                     module = ro::getModuleByIndex(moduleIndex);
 
-                    if (mod0Name != nullptr && strstr(module->getModuleName(), mod0Name))
+                    const char* moduleName = module->getModuleName();
+                    if (mod0Name != nullptr && moduleName != nullptr && strstr(module->getModuleName(), mod0Name))
                         gModules[i] = module;
                     if (moduleIndex == moduleIndexOverride)
                         gModules[i] = module;
