@@ -3,32 +3,56 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include <algorithm>
-#include <array>
 
 namespace hk::util {
 
     template <typename T, size Capacity>
     class FixedCapacityArray {
-        std::array<T, Capacity> mData;
+        alignas(alignof(T)) u8 mStorage[sizeof(T) * Capacity] { 0 };
         size mSize = 0;
+
+        T* valueAt(size index) {
+            return &cast<T*>(mStorage)[index];
+        }
+
+        const T* valueAt(size index) const {
+            return &cast<const T*>(mStorage)[index];
+        }
 
     public:
         void add(T value) {
             HK_ABORT_UNLESS(mSize < Capacity, "hk::util::FixedCapacityArray<T, %zu>::add: Full", Capacity);
-            mData[mSize++] = value;
+            *valueAt(mSize++) = value;
+        }
+
+        void remove(size index) {
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::remove(%zu): out of range (size: %zu)", Capacity, index, mSize);
+
+            valueAt(index)->~T();
+
+            if (index < mSize - 1) {
+                ::size toMove = mSize - index - 1;
+                std::memmove(valueAt(index), valueAt(index + 1), toMove * sizeof(T));
+            }
+
+            mSize--;
         }
 
         T& operator[](size index) {
-            return mData[index];
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::operator[](%zu): out of range (size: %zu)", Capacity, index, mSize);
+            return *valueAt(index);
         }
+
         const T& operator[](size index) const {
-            return mData[index];
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::operator[](%zu): out of range (size: %zu)", Capacity, index, mSize);
+
+            return *valueAt(index);
         }
 
         template <typename Callback>
         void forEach(Callback func) {
             for (::size i = 0; i < mSize; i++)
-                func(mData[i]);
+                func(*this[i]);
         }
 
         void clear() {
@@ -41,12 +65,12 @@ namespace hk::util {
         bool empty() const { return mSize == 0; }
 
         void sort() {
-            std::sort(mData.begin(), mData.begin() + mSize);
+            std::sort(valueAt(0), valueAt(mSize));
         }
 
         template <typename Compare>
         void sort(Compare comp) {
-            std::sort(mData.begin(), mData.begin() + mSize, comp);
+            std::sort(valueAt(0), valueAt(mSize), comp);
         }
 
         ::size size() { return mSize; }
