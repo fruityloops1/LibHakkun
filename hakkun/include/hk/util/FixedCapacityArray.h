@@ -73,8 +73,13 @@ namespace hk::util {
             std::sort(valueAt(0), valueAt(mSize), comp);
         }
 
-        ::size size() { return mSize; }
+        ::size size() const { return mSize; }
         constexpr static ::size capacity() { return Capacity; }
+
+        T* begin() { return valueAt(0); }
+        T* end() { return valueAt(mSize); }
+        const T* begin() const { return valueAt(0); }
+        const T* end() const { return valueAt(mSize); }
     };
 
 } // namespace hk::util
