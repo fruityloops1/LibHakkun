@@ -30,6 +30,14 @@ SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc18ConnectToNamedPortEPjPKc
+	str x0, [sp, #-16]!
+	svc 0x1F
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc15SendSyncRequestEj
     svc 0x21
     ret

@@ -119,7 +119,7 @@ namespace hk::util {
 
         template <typename T, size Capacity>
         FixedCapacityArray<T, Capacity> readArray(size amount) {
-            HK_ABORT_UNLESS(amount <= Capacity, "hk::util::Stream::readArray: size exceeds capacity (%zu/%zu)", size, Capacity);
+            HK_ABORT_UNLESS(amount <= Capacity, "hk::util::Stream::readArray: size exceeds capacity (%zu/%zu)", amount, Capacity);
             FixedCapacityArray<T, Capacity> arr;
 
             for (size i = 0; i < amount; i++)

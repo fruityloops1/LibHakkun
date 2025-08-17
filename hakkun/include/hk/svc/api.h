@@ -113,6 +113,7 @@ namespace hk::svc {
     Result ResetSignal(Handle handle);
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
     Result ArbitrateUnlock(ptr addr);
+    Result ConnectToNamedPort(Handle* outHandle, const char* name);
     Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
     Result CancelSynchronization(Handle handle);
     Result SendSyncRequest(Handle sessionHandle);
