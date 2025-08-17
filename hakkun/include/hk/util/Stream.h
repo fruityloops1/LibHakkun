@@ -82,6 +82,14 @@ namespace hk::util {
             return true;
         }
 
+        void align(size alignment, u8 c = 0) {
+            size alignedCursor = alignUp(mCursor, alignment);
+            size toZero = alignedCursor - mCursor;
+
+            for (size i = 0; i < toZero; i++)
+                write(c);
+        }
+
         bool tryRead(void* out, size dataSize) {
             if (hasSize() && mCursor + dataSize > mSize)
                 return false;
