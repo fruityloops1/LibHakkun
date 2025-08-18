@@ -20,6 +20,11 @@ SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc11CloseHandleEj
+    svc #0x16
+    ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjmj
 	svc 0x1A
 	ret
