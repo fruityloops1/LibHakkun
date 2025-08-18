@@ -90,12 +90,12 @@ namespace hk::util {
             for (size i = 0; i < toZero; i++)
                 write(c);
         }
-
         bool tryRead(void* out, size dataSize) {
             if (hasSize() && mCursor + dataSize > mSize)
                 return false;
 
             memcpy(out, cast<const void*>(mBuffer + mCursor), dataSize);
+            mCursor += dataSize;
             return true;
         }
 
@@ -104,6 +104,7 @@ namespace hk::util {
                 HK_ABORT_UNLESS(mCursor + dataSize <= mSize, "hk::util::Stream::write: out of range (%zu/%zu)", mCursor + dataSize, mSize);
 
             memcpy(out, cast<const void*>(mBuffer + mCursor), dataSize);
+            mCursor += dataSize;
         }
 
         template <typename T>
