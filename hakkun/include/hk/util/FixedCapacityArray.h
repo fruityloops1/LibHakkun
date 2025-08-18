@@ -25,10 +25,10 @@ namespace hk::util {
             *valueAt(mSize++) = value;
         }
 
-        void remove(size index) {
+        T remove(size index) {
             HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::remove(%zu): out of range (size: %zu)", Capacity, index, mSize);
 
-            valueAt(index)->~T();
+            T removedValue = std::move(*valueAt(index));
 
             if (index < mSize - 1) {
                 ::size toMove = mSize - index - 1;
@@ -36,6 +36,8 @@ namespace hk::util {
             }
 
             mSize--;
+
+            return std::move(removedValue);
         }
 
         T& operator[](size index) {
