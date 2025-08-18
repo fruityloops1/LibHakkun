@@ -54,11 +54,15 @@ namespace hk {
         operator T() { return std::move(disown()); }
     };
 
-    using bla = decltype(ValueOrResult<int>(4))::Type;
+    template <>
+    class ValueOrResult<void> : public Result {
+    public:
+        using Type = Result;
+    };
 
 #define HK_UNWRAP(VALUE)                                      \
     ([&]() {                                                  \
-        auto& v = VALUE;                                      \
+        auto&& v = VALUE;                                     \
         using T = std::remove_reference_t<decltype(v)>::Type; \
         ::hk::Result _result_temp = v;                        \
         if (_result_temp.succeeded())                         \
