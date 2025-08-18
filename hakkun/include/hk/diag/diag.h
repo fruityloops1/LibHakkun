@@ -17,7 +17,7 @@ AssertionFailed: %s
 )";
     constexpr char cAbortUnlessResultFormat[] =
         R"(
-ResultAbort (%04d-%04d) [from %s]
+ResultAbort (%04d-%04d/0x%x) [from %s]
 )";
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
@@ -105,6 +105,7 @@ ResultAbort (%04d-%04d) [from %s]
                 ::hk::diag::cAbortUnlessResultFormat, \
                 _result_temp.getModule() + 2000,      \
                 _result_temp.getDescription(),        \
+                _result_temp.getValue(),              \
                 #RESULT);                             \
         }                                             \
     } while (0)
