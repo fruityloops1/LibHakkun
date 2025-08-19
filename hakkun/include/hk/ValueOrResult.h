@@ -4,6 +4,7 @@
 #include "hk/diag/diag.h"
 #include "hk/diag/results.h"
 #include "hk/util/Lambda.h"
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -12,52 +13,56 @@ namespace hk {
     template <typename T>
     class ValueOrResult {
         Result mResult = ResultSuccess();
-        alignas(alignof(T)) u8 mStorage[sizeof(T)] { 0 };
+        union {
+            T mValue;
+        };
 
-        T* getPtr() { return cast<T*>(mStorage); }
+        constexpr bool hasValue() const { return mResult.succeeded(); }
 
-        bool hasValue() const { return mResult.succeeded(); }
-
-        T disown() {
+        constexpr T disown() {
             HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::disown(): No value", 0);
             mResult = diag::ResultValueDisowned();
 
-            return std::move(*getPtr());
+            return std::move(mValue);
         }
 
     public:
         using Type = T;
 
-        ValueOrResult(Result result)
+        constexpr ValueOrResult(Result result)
             : mResult(result) {
             HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult(Result): Result must not be ResultSuccess()", 0);
         }
 
-        ValueOrResult(T&& value) {
-            new (getPtr()) T(std::forward<T>(value));
+        constexpr ValueOrResult(T&& value) {
+            std::construct_at(&mValue, std::forward<T>(value));
         }
 
-        ~ValueOrResult() {
+        constexpr ~ValueOrResult() {
             if (hasValue())
-                getPtr()->~T();
+                mValue.~T();
         }
 
         template <typename L>
-        ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
+        constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
             if (hasValue())
                 return func(disown());
             else
                 return mResult;
         }
 
-        operator Result() const { return mResult; }
-        operator T() { return std::move(disown()); }
+        constexpr operator Result() const { return mResult; }
+        constexpr operator T() { return std::move(disown()); }
     };
 
     template <>
     class ValueOrResult<void> : public Result {
     public:
         using Type = Result;
+        ValueOrResult(Result result)
+            : Result(result) { }
+
+        ValueOrResult() = default;
     };
 
 #define HK_UNWRAP(VALUE)                                      \
@@ -76,6 +81,7 @@ namespace hk {
                 ::hk::diag::cAbortUnlessResultFormat,         \
                 _result_temp.getModule() + 2000,              \
                 _result_temp.getDescription(),                \
+                _result_temp.getValue(),                      \
                 "HK_UNWRAP(" #VALUE ")");                     \
         }                                                     \
     })()

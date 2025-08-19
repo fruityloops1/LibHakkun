@@ -1,9 +1,9 @@
 #include "hk/init/module.h"
 #include "hk/diag/diag.h"
+#include "hk/ro/ModuleHeader.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/sail/init.h"
 #include "hk/svc/api.h"
-#include "rtld/ModuleHeader.h"
 #include "rtld/RoModule.h"
 
 #ifdef HK_ADDON_HeapSourceBss
@@ -14,8 +14,8 @@ namespace hk::init {
 
     extern "C" {
     section(.bss.rtldmodule) nn::ro::detail::RoModule hkRtldModule;
-    extern rtld::ModuleHeader __mod0;
-    section(.rodata.modulename) const ModuleName hkModuleName;
+    extern hk::ro::ModuleHeader __mod0;
+    section(.rodata.modulename) const ModuleName<STR(MODULE_NAME) ".nss"> hkModuleName;
     }
 
     static void callInitializers() {

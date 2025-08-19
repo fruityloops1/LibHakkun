@@ -2,6 +2,7 @@
 
 #include "hk/types.h"
 #include <new>
+#include <utility>
 
 namespace hk::util {
 
@@ -18,8 +19,8 @@ namespace hk::util {
         }
 
         template <typename... Args>
-        void createImpl(Args... args) {
-            new (getUnsafe()) T(args...);
+        void createImpl(Args&&... args) {
+            new (getUnsafe()) T(std::forward<Args>(args)...);
             mAlive = true;
         }
 
@@ -39,17 +40,17 @@ namespace hk::util {
         }
 
         template <typename... Args>
-        bool tryCreate(Args... args) {
+        bool tryCreate(Args&&... args) {
             if (mAlive)
                 return false;
-            createImpl(args...);
+            createImpl(std::forward<Args>(args)...);
             return true;
         }
 
         template <typename... Args>
-        void create(Args... args) {
+        void create(Args&&... args) {
             // assert(!mAlive);
-            createImpl(args...);
+            createImpl(std::forward<Args>(args)...);
         }
 
         T* get() {

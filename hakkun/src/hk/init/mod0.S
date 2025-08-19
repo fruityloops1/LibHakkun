@@ -1,13 +1,5 @@
-.global __module_start__
 .global __mod0
 .hidden hk_rtld_module
-
-.section ".text.modulestart","a"
-__module_start__:
-    b module_entry_stub
-    .word __mod0 - __module_start__
-module_entry_stub:
-    b __module_entry__
 
 .section ".rodata.mod0","a"
 .align 2
