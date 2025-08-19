@@ -28,7 +28,7 @@ namespace hk::hook {
         u64 heapSize = 0;
         HK_ABORT_UNLESS_R(svc::GetInfo(&heapSize, svc::InfoType_HeapRegionSize, svc::PseudoHandle::CurrentProcess, 0));
 
-        size maxPage = (aslrSize - searchSize) >> 12;
+        size maxPage = (aslrSize - searchSize) / cPageSize;
 
         while (true) {
             size randomPage = util::getRandomU64() % maxPage;

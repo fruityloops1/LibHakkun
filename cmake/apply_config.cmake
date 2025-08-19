@@ -6,6 +6,14 @@ function(apply_config project)
 
     if (TARGET_IS_STATIC)
         target_compile_definitions(${project} PRIVATE TARGET_IS_STATIC)
+
+        if (HAKKUN_STANDALONE)
+            message(FATAL_ERROR "HAKKUN_STANDALONE cannot be used with target")
+        endif()
+    endif()
+
+    if (HAKKUN_STANDALONE)
+        target_compile_definitions(${project} PRIVATE HK_STANDALONE)
     endif()
 
     if (SDK_PAST_1900)
