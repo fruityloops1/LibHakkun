@@ -81,6 +81,15 @@ SVC_BEGIN _ZN2hk3svc21FlushProcessDataCacheEjjj
 	ldmia sp!, {r3, r4, pc}
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjj
+    str r1, [sp, #-4]!
+    svc #0x6F
+    ldr r2, [sp]
+    str r1, [r2]
+    add sp, sp, #4
+    bx lr
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEjjyj
     stmdb sp!, {r3, r4, lr}
     mov r3, #0x0

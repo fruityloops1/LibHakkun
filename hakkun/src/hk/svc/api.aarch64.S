@@ -79,6 +79,14 @@ SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemorySystemInfoE
+	str x0, [sp, #-16]!
+	svc 0x6F
+	ldr x2, [sp], #16
+	str x1, [x2]
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEmjmm
 	svc 0x74
 	ret
