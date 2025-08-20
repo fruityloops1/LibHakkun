@@ -81,7 +81,7 @@ SVC_BEGIN _ZN2hk3svc21FlushProcessDataCacheEjjj
 	ldmia sp!, {r3, r4, pc}
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjj
+SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemorySystemInfoE
     str r1, [sp, #-4]!
     svc #0x6F
     ldr r2, [sp]
