@@ -28,6 +28,15 @@ namespace hk::init {
     extern InitFuncPtr __init_array_end__[];
     }
 
+    hk_alwaysinline inline void callInitializers() {
+        InitFuncPtr* current = __preinit_array_start__;
+        while (current != __preinit_array_end__)
+            (*current++)();
+        current = __init_array_start__;
+        while (current != __init_array_end__)
+            (*current++)();
+    }
+
     inline ptr getModuleStart() { return cast<ptr>(&__module_start__); }
 
 } // namespace hk::init

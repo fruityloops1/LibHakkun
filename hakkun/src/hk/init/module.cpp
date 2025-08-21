@@ -19,15 +19,6 @@ namespace hk::init {
     section(.rodata.modulename) const ModuleName<STR(MODULE_NAME) ".nss"> hkModuleName;
     }
 
-    static void callInitializers() {
-        InitFuncPtr* current = __preinit_array_start__;
-        while (current != __preinit_array_end__)
-            (*current++)();
-        current = __init_array_start__;
-        while (current != __init_array_end__)
-            (*current++)();
-    }
-
     extern "C" void hkMain();
 
     extern "C" void __module_entry__(void* x0, void* x1) {
