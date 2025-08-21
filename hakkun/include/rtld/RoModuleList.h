@@ -4,9 +4,15 @@
 
 namespace nn::ro::detail {
 
+    // TODO: Replace with proper IntrusiveList implementation
     struct RoModuleList {
         RoModule* front;
         RoModule* back;
+
+        RoModuleList()
+            : front((RoModule*)this)
+            , back((RoModule*)this) {
+        }
 
         class Iterator;
 
@@ -20,33 +26,135 @@ namespace nn::ro::detail {
 
         class Iterator {
         public:
-            Iterator(RoModule* pModule, bool reverted)
-                : m_pCurrentModule(pModule)
-                , m_Reverted(reverted) { }
+            Iterator(RoModule* module, bool reverted)
+                : mCurrentModule(module)
+                , mReverted(reverted) { }
 
-            Iterator& operator=(RoModule* pModule) {
-                m_pCurrentModule = pModule;
+            Iterator& operator=(RoModule* module) {
+                mCurrentModule = module;
                 return *this;
             }
 
             Iterator& operator++() {
-                if (m_pCurrentModule) {
-                    m_pCurrentModule = m_Reverted ? m_pCurrentModule->next
-                                                  : m_pCurrentModule->prev;
+                if (mCurrentModule) {
+                    mCurrentModule = mReverted ? mCurrentModule->next
+                                               : mCurrentModule->prev;
                 }
                 return *this;
             }
 
             bool operator!=(const Iterator& iterator) {
-                return m_pCurrentModule != iterator.m_pCurrentModule;
+                return mCurrentModule != iterator.mCurrentModule;
             }
 
-            RoModule* operator*() { return m_pCurrentModule; }
+            RoModule* operator*() { return mCurrentModule; }
 
         private:
-            RoModule* m_pCurrentModule;
-            bool m_Reverted;
+            RoModule* mCurrentModule;
+            bool mReverted;
         };
+
+        bool empty() const {
+            return front == (RoModule*)this;
+        }
+
+        void pushFront(RoModule* module) {
+            if (!module)
+                return;
+
+            module->prev = (RoModule*)this;
+            module->next = front;
+
+            front->prev = module;
+
+            front = module;
+        }
+
+        void pushBack(RoModule* module) {
+            if (!module)
+                return;
+
+            module->next = (RoModule*)this;
+            module->prev = back;
+
+            back->next = module;
+
+            back = module;
+        }
+
+        void popFront() {
+            if (empty())
+                return;
+
+            RoModule* oldFront = front;
+            front = front->next;
+            front->prev = (RoModule*)this;
+
+            oldFront->prev = oldFront;
+            oldFront->next = oldFront;
+        }
+
+        void popBack() {
+            if (empty())
+                return;
+
+            RoModule* oldBack = back;
+            back = back->prev;
+            back->next = (RoModule*)this;
+
+            oldBack->prev = oldBack;
+            oldBack->next = oldBack;
+        }
+
+        void insertBefore(RoModule* pos, RoModule* module) {
+            if (!pos || !module)
+                return;
+
+            module->next = pos;
+            module->prev = pos->prev;
+
+            pos->prev->next = module;
+            pos->prev = module;
+
+            if (pos == front)
+                front = module;
+        }
+
+        void insertAfter(RoModule* pos, RoModule* module) {
+            if (!pos || !module)
+                return;
+
+            module->prev = pos;
+            module->next = pos->next;
+
+            pos->next->prev = module;
+            pos->next = module;
+
+            if (pos == back)
+                back = module;
+        }
+
+        void remove(RoModule* module) {
+            if (!module || module == (RoModule*)this)
+                return;
+
+            if (module == front)
+                front = (module->next == (RoModule*)this) ? (RoModule*)this : module->next;
+
+            if (module == back)
+                back = (module->prev == (RoModule*)this) ? (RoModule*)this : module->prev;
+
+            module->prev->next = module->next;
+            module->next->prev = module->prev;
+
+            module->prev = module;
+            module->next = module;
+        }
+
+        void clear() {
+            while (!empty())
+                popFront();
+        }
     };
 
 #ifdef __aarch64__
