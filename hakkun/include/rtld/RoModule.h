@@ -5,18 +5,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hk/types.h"
 #include "rtld/types.h"
 
 namespace nn::ro::detail {
 
     class RoModule {
-
-    private:
-        // ResolveSymbols internals
-        inline void ResolveSymbolRelAbsolute(Elf_Rel* entry);
-        inline void ResolveSymbolRelaAbsolute(Elf_Rela* entry);
-        inline void ResolveSymbolRelJumpSlot(Elf_Rel* entry, bool do_lazy_got_init);
-        inline void ResolveSymbolRelaJumpSlot(Elf_Rela* entry, bool do_lazy_got_init);
+        const Elf_Sym* GetSymbolByNameElf(const char* name) const;
+        const Elf_Sym* GetSymbolByHashesElf(uint64_t bucketHash, uint32_t murmurHash) const;
+        const Elf_Sym* GetSymbolByNameGnu(const char* name) const;
+        const Elf_Sym* GetSymbolByHashesGnu(uint32_t djb2Hash, uint32_t murmurHash) const;
 
     public:
         // nn::util::IntrusiveListBaseNode<nn::ro::detail::RoModule>
@@ -85,18 +83,11 @@ namespace nn::ro::detail {
     private:
         char m_Padding[0x40]; // Not sure what they added, but this is in older versions of RTLD too.
 
-        Elf_Sym* GetSymbolByNameElf(const char* name) const;
-        Elf_Sym* GetSymbolByHashesElf(uint64_t bucketHash, uint32_t murmurHash) const;
-        Elf_Sym* GetSymbolByNameGnu(const char* name) const;
-        Elf_Sym* GetSymbolByHashesGnu(uint32_t djb2Hash, uint32_t murmurHash) const;
-
     public:
-        void Initialize(char* aslr_base, Elf_Dyn* dynamic);
+        void Initialize(ptr moduleBase, const Elf_Dyn* dynamic);
         void Relocate();
-        Elf_Sym* GetSymbolByName(const char* name) const;
-        Elf_Sym* GetSymbolByHashes(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash) const;
-        void ResolveSymbols(bool do_lazy_got_init);
-        bool ResolveSym(Elf_Addr* target_symbol_address, Elf_Sym* symbol) const;
+        const Elf_Sym* GetSymbolByName(const char* name) const;
+        const Elf_Sym* GetSymbolByHashes(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash) const;
     };
 
 } // namespace nn::ro::detail

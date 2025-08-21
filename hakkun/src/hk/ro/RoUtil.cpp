@@ -119,7 +119,7 @@ namespace hk::ro {
     ptr lookupSymbol(const char* symbol) {
         for (int i = 0; i < sNumModules; i++) {
             auto* module = sModules[i].getNnModule();
-            Elf_Sym* sym = module->GetSymbolByName(symbol);
+            const Elf_Sym* sym = module->GetSymbolByName(symbol);
             if (sym) {
                 ptr value = module->m_Base + sym->st_value;
                 return value;
@@ -131,7 +131,7 @@ namespace hk::ro {
     ptr lookupSymbol(uint64_t bucketHash, uint32_t djb2Hash, uint32_t murmurHash) {
         for (int i = 0; i < sNumModules; i++) {
             auto* module = sModules[i].getNnModule();
-            Elf_Sym* sym = module->GetSymbolByHashes(bucketHash, djb2Hash, murmurHash);
+            const Elf_Sym* sym = module->GetSymbolByHashes(bucketHash, djb2Hash, murmurHash);
             if (sym) {
                 ptr value = module->m_Base + sym->st_value;
                 return value;
