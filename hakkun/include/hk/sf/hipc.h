@@ -5,12 +5,12 @@
 namespace hk::sf::hipc {
 
     struct Header {
-        u16 tag;
-        u8 sendStaticCount : 4;
-        u8 sendBufferCount : 4;
-        u8 recvBufferCount : 4;
-        u8 exchBufferCount : 4;
-        u16 dataWords : 10;
+        u32 tag : 16;
+        u32 sendStaticCount : 4;
+        u32 sendBufferCount : 4;
+        u32 recvBufferCount : 4;
+        u32 exchBufferCount : 4;
+        u32 dataWords : 10;
         u32 : 21;
         bool hasSpecialHeader : 1;
     };
@@ -23,18 +23,18 @@ namespace hk::sf::hipc {
     };
 
     struct Static {
-        u8 index : 6;
-        u8 addressHigh : 6;
-        u8 addressMid : 4;
-        u16 size;
+        u32 index : 6;
+        u32 addressHigh : 6;
+        u32 addressMid : 4;
+        u32 size : 16;
         u32 addressLow;
 
         Static(u8 index, u64 address, u16 size)
             : index(index)
             , size(size) {
             addressLow = u32(address & hk::bits(32));
-            addressMid = u8((address >> 32) & hk::bits(4));
-            addressHigh = u8((address >> 36) & hk::bits(6));
+            addressMid = u32((address >> 32) & hk::bits(4));
+            addressHigh = u32((address >> 36) & hk::bits(6));
         }
 
         u64 address() const {
@@ -42,7 +42,7 @@ namespace hk::sf::hipc {
         }
     };
 
-    enum class BufferMode : u8
+    enum class BufferMode : u32
     {
         Normal = 0,
         NonSecure = 1,
@@ -54,16 +54,16 @@ namespace hk::sf::hipc {
         u32 addressLow;
         BufferMode mode : 2;
         u32 addressHigh : 22;
-        u8 sizeHigh : 4;
-        u8 addressMid : 4;
+        u32 sizeHigh : 4;
+        u32 addressMid : 4;
 
         Buffer(BufferMode mode, u64 address, u64 size)
             : mode(mode) {
             addressLow = u32(address & hk::bits(32));
-            addressMid = u8((address >> 32) & hk::bits(4));
-            addressHigh = u8((address >> 36) & hk::bits(22));
-            sizeLow = u32(address & hk::bits(32));
-            sizeHigh = u8((address >> 32) & hk::bits(4));
+            addressMid = u32((address >> 32) & hk::bits(4));
+            addressHigh = u32((address >> 36) & hk::bits(22));
+            sizeLow = u32(size & hk::bits(32));
+            sizeHigh = u32((size >> 32) & hk::bits(4));
         }
 
         u64 address() const {
@@ -77,8 +77,8 @@ namespace hk::sf::hipc {
 
     struct ReceiveStatic {
         u32 addressLow;
-        u16 addressHigh;
-        u16 size;
+        u32 addressHigh : 16;
+        u32 size : 16;
 
         ReceiveStatic()
             : ReceiveStatic(0, 0) { };

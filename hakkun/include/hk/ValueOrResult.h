@@ -20,7 +20,10 @@ namespace hk {
         constexpr bool hasValue() const { return mResult.succeeded(); }
 
         constexpr T disown() {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::disown(): No value", 0);
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::disown(): No value (%04d-%04d/0x%x)",
+                mResult.getModule() + 2000,
+                mResult.getDescription(),
+                mResult.getValue());
             mResult = diag::ResultValueDisowned();
 
             return std::move(mValue);
@@ -55,6 +58,14 @@ namespace hk {
                     return func(disown());
             } else
                 return mResult;
+        }
+
+        const T& value() const {
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::value(): No value (%04d-%04d/0x%x)",
+                mResult.getModule() + 2000,
+                mResult.getDescription(),
+                mResult.getValue());
+            return mValue;
         }
 
         constexpr operator Result() const { return mResult; }

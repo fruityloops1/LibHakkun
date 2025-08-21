@@ -30,7 +30,7 @@ namespace hk::sm {
 
         template <util::TemplateString name>
         ValueOrResult<sf::Service> getServiceHandle() {
-            static_assert(sizeof(name) <= 9, "name can only be eight bytes or less");
+            static_assert(sizeof(name) <= 9, "name can only be eight characters or less");
 
             char nameBuf[9] = {};
             std::memcpy(nameBuf, name.value, sizeof(name.value));
