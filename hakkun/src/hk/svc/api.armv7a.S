@@ -21,6 +21,11 @@ SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjj
     bx lr
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc11ExitProcessEv
+	svc 0x7
+	bx lr
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11CloseHandleEj
     svc #0x16
     bx lr
