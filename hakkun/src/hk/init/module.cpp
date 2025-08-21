@@ -15,6 +15,7 @@ namespace hk::init {
     extern "C" {
     section(.bss.rtldmodule) nn::ro::detail::RoModule hkRtldModule;
     extern hk::ro::ModuleHeader __mod0;
+    section(.rodata.modulename) extern const ModuleName<STR(MODULE_NAME) ".nss"> hkModuleName;
     section(.rodata.modulename) const ModuleName<STR(MODULE_NAME) ".nss"> hkModuleName;
     }
 
