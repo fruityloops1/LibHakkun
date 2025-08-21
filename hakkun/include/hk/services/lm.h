@@ -7,9 +7,10 @@
 #include "hk/sf/sf.h"
 #include "hk/types.h"
 #include "hk/util/FixedCapacityArray.h"
+#include "hk/util/Singleton.h"
 #include "hk/util/Stream.h"
-#include <cstring>
 #include <alloca.h>
+#include <cstring>
 #include <span>
 
 namespace hk::lm {
@@ -49,8 +50,8 @@ namespace hk::lm {
             };
 
             size len = strlen(text);
-            auto sizeBytes  = encodeUleb128(len);
-auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + len));
+            auto sizeBytes = encodeUleb128(len);
+            auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + len));
             util::Stream stream(logData);
             stream.write(LogPacketHeader {
                 .processId = 0,
@@ -67,7 +68,7 @@ auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() +
             stream.writeIterator<char>(std::span<const char>(text, len));
 
             auto request = sf::Request(0);
-            request.addInAutoselect(sf::hipc::BufferMode::Normal, logData, stream.tell());
+            request.addInAutoselect(logData, stream.tell());
             HK_UNWRAP(service.invokeRequest(std::move(request), [](sf::Response& response) {
                 return 0;
             }));
@@ -75,13 +76,15 @@ auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() +
     };
 
     class LogManager : public sf::Service {
+        HK_SINGLETON(LogManager);
+
+    public:
         LogManager(sf::Service&& service)
             : sf::Service(std::move(service)) { }
 
-        static ValueOrResult<LogManager> connect() {
-            return sm::ServiceManager::instance()->getServiceHandle<"lm">().map([](sf::Service service) {
-                return LogManager(std::move(service));
-            });
+        static LogManager* connect() {
+            createInstance(HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<"lm">()));
+            return instance();
         }
 
         ValueOrResult<Logger> getLogger() {

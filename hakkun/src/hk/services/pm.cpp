@@ -1,4 +1,3 @@
-
 #include "hk/services/pm.h"
 
 namespace hk::pm {

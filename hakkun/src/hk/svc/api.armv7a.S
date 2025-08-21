@@ -26,6 +26,16 @@ SVC_BEGIN _ZN2hk3svc11ExitProcessEv
 	bx lr
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjjjNS0_16MemoryPermissionE
+    # todo check if this works
+    str r0, [sp, #-4]!
+    svc #0x15
+    ldr r2, [sp]
+    str r1, [r2]
+    add sp, sp, #4
+    bx lr
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11CloseHandleEj
     svc #0x16
     bx lr
