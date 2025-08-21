@@ -2,6 +2,8 @@
 
 #include "hk/ro/RoModule.h"
 #include "hk/ro/results.h"
+#include "hk/svc/api.h"
+#include "hk/svc/types.h"
 #include "hk/types.h"
 #include "rtld/RoModule.h"
 
@@ -30,5 +32,41 @@ namespace hk::ro {
     struct RoUtil {
         static void initModuleList();
     };
+
+    template <typename Func>
+    hk_alwaysinline inline Result forEachAutoLoadModule(ptr autoLoadBase, const Func& func) {
+        ptr addr = autoLoadBase;
+        while (true) {
+            svc::MemoryInfo curRangeInfo;
+            u32 page;
+
+            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, addr));
+
+            if (curRangeInfo.state == svc::MemoryState_Free)
+                break;
+            HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadExecute, ResultUnusualSectionLayout());
+
+            ptr textBase = curRangeInfo.base_address;
+
+            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+            HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_Read, ResultUnusualSectionLayout());
+
+            ptr rodataBase = curRangeInfo.base_address + curRangeInfo.size;
+
+            while (curRangeInfo.permission == svc::MemoryPermission_Read)
+                HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+
+            ptr bssBase = curRangeInfo.base_address + curRangeInfo.size;
+
+            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+            HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadWrite, ResultUnusualSectionLayout());
+
+            func(textBase, rodataBase, bssBase);
+
+            addr = curRangeInfo.base_address + curRangeInfo.size;
+        }
+
+        return ResultSuccess();
+    }
 
 } // namespace hk::ro
