@@ -109,6 +109,7 @@ namespace hk::svc {
     }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
+    void ExitProcess();
     Result CloseHandle(Handle handle);
     Result ResetSignal(Handle handle);
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
