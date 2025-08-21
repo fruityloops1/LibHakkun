@@ -351,4 +351,19 @@ namespace hk::svc {
         ThreadType* nnsdkThread;
     };
 
+    enum SystemInfoType
+    {
+        SystemInfoType_TotalPhysicalMemorySize = 0,
+        SystemInfoType_UsedPhysicalMemorySize = 1,
+        SystemInfoType_InitialProcessIdRange = 2,
+    };
+
+    enum PhysicalMemorySystemInfo
+    {
+        PhysicalMemorySystemInfo_Application = 0,
+        PhysicalMemorySystemInfo_Applet = 1,
+        PhysicalMemorySystemInfo_System = 2,
+        PhysicalMemorySystemInfo_SystemUnsafe = 3,
+    };
+
 } // namespace hk::svc
