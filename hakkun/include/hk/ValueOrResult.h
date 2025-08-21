@@ -66,7 +66,7 @@ namespace hk {
     };
 
 #define HK_UNWRAP(VALUE)                                      \
-    ([&]() {                                                  \
+    ([&]() hk_alwaysinline {                                  \
         auto&& v = VALUE;                                     \
         using T = std::remove_reference_t<decltype(v)>::Type; \
         ::hk::Result _result_temp = v;                        \
