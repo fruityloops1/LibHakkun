@@ -124,6 +124,7 @@ namespace hk::svc {
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
     Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
+    Result GetSystemInfo(u64* outInfo, svc::SystemInfoType infoType, svc::Handle handle, svc::PhysicalMemorySystemInfo infoSubType);
 
     hk_noreturn Result hkBreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
 
