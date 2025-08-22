@@ -2,6 +2,7 @@
 
 #include "hk/diag/diag.h"
 #include "hk/svc/types.h"
+#include "hk/types.h"
 
 namespace hk::svc {
 #ifdef __aarch64__
@@ -109,7 +110,11 @@ namespace hk::svc {
     }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
-    void ExitProcess();
+    hk_noreturn void ExitProcess();
+    hk_noreturn void ExitThread();
+    // values 0, -1, and -2 will yield the thread.
+    // see https://switchbrew.org/wiki/SVC#SleepThread
+    void SleepThread(s64 nanoseconds);
     Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
     Result CloseHandle(Handle handle);
     Result ResetSignal(Handle handle);

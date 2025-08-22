@@ -109,6 +109,7 @@ namespace hk::sf {
         u8 mHipcStaticIdx = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
+        u32 mOutPointerSizes = 0;
         util::FixedCapacityArray<u32, 8> mObjects;
         util::FixedCapacityArray<Handle, 8> mHipcCopyHandles;
         util::FixedCapacityArray<Handle, 8> mHipcMoveHandles;
@@ -121,8 +122,7 @@ namespace hk::sf {
 
     public:
         Request(u32 command)
-            : mCommandId(command) {
-        }
+            : mCommandId(command) { }
         template <typename T>
         Request(u32 command, const T* data)
             : mCommandId(command)
@@ -130,36 +130,35 @@ namespace hk::sf {
         template <typename T>
         Request(u32 command, const T* data, size size)
             : mCommandId(command)
-            , mData(cast<const u8*>(data), sizeof(T) * size) {
-        }
+            , mData(cast<const u8*>(data), sizeof(T) * size) { }
 
-        void enableDebug(bool before, bool after) {
+        constexpr void enableDebug(bool before, bool after) {
             mPrintRequest = before;
             mPrintResponse = after;
         }
 
-        void debugAbortAfterRequest() {
+        constexpr void debugAbortAfterRequest() {
             mPrintRequest = true;
             mAbortAfterRequest = true;
         }
 
-        void setToken(u32 token) {
+        constexpr void setToken(u32 token) {
             this->mToken = token;
         }
 
-        void setSendPid() {
+        constexpr void setSendPid() {
             mSendPid = true;
         }
 
-        void addCopyHandle(Handle handle) {
+        constexpr void addCopyHandle(Handle handle) {
             mHipcCopyHandles.add(handle);
         }
 
-        void addMoveHandle(Handle handle) {
+        constexpr void addMoveHandle(Handle handle) {
             mHipcMoveHandles.add(handle);
         }
 
-        void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        constexpr void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             mHipcSendStatics.add(hipc::Static(
                 mHipcStaticIdx++,
                 0,
@@ -176,6 +175,7 @@ namespace hk::sf {
                 mode,
                 u64(data),
                 size));
+            mOutPointerSizes++;
         }
 
         void addInPointer(const void* data, u16 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
@@ -191,6 +191,7 @@ namespace hk::sf {
                 mode,
                 u64(data),
                 size));
+            mOutPointerSizes++;
         }
 
         void addOutFixedSizePointer(void* data, u16 size) {
@@ -240,6 +241,9 @@ namespace hk::sf {
                     hipcDataSize += sizeof(cmif::DomainInHeader);
                     hipcDataSize += sizeof(u32) * mObjects.size();
                 }
+
+                hipcDataSize += sizeof(u16) * mOutPointerSizes;
+                hipcDataSize = alignUp(hipcDataSize, sizeof(u16));
 
                 hipcDataSize += cmifDataSize;
 
@@ -308,7 +312,7 @@ namespace hk::sf {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
                 diag::debugLog("");
-                for (int i = 0; i < sizes.hipcDataSize; i += 16)
+                for (int i = 0; i < writer.tell(); i += 16)
                     diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                         buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
@@ -368,7 +372,7 @@ namespace hk::sf {
                 response.hipcSendStatics.add(reader.read<hipc::Static>());
             reader.seek(alignUp(reader.tell(), 16));
 
-            size dataWordsLeft = header.dataWords;
+            size dataWordsLeft = header.dataWords - 4;
 
             if (service->isDomain()) {
                 auto domainOut = reader.read<cmif::DomainOutHeader>();
@@ -382,11 +386,13 @@ namespace hk::sf {
             response.result = outHeader.result;
             response.data = std::span(svc::getTLS()->ipcMessageBuffer + reader.tell(), dataWordsLeft * 4);
 
+            // todo: recv statics
+
             if (printResponse) {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
                 diag::debugLog("");
-                for (int i = 0; i < header.dataWords * 4; i += 16)
+                for (int i = 0; i < (reader.tell() + dataWordsLeft * 4); i += 16)
                     diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                         buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],

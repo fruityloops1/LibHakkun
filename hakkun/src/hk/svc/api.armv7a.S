@@ -22,8 +22,16 @@ SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjj
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc11ExitProcessEv
-	svc 0x7
-	bx lr
+	svc #0x7
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc10ExitThreadEv
+	svc #0xA
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc11SleepThreadEl
+	svc #0xB
+    bx lr
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjjjNS0_16MemoryPermissionE

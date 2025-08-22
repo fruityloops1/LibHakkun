@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/diag/diag.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
 #include <array>
@@ -20,11 +21,10 @@ namespace hk::sf {
         std::array<u8, calcParamsSize<Args...>()> array = {};
         ptr offset = 0;
         ([&] {
-            memcpy(array.data() + offset, &args, sizeof(Args));
+            *cast<Args*>(&array[offset]) = args;
             offset += sizeof(Args);
         }(),
             ...);
-
         return array;
     }
 
