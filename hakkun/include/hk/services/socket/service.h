@@ -13,26 +13,44 @@
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
 #include <type_traits>
+#include <utility>
 
 namespace hk::socket {
 
     class Socket : sf::Service {
+        sf::Service monitorService;
         HK_SINGLETON(Socket);
 
     public:
-        Socket(sf::Service&& service)
-            : sf::Service(std::forward<sf::Service>(service)) { }
+        Socket(sf::Service&& service, sf::Service&& monitor)
+            : sf::Service(std::forward<sf::Service>(service))
+            , monitorService(std::forward<sf::Service>(monitor)) { }
 
         template <util::TemplateString name = "bsd:u">
-        static Socket* initialize() {
-            createInstance(sm::ServiceManager::instance()->getServiceHandle<name>());
+        static Socket* initialize(const ServiceConfig& config, const std::span<u8> socketBuffer) {
+            auto monitor = startMonitoring<name>();
+            createInstance(
+                sm::ServiceManager::instance()->getServiceHandle<name>(),
+                std::move(monitor)
+            );
+            instance()->registerClient(config, socketBuffer);
             return instance();
         }
 
-        void registerClient(const ServiceConfig& config, const u8* socketBuffer, size socketBufferSize) {
+        template <util::TemplateString name>
+        static sf::Service startMonitoring() {
+            auto monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<name>());
+            auto input = u64(0);
+            auto request = sf::Request(1, &input);
+            request.setSendPid();
+            HK_ABORT_UNLESS_R(monitorService.invokeRequest(std::move(request)));
+            return monitorService;
+        }
+
+        void registerClient(const ServiceConfig& config, const std::span<u8> socketBuffer) {
             Handle handle;
-            HK_ABORT_UNLESS_R(svc::CreateTransferMemory(&handle, ptr(socketBuffer), socketBufferSize, svc::MemoryPermission_None));
-            std::array<u8, 0x30> input = sf::packInput(config, u64(0xDEADBEEFCAFEBABE), u64(socketBufferSize));
+            HK_ABORT_UNLESS_R(svc::CreateTransferMemory(&handle, ptr(socketBuffer.data()), socketBuffer.size_bytes(), svc::MemoryPermission_None));
+            std::array<u8, 0x30> input = sf::packInput(config, u64(0xDEADBEEFCAFEBABE), u64(socketBuffer.size_bytes()));
             auto request = sf::Request(0, &input);
             request.addCopyHandle(handle);
             request.setSendPid();

@@ -71,7 +71,7 @@ namespace hk::sf {
         ~Service() {
             if (ownedHandle) {
                 svc::CloseHandle(mSession);
-                HK_ABORT("closed when valid...", 0);
+                diag::debugLog("closed a handle :3");
             }
         }
 
