@@ -26,6 +26,7 @@ target_link_options(${PROJECT_NAME} PRIVATE -T${MISC_LINKER_SCRIPT})
 target_link_options(${PROJECT_NAME} PRIVATE -Wl,--export-dynamic-symbol=_ZN2nn2ro6detail15g_pAutoLoadListE)
 
 add_subdirectory(sys/hakkun)
+add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module.txt)
 apply_module_config(${PROJECT_NAME} TRUE __module_entry__)
 target_link_libraries(${PROJECT_NAME} PRIVATE LibHakkunForModule)
 

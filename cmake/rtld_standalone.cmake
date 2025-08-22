@@ -1,4 +1,5 @@
 include(sys/cmake/module_config.cmake)
+include(sys/cmake/visibility.cmake)
 
 function(add_rtld_standalone)
     add_executable(rtld
@@ -17,9 +18,10 @@ function(add_rtld_standalone)
     
     add_library(SdkImportsFakeLib SHARED
         ${PROJECT_SOURCE_DIR}/sys/hakkun/src/rtld/standalone/SdkImportsFakeLib.cpp
-    )
-    target_link_options(SdkImportsFakeLib PRIVATE -Wl,--export-dynamic -Wl,--version-script=${PROJECT_SOURCE_DIR}/sys/data/rtld_fakelib_visibility.txt)
+    )   
+    target_link_options(SdkImportsFakeLib PRIVATE -Wl,--export-dynamic)
     target_link_options(SdkImportsFakeLib PRIVATE -Wl,-fini=rtldFini)
+    add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_rtld_fakelib.txt)
     apply_module_config(SdkImportsFakeLib FALSE _start)
 
     target_link_libraries(rtld PRIVATE SdkImportsFakeLib)

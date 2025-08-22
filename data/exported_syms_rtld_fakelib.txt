@@ -1,0 +1,8 @@
+__nnDetailInitLibc0
+__nnDetailInitLibc1
+__nnDetailInitLibc2
+nnosInitialize
+nndiagStartup
+nninitStartup
+nnMain
+nnosQuickExit
