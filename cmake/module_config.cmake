@@ -21,9 +21,12 @@ set(MISC_LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/sys/data/misc.ld")
 
 watch(${PROJECT_NAME} "${LINKER_SCRIPT};${MISC_LINKER_SCRIPT}")
 
-function(apply_module_config module)
-    target_link_options(${module} PRIVATE -T${LINKER_SCRIPT})
-    target_link_options(${module} PRIVATE -Wl,-init=__module_entry__ -Wl,--pie -Wl,--version-script=${VERSION_SCRIPT} ${USER_VERSION_SCRIPT_ARG})
+function(apply_module_config module useLinkerScript init)
+
+    if (useLinkerScript)
+        target_link_options(${module} PRIVATE -T${LINKER_SCRIPT})
+    endif()
+    target_link_options(${module} PRIVATE -Wl,-init=${init} -Wl,--pie -Wl,--version-script=${VERSION_SCRIPT} ${USER_VERSION_SCRIPT_ARG})
     apply_config(${module})
 
     target_link_libraries(${module} PRIVATE LibHakkun)

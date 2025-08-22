@@ -8,6 +8,7 @@
 #include "hk/sail/detail.h"
 #include "hk/svc/api.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Tuple.h"
 #include "hk/util/hash.h"
 
 namespace hk::sail {
@@ -21,9 +22,20 @@ namespace hk::sail {
 
         {
             const auto data = ro::parseDynamic(init::getModuleStart(), init::_DYNAMIC);
-            data.forEachPlt([&](const Elf_Rela& entry) {
-                Elf_Addr* ptr = cast<Elf_Addr*>(init::getModuleStart() + entry.r_offset);
-                Elf_Xword symIndex = ELF_R_SYM(entry.r_info);
+            data.forEachPlt([&](const Elf_Rel* rel, const Elf_Rela* rela) {
+                auto [ptr, symIndex] = ([&]() -> Tuple<Elf_Addr*, Elf_Xword> {
+                    if (rela == nullptr)
+                        return {
+                            cast<Elf_Addr*>(init::getModuleStart() + rel->r_offset),
+                            ELF_R_SYM(rel->r_info)
+                        };
+                    else
+                        return {
+                            cast<Elf_Addr*>(init::getModuleStart() + rela->r_offset),
+                            ELF_R_SYM(rela->r_info)
+                        };
+                })();
+
                 const Elf_Sym& sym = data.dynsym[symIndex];
                 if (sym.st_name) {
                     bool abort = ELF_ST_BIND(sym.st_info) != STB_WEAK;

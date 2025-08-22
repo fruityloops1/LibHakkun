@@ -16,6 +16,7 @@ namespace hk::init {
     extern "C" {
     extern nn::ro::detail::RoModule hkRtldModule;
     extern u8 __module_start__;
+    extern u8 __module_end__;
     extern const Elf_Dyn _DYNAMIC[];
     extern const Elf_Rela __rela_start__[];
     extern const Elf_Rela __rela_end__[];
@@ -38,5 +39,6 @@ namespace hk::init {
     }
 
     inline ptr getModuleStart() { return cast<ptr>(&__module_start__); }
+    inline ptr getModuleEnd() { return cast<ptr>(&__module_end__); }
 
 } // namespace hk::init

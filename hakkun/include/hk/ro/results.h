@@ -13,5 +13,6 @@ namespace hk::ro {
     HK_DEFINE_RESULT(NotMapped, 3)
     HK_DEFINE_RESULT(OutOfRange, 4)
     HK_DEFINE_RESULT(RtldModuleInvalid, 5)
+    HK_DEFINE_RESULT(SymbolUnresolved, 6)
 
 } // namespace hk::ro

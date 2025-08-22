@@ -45,9 +45,15 @@ namespace hk {
 
         template <typename L>
         constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
-            if (hasValue())
-                return func(disown());
-            else
+            using Return = typename util::FunctionTraits<L>::ReturnType;
+
+            if (hasValue()) {
+                if constexpr (std::is_same_v<Return, void>) {
+                    func(disown());
+                    return ResultSuccess();
+                } else
+                    return func(disown());
+            } else
                 return mResult;
         }
 

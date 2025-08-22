@@ -51,14 +51,12 @@ namespace hk::ro {
             HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
             HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_Read, ResultUnusualSectionLayout());
 
-            ptr rodataBase = curRangeInfo.base_address + curRangeInfo.size;
+            ptr rodataBase = curRangeInfo.base_address;
 
             while (curRangeInfo.permission == svc::MemoryPermission_Read)
                 HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
 
-            ptr bssBase = curRangeInfo.base_address + curRangeInfo.size;
-
-            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+            ptr bssBase = curRangeInfo.base_address;
             HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadWrite, ResultUnusualSectionLayout());
 
             func(textBase, rodataBase, bssBase);
