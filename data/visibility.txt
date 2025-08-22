@@ -1,6 +1,0 @@
-{
-  local:
-    *;
-  global:
-    _ZN2nn2ro6detail15g_pAutoLoadListE;
-};

@@ -35,7 +35,30 @@ namespace hk::init {
 #endif
         callInitializers();
 
+#ifndef HK_STANDALONE
         hkMain();
+#endif
     }
 
 } // namespace hk::init
+
+#ifdef HK_STANDALONE
+extern "C" void hkMain();
+
+namespace nn::init {
+
+    using FuncPtr = void (*)();
+
+    extern void Start(size threadHandle, size argumentAddr, FuncPtr notifyExceptionHandlerReady, FuncPtr callInitializers);
+    void Start(size threadHandle, size argumentAddr, FuncPtr notifyExceptionHandlerReady, FuncPtr callInitializers) {
+        // if (notifyExceptionHandlerReady)
+        //     notifyExceptionHandlerReady();
+
+        if (callInitializers)
+            callInitializers();
+
+        hkMain();
+    }
+
+} // namespace nn::init
+#endif

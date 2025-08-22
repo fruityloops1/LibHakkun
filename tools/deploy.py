@@ -7,10 +7,12 @@ build_dir = sys.argv[1]
 project_name = sys.argv[2]
 title_id = int(sys.argv[3].removeprefix('0x'), 16)
 module_binary = sys.argv[4]
-is_static = sys.argv[5] == 'TRUE'
+has_rtld = sys.argv[5] == 'TRUE'
 layeredfs_dir = f"atmosphere/contents/{title_id:016X}"
 exefs_dir = f"{layeredfs_dir}/exefs"
 sd_exefs_dir = f"{build_dir}/sd/{exefs_dir}"
+
+print(has_rtld)
 
 def deploy_sd():
     print("-- Deploying to SD folder")
@@ -21,7 +23,7 @@ def deploy_sd():
     os.makedirs(sd_exefs_dir, exist_ok=True)
     shutil.copyfile(f"{build_dir}/main.npdm", f"{sd_exefs_dir}/main.npdm")
     shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{sd_exefs_dir}/{module_binary}")
-    if is_static:
+    if has_rtld:
         shutil.copyfile(f"{build_dir}/rtld.nso", f"{sd_exefs_dir}/rtld")
 
 def deploy_ftp():
@@ -55,7 +57,7 @@ def deploy_ftp():
 
     upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
     upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
-    if is_static:
+    if has_rtld:
         upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
 
 
