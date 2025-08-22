@@ -120,6 +120,7 @@ namespace hk::svc {
     Result SendSyncRequest(Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
+    hk_noreturn void ReturnFromException(Result result);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);

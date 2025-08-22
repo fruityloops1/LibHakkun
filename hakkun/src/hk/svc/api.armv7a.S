@@ -57,6 +57,10 @@ SVC_BEGIN _ZN2hk3svc17OutputDebugStringEPKcj
 	bx lr
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc19ReturnFromExceptionENS_6ResultE
+	svc 0x28
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc7GetInfoEPyNS0_8InfoTypeEjy
     str r0, [sp, #-4]!
     ldr r0, [sp, #4]

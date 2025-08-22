@@ -58,6 +58,7 @@ SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvm
 	ret
 SVC_END
 
+
 SVC_BEGIN _ZN2hk3svc18hkBreakWithMessageENS0_11BreakReasonEPvmS2_S2_
 	svc 0x26
 	ret
@@ -66,6 +67,10 @@ SVC_END
 SVC_BEGIN _ZN2hk3svc17OutputDebugStringEPKcm
 	svc 0x27
 	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc19ReturnFromExceptionENS_6ResultE
+	svc 0x28
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
