@@ -50,7 +50,7 @@ namespace hk::socket {
         void registerClient(const ServiceConfig& config, const std::span<u8> socketBuffer) {
             Handle handle;
             HK_ABORT_UNLESS_R(svc::CreateTransferMemory(&handle, ptr(socketBuffer.data()), socketBuffer.size_bytes(), svc::MemoryPermission_None));
-            std::array<u8, 0x30> input = sf::packInput(config, u64(0xDEADBEEFCAFEBABE), u64(socketBuffer.size_bytes()));
+            std::array<u8, 0x30> input = sf::packInput(config, u64(0), u64(socketBuffer.size_bytes()));
             auto request = sf::Request(0, &input);
             request.addCopyHandle(handle);
             request.setSendPid();
