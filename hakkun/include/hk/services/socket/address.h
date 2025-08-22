@@ -8,35 +8,43 @@
 #include "hk/util/TemplateString.h"
 #include <bit>
 namespace hk::socket {
-    enum class AddressFamily : u32
+    enum class AddressFamily : u8
     {
         Ipv4 = 2,
         Ipv6 = 28,
     };
-    enum class Type : u32
+    enum class Type : u8
     {
         Stream = 1,
         Datagram = 2,
         Raw = 3,
         SequencedPacketStream = 5,
     };
-    enum class Protocol : u32
+    enum class Protocol : u8
     {
         Tcp = 2,
         Udp = 17,
     };
 
     class SocketAddr {
+        u8 mLength;
         AddressFamily mFamily;
+
+        friend class SocketAddrIpv4;
+        SocketAddr(u8 length, AddressFamily family)
+            : mLength(length)
+            , mFamily(family) { }
     };
     class SocketAddrIpv4 : public SocketAddr {
         constexpr SocketAddrIpv4(u16 port, u32 address)
-            : mPort(std::byteswap(port))
-            , mAddress(std::byteswap(address)) { }
+            : SocketAddr(6, AddressFamily::Ipv4)
+            , mPort(std::byteswap(port))
+            , mAddress(address) { }
 
     public:
         u16 mPort;
         u32 mAddress;
+        u64 _ = {};
         constexpr static ValueOrResult<u32> parseAddress(const char* text) {
             size len = __builtin_strlen(text);
             HK_UNLESS(len <= 15, ResultTooLong());
@@ -72,16 +80,13 @@ namespace hk::socket {
                 octets[i] = result.value();
                 value2 <<= 8;
                 value2 |= octets[i];
-                diag::debugLog("octet %x %d", octets[i], octets[i]);
-                diag::debugLog("value %x", value2);
             }
-
 
             return std::byteswap(value2);
         }
         template <util::TemplateString address>
         constexpr static SocketAddrIpv4 parse(u16 port) {
-            // static_assert(__builtin_strlen(address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
+            static_assert(__builtin_strlen(address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
             constexpr ValueOrResult<u32> result = parseAddress(address.value);
             static_assert(Result(result).getDescription() == 0);
 
