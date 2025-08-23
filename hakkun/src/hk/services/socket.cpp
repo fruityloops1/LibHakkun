@@ -2,4 +2,4 @@
 
 namespace hk::socket {
     HK_SINGLETON_IMPL(Socket);
-}
+} // namespace hk::socket

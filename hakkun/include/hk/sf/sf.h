@@ -25,8 +25,11 @@ Untested:
 */
 
 namespace hk::sf {
+
     class Request;
     struct Response;
+
+    constexpr size cTlsBufferSize = sizeof(svc::ThreadLocalRegion::ipcMessageBuffer);
 
     class Service {
         friend class Request;
@@ -35,7 +38,7 @@ namespace hk::sf {
         std::optional<u32> mObject;
         // Whether the session handle is owned by the current service.
         // Domain subservices don't own their own handles.
-        bool ownedHandle;
+        bool mOwnedHandle;
 
         template <typename ResponseHandler>
         inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler);
@@ -52,24 +55,25 @@ namespace hk::sf {
         Service(Handle session, std::optional<u32> object, bool isRoot)
             : mSession(session)
             , mObject(object)
-            , ownedHandle(isRoot) { }
+            , mOwnedHandle(isRoot) { }
 
     public:
         Service(Service&& old)
             : mSession(old.mSession)
-            , ownedHandle(old.ownedHandle) {
-            old.ownedHandle = false;
+            , mOwnedHandle(old.mOwnedHandle) {
+            old.mSession = 0;
+            old.mOwnedHandle = false;
         }
         Service(Handle handle)
             : mSession(handle)
             , mObject()
-            , ownedHandle(true) { }
+            , mOwnedHandle(true) { }
         static Service fromHandle(Handle session) {
             return Service(session, std::nullopt, false);
         }
 
         ~Service() {
-            if (ownedHandle) {
+            if (mOwnedHandle) {
                 svc::CloseHandle(mSession);
                 diag::debugLog("closed a handle :3");
             }
@@ -84,7 +88,7 @@ namespace hk::sf {
         }
 
         bool isDomainSubservice() {
-            return !ownedHandle;
+            return !mOwnedHandle;
         }
 
         // A service might have many interfaces, and the kernel only has so many session handles,
@@ -224,8 +228,9 @@ namespace hk::sf {
     private:
         friend class Service;
         void writeToTls(Service* service, cmif::MessageTag tag) {
-            std::memset(svc::getTLS()->ipcMessageBuffer, 0, 256);
-            util::Stream writer(svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+
+            std::memset(svc::getTLS()->ipcMessageBuffer, 0, cTlsBufferSize);
+            util::Stream writer(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
             bool hasSpecialHeader = mSendPid || !mHipcCopyHandles.empty() || !mHipcMoveHandles.empty();
 
             struct Sizes {
@@ -237,7 +242,7 @@ namespace hk::sf {
                 u16 hipcDataSize = 16;
                 u16 cmifDataSize = sizeof(cmif::InHeader) + mData.size_bytes();
 
-                if (!service->ownedHandle) {
+                if (!service->mOwnedHandle) {
                     hipcDataSize += sizeof(cmif::DomainInHeader);
                     hipcDataSize += sizeof(u32) * mObjects.size();
                 }
@@ -310,7 +315,7 @@ namespace hk::sf {
 
             if (mPrintRequest) {
                 u8 buf[256] = {};
-                memcpy(buf, svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+                memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
                 diag::debugLog("");
                 for (int i = 0; i < writer.tell(); i += 16)
                     diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
@@ -318,7 +323,7 @@ namespace hk::sf {
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
                         buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
                         buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
-                memcpy(svc::getTLS()->ipcMessageBuffer, buf, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+                memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
             }
 
             if (mAbortAfterRequest)
@@ -351,7 +356,7 @@ namespace hk::sf {
     private:
         friend class Service;
         static Response readFromTls(Service* service, bool printResponse) {
-            util::Stream reader(svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+            util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
 
             auto header = reader.read<hipc::Header>();
 
@@ -390,7 +395,7 @@ namespace hk::sf {
 
             if (printResponse) {
                 u8 buf[256] = {};
-                memcpy(buf, svc::getTLS()->ipcMessageBuffer, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+                memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
                 diag::debugLog("");
                 for (int i = 0; i < (reader.tell() + dataWordsLeft * 4); i += 16)
                     diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
@@ -398,7 +403,7 @@ namespace hk::sf {
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
                         buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
                         buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
-                memcpy(svc::getTLS()->ipcMessageBuffer, buf, sizeof(svc::ThreadLocalRegion::ipcMessageBuffer));
+                memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
             }
 
             return response;
@@ -420,4 +425,5 @@ namespace hk::sf {
         auto response = Response::readFromTls(this, request.mPrintResponse);
         return response.result;
     }
-}
+
+} // namespace hk::sf

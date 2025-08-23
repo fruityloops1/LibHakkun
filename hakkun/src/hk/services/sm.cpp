@@ -8,4 +8,4 @@ namespace hk::sm {
     //     // svc::ConnectToNamedPort("sm");
     //     HK_ABORT("lol", 0);
     // }
-}
+} // namespace hk::sm

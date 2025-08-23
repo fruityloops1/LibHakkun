@@ -6,6 +6,7 @@
 #include <array>
 
 namespace hk::sf {
+
     template <typename... Args>
     constexpr size calcParamsSize() {
         u32 totalSize = 0;
@@ -35,4 +36,5 @@ namespace hk::sf {
             return *cast<T*>(response.data.data());
         };
     }
-}
+
+} // namespace hk::sf

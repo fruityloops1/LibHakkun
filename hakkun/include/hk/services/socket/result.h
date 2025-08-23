@@ -1,5 +1,9 @@
+#pragma once
+
 #include "hk/Result.h"
+
 namespace hk::socket {
+
     HK_RESULT_MODULE(412)
     HK_DEFINE_RESULT_RANGE(Socket, 30, 50)
 
@@ -10,4 +14,5 @@ namespace hk::socket {
     HK_DEFINE_RESULT(OctetTooLarge, 34)
     HK_DEFINE_RESULT(EarlyEndOfString, 35)
     HK_DEFINE_RESULT(TooLong, 36)
-}
+
+} // namespace hk::socket

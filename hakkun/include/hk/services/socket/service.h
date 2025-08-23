@@ -18,21 +18,20 @@
 namespace hk::socket {
 
     class Socket : sf::Service {
-        sf::Service monitorService;
+        sf::Service mMonitorService;
         HK_SINGLETON(Socket);
 
     public:
         Socket(sf::Service&& service, sf::Service&& monitor)
             : sf::Service(std::forward<sf::Service>(service))
-            , monitorService(std::forward<sf::Service>(monitor)) { }
+            , mMonitorService(std::forward<sf::Service>(monitor)) { }
 
         template <util::TemplateString name = "bsd:u">
         static Socket* initialize(const ServiceConfig& config, const std::span<u8> socketBuffer) {
             auto monitor = startMonitoring<name>();
             createInstance(
                 sm::ServiceManager::instance()->getServiceHandle<name>(),
-                std::move(monitor)
-            );
+                std::move(monitor));
             instance()->registerClient(config, socketBuffer);
             return instance();
         }
@@ -89,4 +88,4 @@ namespace hk::socket {
         }
     };
 
-}
+} // namespace hk::socket

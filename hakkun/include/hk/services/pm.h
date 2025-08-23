@@ -1,8 +1,11 @@
+#pragma once
+
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/util/Singleton.h"
 
 namespace hk::pm {
+
     class ProcessManagerForDebugMonitor : public sf::Service {
         HK_SINGLETON(ProcessManagerForDebugMonitor);
 
@@ -22,4 +25,5 @@ namespace hk::pm {
             });
         }
     };
-}
+
+} // namespace hk::pm

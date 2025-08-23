@@ -93,4 +93,4 @@ namespace hk::sf::hipc {
         }
     };
 
-}
+} // namespace hk::sf::hipc

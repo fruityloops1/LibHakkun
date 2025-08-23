@@ -3,7 +3,6 @@
 
 #include "hk/ValueOrResult.h"
 #include "hk/services/sm.h"
-#include "hk/sf/hipc.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
 #include "hk/util/FixedCapacityArray.h"
@@ -14,6 +13,7 @@
 #include <span>
 
 namespace hk::lm {
+
     class Logger {
         friend class LogManager;
         sf::Service service;
@@ -97,4 +97,5 @@ namespace hk::lm {
             });
         }
     };
-}
+
+} // namespace hk::lm

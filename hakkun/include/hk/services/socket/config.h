@@ -1,6 +1,9 @@
+#pragma once
+
 #include "hk/types.h"
 
 namespace hk::socket {
+
     struct ServiceConfig {
         u32 version = 0xA;
 
@@ -14,7 +17,7 @@ namespace hk::socket {
 
         u32 sbEfficiency = 4;
 
-        constexpr size_t calculateTransferMemorySize() const {
+        constexpr size_t calcTransferMemorySize() const {
             u32 tcp_tx_buf_max_size = tcpTxBufMaxSize != 0 ? tcpTxBufMaxSize : tcpTxBufSize;
             u32 tcp_rx_buf_max_size = tcpRxBufMaxSize != 0 ? tcpRxBufMaxSize : tcpRxBufSize;
             u32 sum = tcp_tx_buf_max_size + tcp_rx_buf_max_size + udpTxBufSize + udpRxBufSize;
@@ -23,4 +26,5 @@ namespace hk::socket {
             return size(sbEfficiency * sum);
         }
     };
-}
+
+} // namespace hk::socket

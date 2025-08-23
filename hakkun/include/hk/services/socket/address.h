@@ -7,21 +7,22 @@
 #include "hk/types.h"
 #include "hk/util/TemplateString.h"
 #include <bit>
+
 namespace hk::socket {
-    enum class AddressFamily : u8
-    {
+
+    enum class AddressFamily : u8 {
         Ipv4 = 2,
         Ipv6 = 28,
     };
-    enum class Type : u8
-    {
+
+    enum class Type : u8 {
         Stream = 1,
         Datagram = 2,
         Raw = 3,
         SequencedPacketStream = 5,
     };
-    enum class Protocol : u8
-    {
+
+    enum class Protocol : u8 {
         Tcp = 2,
         Udp = 17,
     };
@@ -35,6 +36,7 @@ namespace hk::socket {
             : mLength(length)
             , mFamily(family) { }
     };
+
     class SocketAddrIpv4 : public SocketAddr {
         constexpr SocketAddrIpv4(u16 port, u32 address)
             : SocketAddr(6, AddressFamily::Ipv4)
@@ -44,7 +46,8 @@ namespace hk::socket {
     public:
         u16 mPort;
         u32 mAddress;
-        u64 _ = {};
+        u64 _8 = {};
+
         constexpr static ValueOrResult<u32> parseAddress(const char* text) {
             size len = __builtin_strlen(text);
             HK_UNLESS(len <= 15, ResultTooLong());
@@ -84,6 +87,7 @@ namespace hk::socket {
 
             return std::byteswap(value2);
         }
+
         template <util::TemplateString address>
         constexpr static SocketAddrIpv4 parse(u16 port) {
             static_assert(__builtin_strlen(address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
@@ -103,4 +107,5 @@ namespace hk::socket {
             });
         }
     };
-}
+
+} // namespace hk::socket

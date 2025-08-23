@@ -3,7 +3,9 @@
 #include "hk/types.h"
 
 namespace hk::sf::cmif {
+
     static constexpr u32 cInHeaderMagic = 0x49434653;
+
     struct InHeader {
         u32 magic = 0;
         u32 version;
@@ -45,4 +47,5 @@ namespace hk::sf::cmif {
         Request = 0,
         Close = 1,
     };
-}
+
+} // namespace hk::sf::cmif
