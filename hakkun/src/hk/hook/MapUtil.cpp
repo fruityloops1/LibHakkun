@@ -1,6 +1,8 @@
 #include "hk/hook/MapUtil.h"
 #include "hk/diag/diag.h"
+#include "hk/hook/results.h"
 #include "hk/svc/api.h"
+#include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Random.h"
 
@@ -60,6 +62,44 @@ namespace hk::hook {
         HK_ABORT_UNLESS_R(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
 
         *outRw = dest + ptrToAlignedDiff;
+
+        return ResultSuccess();
+    }
+
+    Result mapRwToRx(ptr rw, size mapSize, ptr* outRx) {
+        if (not isAlignedPage(rw) or not isAlignedPage(mapSize) or (*outRx != 0 and not isAlignedPage(*outRx)))
+            return ResultAddressNotAligned();
+
+        if (*outRx != 0) {
+            svc::MemoryInfo info;
+            u32 page;
+            HK_ABORT_UNLESS_R(svc::QueryMemory(&info, &page, *outRx));
+
+            if (info.state != svc::MemoryState_Free or info.size < mapSize)
+                return ResultMapAddressNotViable();
+        } else
+            *outRx = findAslr(mapSize);
+
+        Handle curProcess;
+        HK_ABORT_UNLESS_R(svc::getProcessHandleMesosphere(&curProcess));
+
+        // diag::debugLog("svc::MapProcessCodeMemory(%x, %zx, %zx, %zx)", curProcess, *outRx, rw, mapSize);
+        // HK_TRY(svc::MapProcessCodeMemory(curProcess, *outRx, rw, mapSize));
+
+        // diag::debugLog("svc::MapMemory(%zx, %zx, %zx)", *outRx, rw, mapSize);
+        // HK_TRY(svc::MapMemory(*outRx, rw, mapSize));
+        //
+        // diag::debugLog("svc::SetProcessMemoryPermission(%x, %zx, %zx, %d)", curProcess, *outRx, mapSize, svc::MemoryPermission_ReadExecute);
+        // HK_TRY(svc::SetProcessMemoryPermission(curProcess, *outRx, mapSize, svc::MemoryPermission_ReadExecute));
+
+        return ResultSuccess();
+    }
+
+    Result unmapRwToRx(ptr rw, size mapSize, ptr rx) {
+        Handle curProcess;
+        HK_ABORT_UNLESS_R(svc::getProcessHandleMesosphere(&curProcess));
+
+        HK_TRY(svc::UnmapProcessCodeMemory(curProcess, rx, rw, mapSize));
 
         return ResultSuccess();
     }

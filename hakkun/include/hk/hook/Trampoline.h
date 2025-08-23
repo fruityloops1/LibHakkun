@@ -1,8 +1,10 @@
 #pragma once
 
+#include "hk/diag/diag.h"
 #include "hk/hook/InstrUtil.h"
 #include "hk/hook/Replace.h"
 #include "hk/svc/api.h"
+#include "hk/svc/types.h"
 #include "hk/util/PoolAllocator.h"
 
 namespace hk::hook {
@@ -26,13 +28,20 @@ namespace hk::hook {
 
         detail::TrampolineBackup* mBackup = nullptr;
 
-        Func getBackupFuncPtr() const { return cast<Func>(mBackup->getRx()); }
+        Func getBackupFuncPtr() const {
+            return mFarBackup != nullptr ? cast<Func>(&mFarBackup->origInstrForTrampoline) : cast<Func>(mBackup->getRx());
+        }
 
+        using Rp::checkBranchDistanceExceeded;
         using Rp::getAt;
+        using Rp::getFarRx;
+        using Rp::mFarBackup;
         using Rp::mFunc;
         using Rp::mModule;
         using Rp::mOffset;
         using Rp::mOrigInstr;
+        using Rp::restoreBranch;
+        using Rp::writeBranch;
 
     public:
         TrampolineHook(Func func)
@@ -48,25 +57,45 @@ namespace hk::hook {
             mModule = module;
             mOffset = offset;
 
-            mOrigInstr = *cast<Instr*>(getAt());
-            Result rc = writeBranch(mModule, mOffset, mFunc);
-            if (rc.failed()) {
-                mModule = nullptr;
-                mOffset = 0;
-                mOrigInstr = 0;
-                return rc;
+            Result rc = writeBranch();
+            HK_ABORT_UNLESS_R(rc);
+
+            const ptr to = getAt() + sizeof(Instr);
+            ptr from;
+            Instr* origInstr;
+            Instr* bRetInstr;
+            ptr rx;
+
+            if (mFarBackup) {
+                from = getFarRx() + sizeof(Instr);
+
+                s64 distance = checkBranchDistanceExceeded(from, to);
+                HK_ABORT_UNLESS(distance == 0, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", distance, cMaxBranchDistance);
+
+                origInstr = &mFarBackup->origInstrForTrampoline;
+                bRetInstr = &mFarBackup->bRetInstrForTrampoline;
+
+                rx = getFarRx();
+
+                svc::MemoryInfo info;
+                u32 page;
+                svc::QueryMemory(&info, &page, rx);
+                diag::debugLog("penis %zx %zx %zx %d %d", rx, info.base_address, info.size, info.state, info.permission);
+            } else {
+                mBackup = detail::sTrampolinePool.allocate();
+                HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
+
+                from = mBackup->getRx() + sizeof(Instr);
+
+                origInstr = &mBackup->origInstr;
+                bRetInstr = &mBackup->bRetInstr;
+
+                rx = mBackup->getRx();
             }
 
-            mBackup = detail::sTrampolinePool.allocate();
-            HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
-            mBackup->origInstr = mOrigInstr; // TODO: Relocate instruction, or at least abort if instruction needs to be relocated
-
-            const ptr from = mBackup->getRx() + sizeof(Instr), to = getAt() + sizeof(Instr);
-            const s64 gap = to - from;
-            HK_ABORT_UNLESS(abs(gap) <= cMaxBranchDistance, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", abs(gap), cMaxBranchDistance);
-
-            mBackup->bRetInstr = makeB(from, to);
-            svc::clearCache(mBackup->getRx(), sizeof(detail::TrampolineBackup));
+            *origInstr = mOrigInstr; // TODO: Relocate instruction, or at least abort if instruction needs to be relocated
+            *bRetInstr = makeB(from, to);
+            svc::clearCache(rx, mFarBackup != nullptr ? sizeof(detail::FarBackup) : sizeof(detail::TrampolineBackup));
 
             orig = getBackupFuncPtr();
 
@@ -76,15 +105,13 @@ namespace hk::hook {
         Result uninstall() override {
             HK_UNLESS(Rp::isInstalled(), ResultNotInstalled());
 
-            detail::sTrampolinePool.free(mBackup);
-            mBackup = nullptr;
+            if (mFarBackup == nullptr) {
+                HK_ASSERT(mBackup != nullptr);
+                detail::sTrampolinePool.free(mBackup);
+                mBackup = nullptr;
+            }
 
-            HK_TRY(Rp::mModule->writeRo(mOffset, mOrigInstr));
-            mModule = nullptr;
-            mOffset = 0;
-            mOrigInstr = 0;
-
-            return ResultSuccess();
+            return restoreBranch();
         }
 
         Func orig = nullptr;

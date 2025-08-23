@@ -12,6 +12,17 @@
 	.cfi_endproc
 .endm
 
+
+SVC_BEGIN _ZN2hk3svc9MapMemoryEmmm
+	svc 0x4
+	ret
+SVC_END
+
+SVC_BEGIN svcUnmapMemory
+	svc 0x5
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjm
 	str x1, [sp, #-16]!
 	svc 0x6
@@ -66,7 +77,27 @@ SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc26SetProcessMemoryPermissionEjmmNS0_16MemoryPermissionE
+	svc 0x73
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEmjmm
 	svc 0x74
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc18UnmapProcessMemoryEmjmm
+	svc 0x75
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc20MapProcessCodeMemoryEjmmm
+	svc 0x77
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc22UnmapProcessCodeMemoryEjmmm
+	svc 0x78
 	ret
 SVC_END

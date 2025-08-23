@@ -41,12 +41,12 @@ namespace hk::util {
         bool empty() const { return mSize == 0; }
 
         void sort() {
-            std::sort(mData.begin(), mData.begin() + mSize);
+            std::sort(valueAt(0), valueAt(mSize));
         }
 
         template <typename Compare>
         void sort(Compare comp) {
-            std::sort(mData.begin(), mData.begin() + mSize, comp);
+            std::sort(valueAt(0), valueAt(mSize), comp);
         }
 
         ::size size() { return mSize; }

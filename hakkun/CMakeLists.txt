@@ -8,6 +8,7 @@ set(SOURCES
     src/hk/diag/diag.cpp
 
     src/hk/hook/MapUtil.cpp
+    src/hk/hook/Replace.cpp
     src/hk/hook/Trampoline.cpp
 
     src/hk/init/module.S
