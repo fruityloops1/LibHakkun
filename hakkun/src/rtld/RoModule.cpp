@@ -20,7 +20,7 @@ namespace nn::ro::detail {
         m_PltRelSz = data.pltRelSize;
         m_pGot = data.pltGot;
 
-        m_IsGnuHash = data.gnuHashTable != nullptr;
+        m_IsGnuHash = data.gnuHashTable != nullptr and hk::is64Bit();
 
         if (m_IsGnuHash) {
             m_pGnuBloomFilter = cast<uint64_t*>(&data.gnuHashTable[4]);
@@ -55,8 +55,7 @@ namespace nn::ro::detail {
         m_RelCount = data.relCount;
         m_RelaCount = data.relaCount;
 
-        // m_BindNow = data.bindNow;
-        m_BindNow = true;
+        m_BindNow = data.bindNow;
     }
 
     void RoModule::Relocate() {

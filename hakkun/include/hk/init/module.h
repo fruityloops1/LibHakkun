@@ -41,4 +41,6 @@ namespace hk::init {
     inline ptr getModuleStart() { return cast<ptr>(&__module_start__); }
     inline ptr getModuleEnd() { return cast<ptr>(&__module_end__); }
 
+    inline nn::ro::detail::RoModule* getSelfRtldModule() { return &hkRtldModule; }
+
 } // namespace hk::init

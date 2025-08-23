@@ -95,7 +95,9 @@ namespace hk::rtld {
             new (module) nn::ro::detail::RoModule;
 
             module->Initialize(textBase, dynamic);
-            module->Relocate();
+
+            if (module != init::getSelfRtldModule())
+                module->Relocate();
 
             g_AutoLoad.pushFront(module);
         }));
