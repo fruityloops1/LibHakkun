@@ -54,7 +54,7 @@ namespace hk::util {
         template <typename Callback>
         void forEach(Callback func) {
             for (::size i = 0; i < mSize; i++)
-                func(*this[i]);
+                func((*this)[i]);
         }
 
         void clear() {

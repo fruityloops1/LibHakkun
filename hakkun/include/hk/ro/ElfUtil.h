@@ -97,9 +97,9 @@ namespace hk::ro {
                     return;
 
                 if (isRela) {
-                    const Elf_Rela* plt = cast<const Elf_Rela*>(plt);
+                    const Elf_Rela* pltEntries = cast<const Elf_Rela*>(plt);
                     for (size i = 0; true; i++) {
-                        const Elf_Rela* entry = &plt[i];
+                        const Elf_Rela* entry = &pltEntries[i];
                         if (entry->r_offset == 0)
                             break;
 
@@ -107,9 +107,9 @@ namespace hk::ro {
                         callback(nullptr, entry);
                     }
                 } else {
-                    const Elf_Rel* plt = cast<const Elf_Rel*>(plt);
+                    const Elf_Rel* pltEntries = cast<const Elf_Rel*>(plt);
                     for (size i = 0; true; i++) {
-                        const Elf_Rel* entry = &plt[i];
+                        const Elf_Rel* entry = &pltEntries[i];
                         if (entry->r_offset == 0)
                             break;
 
@@ -117,6 +117,17 @@ namespace hk::ro {
                         callback(entry, nullptr);
                     }
                 }
+            }
+
+            template <bool FilterAbsolute = true, typename Func>
+            void forEachPltRelRela(const Func& callback) const {
+                forEachPlt<FilterAbsolute>(callback);
+                forEachRel<FilterAbsolute>([&](const Elf_Rel& entry) {
+                    callback(&entry, nullptr);
+                });
+                forEachRela<FilterAbsolute>([&](const Elf_Rela& entry) {
+                    callback(nullptr, &entry);
+                });
             }
 
 #undef _HK_RO_DETAIL_DYNAMICDATA_FILTERABSOLUTE
@@ -157,7 +168,9 @@ namespace hk::ro {
                 data.rela = cast<const Elf_Rela*>(moduleBase + dynamic->d_un.d_ptr);
                 continue;
             case DT_JMPREL:
+                diag::debugLog("&PLT=%p", &data.plt);
                 data.plt = Elf_Addr(moduleBase) + dynamic->d_un.d_ptr;
+                diag::debugLog("PLT=%p", data.plt);
                 continue;
             case DT_RELSZ:
                 data.relSize = dynamic->d_un.d_val;

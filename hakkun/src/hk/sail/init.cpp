@@ -22,7 +22,7 @@ namespace hk::sail {
 
         {
             const auto data = ro::parseDynamic(init::getModuleStart(), init::_DYNAMIC);
-            data.forEachPlt([&](const Elf_Rel* rel, const Elf_Rela* rela) {
+            data.forEachPltRelRela([&](const Elf_Rel* rel, const Elf_Rela* rela) {
                 auto [ptr, symIndex] = ([&]() -> Tuple<Elf_Addr*, Elf_Xword> {
                     if (rela == nullptr)
                         return {
