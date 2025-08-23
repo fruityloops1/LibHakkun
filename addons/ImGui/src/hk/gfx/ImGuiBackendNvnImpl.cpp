@@ -238,8 +238,12 @@ namespace hk::gfx {
                     const util::Vector2f size = max - min;
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
-
-                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexId());
+                    
+                    #if IMGUI_VERSION_NUM>=19200
+                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
+                    #else
+                    TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
+                    #endif
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {
