@@ -12,8 +12,6 @@ layeredfs_dir = f"atmosphere/contents/{title_id:016X}"
 exefs_dir = f"{layeredfs_dir}/exefs"
 sd_exefs_dir = f"{build_dir}/sd/{exefs_dir}"
 
-print(has_rtld)
-
 def deploy_sd():
     print("-- Deploying to SD folder")
     try:

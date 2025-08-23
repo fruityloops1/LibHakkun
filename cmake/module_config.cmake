@@ -20,7 +20,7 @@ function(apply_module_config module useLinkerScript init)
     if (useLinkerScript)
         target_link_options(${module} PRIVATE -T${LINKER_SCRIPT})
     endif()
-    write_visibility_script(${VERSION_SCRIPT_FILE})
+    write_visibility_script(${VERSION_SCRIPT_FILE} ${module})
     target_link_options(${module} PRIVATE -Wl,-init=${init} -Wl,--pie)
 
     if (EXISTS ${VERSION_SCRIPT_FILE})

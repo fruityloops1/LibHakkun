@@ -26,16 +26,20 @@ function(add_to_visibility file)
     endif()
 endfunction()
 
-function(write_visibility_script output_file)
+function(write_visibility_script output_file project)
     get_property(symbols GLOBAL PROPERTY VISIBILITY_SYMBOLS_LIST)
     
     list(REMOVE_DUPLICATES symbols)
     
     set(script_content "{\n")
+    set(script_content "${script_content}  local:\n")
+    set(script_content "${script_content}  *;\n")
     set(script_content "${script_content}  global:\n")
     #
     foreach(symbol ${symbols})
         set(script_content "${script_content}    ${symbol};\n")
+        
+        target_link_options(${project} PRIVATE -Wl,--export-dynamic-symbol=${symbol})
     endforeach()
     
     set(script_content "${script_content}};\n")

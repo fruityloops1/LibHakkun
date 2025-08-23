@@ -23,10 +23,12 @@ set(CMAKE_EXECUTABLE_SUFFIX ".nss")
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_options(${PROJECT_NAME} PRIVATE -T${MISC_LINKER_SCRIPT})
-target_link_options(${PROJECT_NAME} PRIVATE -Wl,--export-dynamic-symbol=_ZN2nn2ro6detail15g_pAutoLoadListE)
 
 add_subdirectory(sys/hakkun)
 add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module.txt)
+if (HAKKUN_STANDALONE)
+    add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module_standalone.txt)
+endif()
 apply_module_config(${PROJECT_NAME} TRUE __module_entry__)
 target_link_libraries(${PROJECT_NAME} PRIVATE LibHakkunForModule)
 
@@ -36,12 +38,14 @@ if (TARGET_IS_STATIC)
     include(sys/cmake/rtld_dummy.cmake)
 
     add_rtld_dummy()
+    add_dependencies(${PROJECT_NAME} rtld)
 endif()
 
 if (HAKKUN_STANDALONE)
     include(sys/cmake/rtld_standalone.cmake)
 
     add_rtld_standalone()
+    add_dependencies(${PROJECT_NAME} rtld)
 endif()
 
 enable_addons(${PROJECT_NAME})
