@@ -6,29 +6,25 @@ namespace hk::svc {
 
     using Handle = hk::Handle;
 
-    enum ProcessExitReason : u32
-    {
+    enum ProcessExitReason : u32 {
         ProcessExitReason_ExitProcess = 0,
         ProcessExitReason_TerminateProcess = 1,
         ProcessExitReason_Exception = 2,
     };
 
-    enum ThreadExitReason : u32
-    {
+    enum ThreadExitReason : u32 {
         ThreadExitReason_ExitThread = 0,
         ThreadExitReason_TerminateThread = 1,
         ThreadExitReason_ExitProcess = 2,
         ThreadExitReason_TerminateProcess = 3,
     };
 
-    enum BreakPointType : u32
-    {
+    enum BreakPointType : u32 {
         BreakPointType_HardwareInstruction = 0,
         BreakPointType_HardwareData = 1,
     };
 
-    enum BreakReason : u32
-    {
+    enum BreakReason : u32 {
         BreakReason_Panic = 0,
         BreakReason_Assert = 1,
         BreakReason_User = 2,
@@ -41,8 +37,7 @@ namespace hk::svc {
         BreakReason_NotificationOnlyFlag = 0x80000000,
     };
 
-    enum DebugException : u32
-    {
+    enum DebugException : u32 {
         DebugException_UndefinedInstruction = 0,
         DebugException_InstructionAbort = 1,
         DebugException_DataAbort = 2,
@@ -55,8 +50,7 @@ namespace hk::svc {
         DebugException_MemorySystemError = 9,
     };
 
-    enum DebugEvent : u32
-    {
+    enum DebugEvent : u32 {
         DebugEvent_CreateProcess = 0,
         DebugEvent_CreateThread = 1,
         DebugEvent_ExitProcess = 2,
@@ -64,8 +58,7 @@ namespace hk::svc {
         DebugEvent_Exception = 4,
     };
 
-    enum ContinueFlag : u32
-    {
+    enum ContinueFlag : u32 {
         ContinueFlag_ExceptionHandled = (1u << 0),
         ContinueFlag_EnableExceptionEvent = (1u << 1),
         ContinueFlag_ContinueAll = (1u << 2),
@@ -158,8 +151,7 @@ namespace hk::svc {
         DebugInfo info;
     };
 
-    enum MemoryState : u32
-    {
+    enum MemoryState : u32 {
         MemoryState_Free = 0x00,
         MemoryState_Io = 0x01,
         MemoryState_Static = 0x02,
@@ -186,8 +178,7 @@ namespace hk::svc {
         MemoryState_Insecure = 0x17,
     };
 
-    enum MemoryAttribute : u32
-    {
+    enum MemoryAttribute : u32 {
         MemoryAttribute_Locked = (1 << 0),
         MemoryAttribute_IpcLocked = (1 << 1),
         MemoryAttribute_DeviceShared = (1 << 2),
@@ -195,8 +186,7 @@ namespace hk::svc {
         MemoryAttribute_PermissionLocked = (1 << 4),
     };
 
-    enum MemoryPermission : u32
-    {
+    enum MemoryPermission : u32 {
         MemoryPermission_None = (0 << 0),
 
         MemoryPermission_Read = (1 << 0),
@@ -224,8 +214,7 @@ namespace hk::svc {
         u32 flags;
     };
 
-    enum HardwareBreakPointRegisterName : u32
-    {
+    enum HardwareBreakPointRegisterName : u32 {
         HardwareBreakPointRegisterName_I0 = 0,
         HardwareBreakPointRegisterName_I1 = 1,
         HardwareBreakPointRegisterName_I2 = 2,
@@ -260,8 +249,7 @@ namespace hk::svc {
         HardwareBreakPointRegisterName_D15 = 31,
     };
 
-    enum InfoType : u32
-    {
+    enum InfoType : u32 {
         InfoType_CoreMask = 0,
         InfoType_PriorityMask = 1,
         InfoType_AliasRegionAddress = 2,
@@ -314,8 +302,7 @@ namespace hk::svc {
         };
     };
 
-    enum PseudoHandle : svc::Handle
-    {
+    enum PseudoHandle : svc::Handle {
         CurrentThread = 0xFFFF8000,
         CurrentProcess = 0xFFFF8001,
     };
@@ -351,15 +338,13 @@ namespace hk::svc {
         ThreadType* nnsdkThread;
     };
 
-    enum SystemInfoType
-    {
+    enum SystemInfoType {
         SystemInfoType_TotalPhysicalMemorySize = 0,
         SystemInfoType_UsedPhysicalMemorySize = 1,
         SystemInfoType_InitialProcessIdRange = 2,
     };
 
-    enum PhysicalMemorySystemInfo
-    {
+    enum PhysicalMemorySystemInfo {
         PhysicalMemorySystemInfo_Application = 0,
         PhysicalMemorySystemInfo_Applet = 1,
         PhysicalMemorySystemInfo_System = 2,

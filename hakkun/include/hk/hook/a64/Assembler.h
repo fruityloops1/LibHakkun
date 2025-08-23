@@ -32,8 +32,7 @@ namespace hk::hook::a64 {
 
     using InstrBuilder = util::IntBuilder<Instr>;
 
-    enum IRegType : u8
-    {
+    enum IRegType : u8 {
         X0,
         X1,
         X2,
@@ -112,8 +111,7 @@ namespace hk::hook::a64 {
         IRegType_Max = 0xFF & ~W
     };
 
-    enum class IShiftType : u8
-    {
+    enum class IShiftType : u8 {
         LSL,
         LSR,
         ASR,
@@ -133,12 +131,10 @@ namespace hk::hook::a64 {
     };
 
     struct IImm {
-        enum _CreateArg
-        {
+        enum _CreateArg {
             CreateArg
         };
-        enum Type : u8
-        {
+        enum Type : u8 {
             None,
             Imm,
             Arg,
@@ -173,8 +169,7 @@ namespace hk::hook::a64 {
         constexpr bool isImm() const { return type == Imm; }
     } __attribute__((packed));
 
-    enum class IInstrType : u8
-    {
+    enum class IInstrType : u8 {
         Nop,
         Ret,
         Br,
@@ -471,8 +466,7 @@ namespace hk::hook::a64 {
             return *a == *b;
         }
 
-        enum class ParseMnemonic
-        {
+        enum class ParseMnemonic {
             None,
             Nop,
             Ret,
@@ -487,8 +481,7 @@ namespace hk::hook::a64 {
             And,
         };
 
-        enum
-        {
+        enum {
             End = 0,
             Rd = bit(0),
             Rn = bit(1),

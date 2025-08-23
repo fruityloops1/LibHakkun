@@ -35,15 +35,13 @@ namespace hk::sf::cmif {
         u32 _padding[3];
     };
 
-    enum class MessageTag : u16
-    {
+    enum class MessageTag : u16 {
         Close = 2,
         Request = 4,
         Control = 5,
     };
 
-    enum class DomainTag : u8
-    {
+    enum class DomainTag : u8 {
         Request = 0,
         Close = 1,
     };

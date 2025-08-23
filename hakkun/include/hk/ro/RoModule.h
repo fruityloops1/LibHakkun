@@ -73,8 +73,7 @@ namespace hk::ro {
             return writeRo(offset, &value, sizeof(T));
         }
 
-        enum RodataAttribute
-        {
+        enum RodataAttribute {
             RodataAttribute_ModuleName,
             RodataAttribute_Unknown,
 

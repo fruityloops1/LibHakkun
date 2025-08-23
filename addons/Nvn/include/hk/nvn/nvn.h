@@ -1112,10 +1112,10 @@ typedef enum {
 typedef void (*PFNNVNGENERICFUNCPTRPROC)(void);
 typedef PFNNVNGENERICFUNCPTRPROC (*PFNNVNBOOTSTRAPLOADERPROC)(const char*);
 typedef void (*PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC)(NVNcommandBuffer*,
-                                                      NVNcommandBufferMemoryEvent, size_t, void*);
+    NVNcommandBufferMemoryEvent, size_t, void*);
 typedef void (*PFNNVNDEBUGCALLBACKPROC)(NVNdebugCallbackSource source, NVNdebugCallbackType type,
-                                        int id, NVNdebugCallbackSeverity severity,
-                                        const unsigned char* message, void* user);
+    int id, NVNdebugCallbackSeverity severity,
+    const unsigned char* message, void* user);
 typedef void (*PFNNVNWALKDEBUGDATABASECALLBACKPROC)(void*, void*);
 
 typedef void (*PFNNVNDEVICEBUILDERSETDEFAULTSPROC)(NVNdeviceBuilder*);
@@ -1131,23 +1131,23 @@ typedef NVNtextureHandle (*PFNNVNDEVICEGETTEXTUREHANDLEPROC)(const NVNdevice*, i
 typedef NVNtextureHandle (*PFNNVNDEVICEGETTEXELFETCHHANDLEPROC)(const NVNdevice*, int);
 typedef NVNimageHandle (*PFNNVNDEVICEGETIMAGEHANDLEPROC)(const NVNdevice*, int);
 typedef void (*PFNNVNDEVICEINSTALLDEBUGCALLBACKPROC)(NVNdevice*, const PFNNVNDEBUGCALLBACKPROC,
-                                                     void*, NVNboolean);
+    void*, NVNboolean);
 typedef NVNdebugDomainId (*PFNNVNDEVICEGENERATEDEBUGDOMAINIDPROC)(const NVNdevice*, const char*);
 typedef void (*PFNNVNDEVICESETWINDOWORIGINMODEPROC)(NVNdevice*, NVNwindowOriginMode);
 typedef void (*PFNNVNDEVICESETDEPTHMODEPROC)(NVNdevice*, NVNdepthMode);
 typedef NVNboolean (*PFNNVNDEVICEREGISTERFASTCLEARCOLORPROC)(NVNdevice*, const float*, NVNformat);
 typedef NVNboolean (*PFNNVNDEVICEREGISTERFASTCLEARCOLORIPROC)(NVNdevice*, const int*, NVNformat);
 typedef NVNboolean (*PFNNVNDEVICEREGISTERFASTCLEARCOLORUIPROC)(NVNdevice*, const uint32_t*,
-                                                               NVNformat);
+    NVNformat);
 typedef NVNboolean (*PFNNVNDEVICEREGISTERFASTCLEARDEPTHPROC)(NVNdevice*, float);
 typedef NVNwindowOriginMode (*PFNNVNDEVICEGETWINDOWORIGINMODEPROC)(const NVNdevice*);
 typedef NVNdepthMode (*PFNNVNDEVICEGETDEPTHMODEPROC)(const NVNdevice*);
 typedef uint64_t (*PFNNVNDEVICEGETTIMESTAMPINNANOSECONDSPROC)(const NVNdevice*,
-                                                              const NVNcounterData*);
+    const NVNcounterData*);
 typedef void (*PFNNVNDEVICEAPPLYDEFERREDFINALIZESPROC)(NVNdevice*, int);
 typedef void (*PFNNVNDEVICEFINALIZECOMMANDHANDLEPROC)(NVNdevice*, NVNcommandHandle);
 typedef void (*PFNNVNDEVICEWALKDEBUGDATABASEPROC)(const NVNdevice*, NVNdebugObjectType,
-                                                  PFNNVNWALKDEBUGDATABASECALLBACKPROC, void*);
+    PFNNVNWALKDEBUGDATABASECALLBACKPROC, void*);
 typedef NVNseparateTextureHandle (*PFNNVNDEVICEGETSEPARATETEXTUREHANDLEPROC)(const NVNdevice*, int);
 typedef NVNseparateSamplerHandle (*PFNNVNDEVICEGETSEPARATESAMPLERHANDLEPROC)(const NVNdevice*, int);
 typedef NVNboolean (*PFNNVNDEVICEISEXTERNALDEBUGGERATTACHEDPROC)(const NVNdevice*);
@@ -1211,30 +1211,30 @@ typedef NVNboolean (*PFNNVNMEMORYPOOLMAPVIRTUALPROC)(NVNmemoryPool*, int, const 
 typedef size_t (*PFNNVNMEMORYPOOLGETSIZEPROC)(const NVNmemoryPool*);
 typedef NVNmemoryPoolFlags (*PFNNVNMEMORYPOOLGETFLAGSPROC)(const NVNmemoryPool*);
 typedef NVNboolean (*PFNNVNTEXTUREPOOLINITIALIZEPROC)(NVNtexturePool*, const NVNmemoryPool*,
-                                                      ptrdiff_t, int);
+    ptrdiff_t, int);
 typedef void (*PFNNVNTEXTUREPOOLSETDEBUGLABELPROC)(NVNtexturePool*, const char*);
 typedef void (*PFNNVNTEXTUREPOOLFINALIZEPROC)(NVNtexturePool*);
 typedef void (*PFNNVNTEXTUREPOOLREGISTERTEXTUREPROC)(const NVNtexturePool*, int, const NVNtexture*,
-                                                     const NVNtextureView*);
+    const NVNtextureView*);
 typedef void (*PFNNVNTEXTUREPOOLREGISTERIMAGEPROC)(const NVNtexturePool*, int, const NVNtexture*,
-                                                   const NVNtextureView*);
+    const NVNtextureView*);
 typedef const NVNmemoryPool* (*PFNNVNTEXTUREPOOLGETMEMORYPOOLPROC)(const NVNtexturePool*);
 typedef ptrdiff_t (*PFNNVNTEXTUREPOOLGETMEMORYOFFSETPROC)(const NVNtexturePool*);
 typedef int (*PFNNVNTEXTUREPOOLGETSIZEPROC)(const NVNtexturePool*);
 typedef NVNboolean (*PFNNVNSAMPLERPOOLINITIALIZEPROC)(NVNsamplerPool*, const NVNmemoryPool*,
-                                                      ptrdiff_t, int);
+    ptrdiff_t, int);
 typedef void (*PFNNVNSAMPLERPOOLSETDEBUGLABELPROC)(NVNsamplerPool*, const char*);
 typedef void (*PFNNVNSAMPLERPOOLFINALIZEPROC)(NVNsamplerPool*);
 typedef void (*PFNNVNSAMPLERPOOLREGISTERSAMPLERPROC)(const NVNsamplerPool*, int, const NVNsampler*);
 typedef void (*PFNNVNSAMPLERPOOLREGISTERSAMPLERBUILDERPROC)(const NVNsamplerPool*, int,
-                                                            const NVNsamplerBuilder*);
+    const NVNsamplerBuilder*);
 typedef const NVNmemoryPool* (*PFNNVNSAMPLERPOOLGETMEMORYPOOLPROC)(const NVNsamplerPool*);
 typedef ptrdiff_t (*PFNNVNSAMPLERPOOLGETMEMORYOFFSETPROC)(const NVNsamplerPool*);
 typedef int (*PFNNVNSAMPLERPOOLGETSIZEPROC)(const NVNsamplerPool*);
 typedef void (*PFNNVNBUFFERBUILDERSETDEVICEPROC)(NVNbufferBuilder*, NVNdevice*);
 typedef void (*PFNNVNBUFFERBUILDERSETDEFAULTSPROC)(NVNbufferBuilder*);
 typedef void (*PFNNVNBUFFERBUILDERSETSTORAGEPROC)(NVNbufferBuilder*, NVNmemoryPool*, ptrdiff_t,
-                                                  size_t);
+    size_t);
 typedef NVNmemoryPool (*PFNNVNBUFFERBUILDERGETMEMORYPOOLPROC)(const NVNbufferBuilder*);
 typedef ptrdiff_t (*PFNNVNBUFFERBUILDERGETMEMORYOFFSETPROC)(const NVNbufferBuilder*);
 typedef size_t (*PFNNVNBUFFERBUILDERGETSIZEPROC)(const NVNbufferBuilder*);
@@ -1263,16 +1263,16 @@ typedef void (*PFNNVNTEXTUREBUILDERSETLEVELSPROC)(NVNtextureBuilder*, int);
 typedef void (*PFNNVNTEXTUREBUILDERSETFORMATPROC)(NVNtextureBuilder*, NVNformat);
 typedef void (*PFNNVNTEXTUREBUILDERSETSAMPLESPROC)(NVNtextureBuilder*, int);
 typedef void (*PFNNVNTEXTUREBUILDERSETSWIZZLEPROC)(NVNtextureBuilder*, NVNtextureSwizzle,
-                                                   NVNtextureSwizzle, NVNtextureSwizzle,
-                                                   NVNtextureSwizzle);
+    NVNtextureSwizzle, NVNtextureSwizzle,
+    NVNtextureSwizzle);
 typedef void (*PFNNVNTEXTUREBUILDERSETDEPTHSTENCILMODEPROC)(NVNtextureBuilder*,
-                                                            NVNtextureDepthStencilMode);
+    NVNtextureDepthStencilMode);
 typedef size_t (*PFNNVNTEXTUREBUILDERGETSTORAGESIZEPROC)(const NVNtextureBuilder*);
 typedef size_t (*PFNNVNTEXTUREBUILDERGETSTORAGEALIGNMENTPROC)(const NVNtextureBuilder*);
 typedef void (*PFNNVNTEXTUREBUILDERSETSTORAGEPROC)(NVNtextureBuilder*, NVNmemoryPool*, ptrdiff_t);
 typedef void (*PFNNVNTEXTUREBUILDERSETPACKAGEDTEXTUREDATAPROC)(NVNtextureBuilder*, const void*);
 typedef void (*PFNNVNTEXTUREBUILDERSETPACKAGEDTEXTURELAYOUTPROC)(NVNtextureBuilder*,
-                                                                 const NVNpackagedTextureLayout*);
+    const NVNpackagedTextureLayout*);
 typedef void (*PFNNVNTEXTUREBUILDERSETSTRIDEPROC)(NVNtextureBuilder*, ptrdiff_t);
 typedef void (*PFNNVNTEXTUREBUILDERSETGLTEXTURENAMEPROC)(NVNtextureBuilder*, uint32_t);
 typedef NVNstorageClass (*PFNNVNTEXTUREBUILDERGETSTORAGECLASSPROC)(const NVNtextureBuilder*);
@@ -1285,14 +1285,14 @@ typedef int (*PFNNVNTEXTUREBUILDERGETLEVELSPROC)(const NVNtextureBuilder*);
 typedef NVNformat (*PFNNVNTEXTUREBUILDERGETFORMATPROC)(const NVNtextureBuilder*);
 typedef int (*PFNNVNTEXTUREBUILDERGETSAMPLESPROC)(const NVNtextureBuilder*);
 typedef void (*PFNNVNTEXTUREBUILDERGETSWIZZLEPROC)(const NVNtextureBuilder*, NVNtextureSwizzle*,
-                                                   NVNtextureSwizzle*, NVNtextureSwizzle*,
-                                                   NVNtextureSwizzle*);
+    NVNtextureSwizzle*, NVNtextureSwizzle*,
+    NVNtextureSwizzle*);
 typedef NVNtextureDepthStencilMode (*PFNNVNTEXTUREBUILDERGETDEPTHSTENCILMODEPROC)(
     const NVNtextureBuilder*);
 typedef const void* (*PFNNVNTEXTUREBUILDERGETPACKAGEDTEXTUREDATAPROC)(const NVNtextureBuilder*);
 typedef ptrdiff_t (*PFNNVNTEXTUREBUILDERGETSTRIDEPROC)(const NVNtextureBuilder*);
 typedef void (*PFNNVNTEXTUREBUILDERGETSPARSETILELAYOUTPROC)(const NVNtextureBuilder*,
-                                                            NVNtextureSparseTileLayout*);
+    NVNtextureSparseTileLayout*);
 typedef uint32_t (*PFNNVNTEXTUREBUILDERGETGLTEXTURENAMEPROC)(const NVNtextureBuilder*);
 typedef size_t (*PFNNVNTEXTUREBUILDERGETZCULLSTORAGESIZEPROC)(const NVNtextureBuilder*);
 typedef NVNmemoryPool (*PFNNVNTEXTUREBUILDERGETMEMORYPOOLPROC)(const NVNtextureBuilder*);
@@ -1302,19 +1302,19 @@ typedef void (*PFNNVNTEXTUREVIEWSETLEVELSPROC)(NVNtextureView*, int, int);
 typedef void (*PFNNVNTEXTUREVIEWSETLAYERSPROC)(NVNtextureView*, int, int);
 typedef void (*PFNNVNTEXTUREVIEWSETFORMATPROC)(NVNtextureView*, NVNformat);
 typedef void (*PFNNVNTEXTUREVIEWSETSWIZZLEPROC)(NVNtextureView*, NVNtextureSwizzle,
-                                                NVNtextureSwizzle, NVNtextureSwizzle,
-                                                NVNtextureSwizzle);
+    NVNtextureSwizzle, NVNtextureSwizzle,
+    NVNtextureSwizzle);
 typedef void (*PFNNVNTEXTUREVIEWSETDEPTHSTENCILMODEPROC)(NVNtextureView*,
-                                                         NVNtextureDepthStencilMode);
+    NVNtextureDepthStencilMode);
 typedef void (*PFNNVNTEXTUREVIEWSETTARGETPROC)(NVNtextureView*, NVNtextureTarget);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETLEVELSPROC)(const NVNtextureView*, int*, int*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETLAYERSPROC)(const NVNtextureView*, int*, int*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETFORMATPROC)(const NVNtextureView*, NVNformat*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETSWIZZLEPROC)(const NVNtextureView*, NVNtextureSwizzle*,
-                                                      NVNtextureSwizzle*, NVNtextureSwizzle*,
-                                                      NVNtextureSwizzle*);
+    NVNtextureSwizzle*, NVNtextureSwizzle*,
+    NVNtextureSwizzle*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETDEPTHSTENCILMODEPROC)(const NVNtextureView*,
-                                                               NVNtextureDepthStencilMode*);
+    NVNtextureDepthStencilMode*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWGETTARGETPROC)(const NVNtextureView*, NVNtextureTarget*);
 typedef NVNboolean (*PFNNVNTEXTUREVIEWCOMPAREPROC)(const NVNtextureView*, const NVNtextureView*);
 typedef NVNboolean (*PFNNVNTEXTUREINITIALIZEPROC)(NVNtexture*, const NVNtextureBuilder*);
@@ -1332,27 +1332,27 @@ typedef int (*PFNNVNTEXTUREGETLEVELSPROC)(const NVNtexture*);
 typedef NVNformat (*PFNNVNTEXTUREGETFORMATPROC)(const NVNtexture*);
 typedef int (*PFNNVNTEXTUREGETSAMPLESPROC)(const NVNtexture*);
 typedef void (*PFNNVNTEXTUREGETSWIZZLEPROC)(const NVNtexture*, NVNtextureSwizzle*,
-                                            NVNtextureSwizzle*, NVNtextureSwizzle*,
-                                            NVNtextureSwizzle*);
+    NVNtextureSwizzle*, NVNtextureSwizzle*,
+    NVNtextureSwizzle*);
 typedef NVNtextureDepthStencilMode (*PFNNVNTEXTUREGETDEPTHSTENCILMODEPROC)(const NVNtexture*);
 typedef ptrdiff_t (*PFNNVNTEXTUREGETSTRIDEPROC)(const NVNtexture*);
 typedef NVNtextureAddress (*PFNNVNTEXTUREGETTEXTUREADDRESSPROC)(const NVNtexture*);
 typedef void (*PFNNVNTEXTUREGETSPARSETILELAYOUTPROC)(const NVNtexture*,
-                                                     NVNtextureSparseTileLayout*);
+    NVNtextureSparseTileLayout*);
 typedef void (*PFNNVNTEXTUREWRITETEXELSPROC)(const NVNtexture*, const NVNtextureView*,
-                                             const NVNcopyRegion*, const void*);
+    const NVNcopyRegion*, const void*);
 typedef void (*PFNNVNTEXTUREWRITETEXELSSTRIDEDPROC)(const NVNtexture*, const NVNtextureView*,
-                                                    const NVNcopyRegion*, const void*, ptrdiff_t,
-                                                    ptrdiff_t);
+    const NVNcopyRegion*, const void*, ptrdiff_t,
+    ptrdiff_t);
 typedef void (*PFNNVNTEXTUREREADTEXELSPROC)(const NVNtexture*, const NVNtextureView*,
-                                            const NVNcopyRegion*, void*);
+    const NVNcopyRegion*, void*);
 typedef void (*PFNNVNTEXTUREREADTEXELSSTRIDEDPROC)(const NVNtexture*, const NVNtextureView*,
-                                                   const NVNcopyRegion*, void*, ptrdiff_t,
-                                                   ptrdiff_t);
+    const NVNcopyRegion*, void*, ptrdiff_t,
+    ptrdiff_t);
 typedef void (*PFNNVNTEXTUREFLUSHTEXELSPROC)(const NVNtexture*, const NVNtextureView*,
-                                             const NVNcopyRegion*);
+    const NVNcopyRegion*);
 typedef void (*PFNNVNTEXTUREINVALIDATETEXELSPROC)(const NVNtexture*, const NVNtextureView*,
-                                                  const NVNcopyRegion*);
+    const NVNcopyRegion*);
 typedef NVNmemoryPool (*PFNNVNTEXTUREGETMEMORYPOOLPROC)(const NVNtexture*);
 typedef ptrdiff_t (*PFNNVNTEXTUREGETMEMORYOFFSETPROC)(const NVNtexture*);
 typedef int (*PFNNVNTEXTUREGETSTORAGESIZEPROC)(const NVNtexture*);
@@ -1361,13 +1361,13 @@ typedef uint64_t (*PFNNVNTEXTUREGETDEBUGIDPROC)(const NVNtexture*);
 typedef void (*PFNNVNSAMPLERBUILDERSETDEVICEPROC)(NVNsamplerBuilder*, NVNdevice*);
 typedef void (*PFNNVNSAMPLERBUILDERSETDEFAULTSPROC)(NVNsamplerBuilder*);
 typedef void (*PFNNVNSAMPLERBUILDERSETMINMAGFILTERPROC)(NVNsamplerBuilder*, NVNminFilter,
-                                                        NVNmagFilter);
+    NVNmagFilter);
 typedef void (*PFNNVNSAMPLERBUILDERSETWRAPMODEPROC)(NVNsamplerBuilder*, NVNwrapMode, NVNwrapMode,
-                                                    NVNwrapMode);
+    NVNwrapMode);
 typedef void (*PFNNVNSAMPLERBUILDERSETLODCLAMPPROC)(NVNsamplerBuilder*, float, float);
 typedef void (*PFNNVNSAMPLERBUILDERSETLODBIASPROC)(NVNsamplerBuilder*, float);
 typedef void (*PFNNVNSAMPLERBUILDERSETCOMPAREPROC)(NVNsamplerBuilder*, NVNcompareMode,
-                                                   NVNcompareFunc);
+    NVNcompareFunc);
 typedef void (*PFNNVNSAMPLERBUILDERSETBORDERCOLORPROC)(NVNsamplerBuilder*, const float*);
 typedef void (*PFNNVNSAMPLERBUILDERSETBORDERCOLORIPROC)(NVNsamplerBuilder*, const int*);
 typedef void (*PFNNVNSAMPLERBUILDERSETBORDERCOLORUIPROC)(NVNsamplerBuilder*, const uint32_t*);
@@ -1375,13 +1375,13 @@ typedef void (*PFNNVNSAMPLERBUILDERSETMAXANISOTROPYPROC)(NVNsamplerBuilder*, flo
 typedef void (*PFNNVNSAMPLERBUILDERSETREDUCTIONFILTERPROC)(NVNsamplerBuilder*, NVNsamplerReduction);
 typedef void (*PFNNVNSAMPLERBUILDERSETLODSNAPPROC)(NVNsamplerBuilder*, float);
 typedef void (*PFNNVNSAMPLERBUILDERGETMINMAGFILTERPROC)(const NVNsamplerBuilder*, NVNminFilter*,
-                                                        NVNmagFilter*);
+    NVNmagFilter*);
 typedef void (*PFNNVNSAMPLERBUILDERGETWRAPMODEPROC)(const NVNsamplerBuilder*, NVNwrapMode*,
-                                                    NVNwrapMode*, NVNwrapMode*);
+    NVNwrapMode*, NVNwrapMode*);
 typedef void (*PFNNVNSAMPLERBUILDERGETLODCLAMPPROC)(const NVNsamplerBuilder*, float*, float*);
 typedef float (*PFNNVNSAMPLERBUILDERGETLODBIASPROC)(const NVNsamplerBuilder*);
 typedef void (*PFNNVNSAMPLERBUILDERGETCOMPAREPROC)(const NVNsamplerBuilder*, NVNcompareMode*,
-                                                   NVNcompareFunc*);
+    NVNcompareFunc*);
 typedef void (*PFNNVNSAMPLERBUILDERGETBORDERCOLORPROC)(const NVNsamplerBuilder*, float*);
 typedef void (*PFNNVNSAMPLERBUILDERGETBORDERCOLORIPROC)(const NVNsamplerBuilder*, int*);
 typedef void (*PFNNVNSAMPLERBUILDERGETBORDERCOLORUIPROC)(const NVNsamplerBuilder*, uint32_t*);
@@ -1393,7 +1393,7 @@ typedef void (*PFNNVNSAMPLERFINALIZEPROC)(NVNsampler*);
 typedef void (*PFNNVNSAMPLERSETDEBUGLABELPROC)(NVNsampler*, const char*);
 typedef void (*PFNNVNSAMPLERGETMINMAGFILTERPROC)(const NVNsampler*, NVNminFilter*, NVNmagFilter*);
 typedef void (*PFNNVNSAMPLERGETWRAPMODEPROC)(const NVNsampler*, NVNwrapMode*, NVNwrapMode*,
-                                             NVNwrapMode*);
+    NVNwrapMode*);
 typedef void (*PFNNVNSAMPLERGETLODCLAMPPROC)(const NVNsampler*, float*, float*);
 typedef float (*PFNNVNSAMPLERGETLODBIASPROC)(const NVNsampler*);
 typedef void (*PFNNVNSAMPLERGETCOMPAREPROC)(const NVNsampler*, NVNcompareMode*, NVNcompareFunc*);
@@ -1407,18 +1407,18 @@ typedef uint64_t (*PFNNVNSAMPLERGETDEBUGIDPROC)(const NVNsampler*);
 typedef void (*PFNNVNBLENDSTATESETDEFAULTSPROC)(NVNblendState*);
 typedef void (*PFNNVNBLENDSTATESETBLENDTARGETPROC)(NVNblendState*, int);
 typedef void (*PFNNVNBLENDSTATESETBLENDFUNCPROC)(NVNblendState*, NVNblendFunc, NVNblendFunc,
-                                                 NVNblendFunc, NVNblendFunc);
+    NVNblendFunc, NVNblendFunc);
 typedef void (*PFNNVNBLENDSTATESETBLENDEQUATIONPROC)(NVNblendState*, NVNblendEquation,
-                                                     NVNblendEquation);
+    NVNblendEquation);
 typedef void (*PFNNVNBLENDSTATESETADVANCEDMODEPROC)(NVNblendState*, NVNblendAdvancedMode);
 typedef void (*PFNNVNBLENDSTATESETADVANCEDOVERLAPPROC)(NVNblendState*, NVNblendAdvancedOverlap);
 typedef void (*PFNNVNBLENDSTATESETADVANCEDPREMULTIPLIEDSRCPROC)(NVNblendState*, NVNboolean);
 typedef void (*PFNNVNBLENDSTATESETADVANCEDNORMALIZEDDSTPROC)(NVNblendState*, NVNboolean);
 typedef int (*PFNNVNBLENDSTATEGETBLENDTARGETPROC)(const NVNblendState*);
 typedef void (*PFNNVNBLENDSTATEGETBLENDFUNCPROC)(const NVNblendState*, NVNblendFunc*, NVNblendFunc*,
-                                                 NVNblendFunc*, NVNblendFunc*);
+    NVNblendFunc*, NVNblendFunc*);
 typedef void (*PFNNVNBLENDSTATEGETBLENDEQUATIONPROC)(const NVNblendState*, NVNblendEquation*,
-                                                     NVNblendEquation*);
+    NVNblendEquation*);
 typedef NVNblendAdvancedMode (*PFNNVNBLENDSTATEGETADVANCEDMODEPROC)(const NVNblendState*);
 typedef NVNblendAdvancedOverlap (*PFNNVNBLENDSTATEGETADVANCEDOVERLAPPROC)(const NVNblendState*);
 typedef NVNboolean (*PFNNVNBLENDSTATEGETADVANCEDPREMULTIPLIEDSRCPROC)(const NVNblendState*);
@@ -1432,17 +1432,17 @@ typedef NVNlogicOp (*PFNNVNCOLORSTATEGETLOGICOPPROC)(const NVNcolorState*);
 typedef NVNalphaFunc (*PFNNVNCOLORSTATEGETALPHATESTPROC)(const NVNcolorState*);
 typedef void (*PFNNVNCHANNELMASKSTATESETDEFAULTSPROC)(NVNchannelMaskState*);
 typedef void (*PFNNVNCHANNELMASKSTATESETCHANNELMASKPROC)(NVNchannelMaskState*, int, NVNboolean,
-                                                         NVNboolean, NVNboolean, NVNboolean);
+    NVNboolean, NVNboolean, NVNboolean);
 typedef void (*PFNNVNCHANNELMASKSTATEGETCHANNELMASKPROC)(const NVNchannelMaskState*, int,
-                                                         NVNboolean*, NVNboolean*, NVNboolean*,
-                                                         NVNboolean*);
+    NVNboolean*, NVNboolean*, NVNboolean*,
+    NVNboolean*);
 typedef void (*PFNNVNMULTISAMPLESTATESETDEFAULTSPROC)(NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETMULTISAMPLEENABLEPROC)(NVNmultisampleState*, NVNboolean);
 typedef void (*PFNNVNMULTISAMPLESTATESETSAMPLESPROC)(NVNmultisampleState*, int);
 typedef void (*PFNNVNMULTISAMPLESTATESETALPHATOCOVERAGEENABLEPROC)(NVNmultisampleState*,
-                                                                   NVNboolean);
+    NVNboolean);
 typedef void (*PFNNVNMULTISAMPLESTATESETALPHATOCOVERAGEDITHERPROC)(NVNmultisampleState*,
-                                                                   NVNboolean);
+    NVNboolean);
 typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETMULTISAMPLEENABLEPROC)(const NVNmultisampleState*);
 typedef int (*PFNNVNMULTISAMPLESTATEGETSAMPLESPROC)(const NVNmultisampleState*);
 typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETALPHATOCOVERAGEENABLEPROC)(
@@ -1452,26 +1452,26 @@ typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETALPHATOCOVERAGEDITHERPROC)(
 typedef void (*PFNNVNMULTISAMPLESTATESETRASTERSAMPLESPROC)(NVNmultisampleState*, int);
 typedef int (*PFNNVNMULTISAMPLESTATEGETRASTERSAMPLESPROC)(NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETCOVERAGEMODULATIONMODEPROC)(NVNmultisampleState*,
-                                                                    NVNcoverageModulationMode);
+    NVNcoverageModulationMode);
 typedef NVNcoverageModulationMode (*PFNNVNMULTISAMPLESTATEGETCOVERAGEMODULATIONMODEPROC)(
     const NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETCOVERAGETOCOLORENABLEPROC)(NVNmultisampleState*,
-                                                                   NVNboolean);
+    NVNboolean);
 typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETCOVERAGETOCOLORENABLEPROC)(
     const NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETCOVERAGETOCOLOROUTPUTPROC)(NVNmultisampleState*, int);
 typedef int (*PFNNVNMULTISAMPLESTATEGETCOVERAGETOCOLOROUTPUTPROC)(const NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETSAMPLELOCATIONSENABLEPROC)(NVNmultisampleState*,
-                                                                   NVNboolean);
+    NVNboolean);
 typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETSAMPLELOCATIONSENABLEPROC)(
     const NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATEGETSAMPLELOCATIONSGRIDPROC)(NVNmultisampleState*, int*, int*);
 typedef void (*PFNNVNMULTISAMPLESTATESETSAMPLELOCATIONSGRIDENABLEPROC)(NVNmultisampleState*,
-                                                                       NVNboolean);
+    NVNboolean);
 typedef NVNboolean (*PFNNVNMULTISAMPLESTATEGETSAMPLELOCATIONSGRIDENABLEPROC)(
     const NVNmultisampleState*);
 typedef void (*PFNNVNMULTISAMPLESTATESETSAMPLELOCATIONSPROC)(NVNmultisampleState*, int, int,
-                                                             const float*);
+    const float*);
 typedef void (*PFNNVNPOLYGONSTATESETDEFAULTSPROC)(NVNpolygonState*);
 typedef void (*PFNNVNPOLYGONSTATESETCULLFACEPROC)(NVNpolygonState*, NVNface);
 typedef void (*PFNNVNPOLYGONSTATESETFRONTFACEPROC)(NVNpolygonState*, NVNfrontFace);
@@ -1488,23 +1488,23 @@ typedef void (*PFNNVNDEPTHSTENCILSTATESETDEPTHWRITEENABLEPROC)(NVNdepthStencilSt
 typedef void (*PFNNVNDEPTHSTENCILSTATESETDEPTHFUNCPROC)(NVNdepthStencilState*, NVNdepthFunc);
 typedef void (*PFNNVNDEPTHSTENCILSTATESETSTENCILTESTENABLEPROC)(NVNdepthStencilState*, NVNboolean);
 typedef void (*PFNNVNDEPTHSTENCILSTATESETSTENCILFUNCPROC)(NVNdepthStencilState*, NVNface,
-                                                          NVNstencilFunc);
+    NVNstencilFunc);
 typedef void (*PFNNVNDEPTHSTENCILSTATESETSTENCILOPPROC)(NVNdepthStencilState*, NVNface,
-                                                        NVNstencilOp, NVNstencilOp, NVNstencilOp);
+    NVNstencilOp, NVNstencilOp, NVNstencilOp);
 typedef NVNboolean (*PFNNVNDEPTHSTENCILSTATEGETDEPTHTESTENABLEPROC)(const NVNdepthStencilState*);
 typedef NVNboolean (*PFNNVNDEPTHSTENCILSTATEGETDEPTHWRITEENABLEPROC)(const NVNdepthStencilState*);
 typedef NVNdepthFunc (*PFNNVNDEPTHSTENCILSTATEGETDEPTHFUNCPROC)(const NVNdepthStencilState*);
 typedef NVNboolean (*PFNNVNDEPTHSTENCILSTATEGETSTENCILTESTENABLEPROC)(const NVNdepthStencilState*);
 typedef NVNstencilFunc (*PFNNVNDEPTHSTENCILSTATEGETSTENCILFUNCPROC)(const NVNdepthStencilState*,
-                                                                    NVNface);
+    NVNface);
 typedef void (*PFNNVNDEPTHSTENCILSTATEGETSTENCILOPPROC)(const NVNdepthStencilState*, NVNface,
-                                                        NVNstencilOp*, NVNstencilOp*,
-                                                        NVNstencilOp*);
+    NVNstencilOp*, NVNstencilOp*,
+    NVNstencilOp*);
 typedef void (*PFNNVNVERTEXATTRIBSTATESETDEFAULTSPROC)(NVNvertexAttribState*);
 typedef void (*PFNNVNVERTEXATTRIBSTATESETFORMATPROC)(NVNvertexAttribState*, NVNformat, ptrdiff_t);
 typedef void (*PFNNVNVERTEXATTRIBSTATESETSTREAMINDEXPROC)(NVNvertexAttribState*, int);
 typedef void (*PFNNVNVERTEXATTRIBSTATEGETFORMATPROC)(const NVNvertexAttribState*, NVNformat*,
-                                                     ptrdiff_t*);
+    ptrdiff_t*);
 typedef int (*PFNNVNVERTEXATTRIBSTATEGETSTREAMINDEXPROC)(const NVNvertexAttribState*);
 typedef void (*PFNNVNVERTEXSTREAMSTATESETDEFAULTSPROC)(NVNvertexStreamState*);
 typedef void (*PFNNVNVERTEXSTREAMSTATESETSTRIDEPROC)(NVNvertexStreamState*, ptrdiff_t);
@@ -1515,10 +1515,10 @@ typedef NVNboolean (*PFNNVNCOMMANDBUFFERINITIALIZEPROC)(NVNcommandBuffer*, NVNde
 typedef void (*PFNNVNCOMMANDBUFFERFINALIZEPROC)(NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERSETDEBUGLABELPROC)(NVNcommandBuffer*, const char*);
 typedef void (*PFNNVNCOMMANDBUFFERSETMEMORYCALLBACKPROC)(NVNcommandBuffer*,
-                                                         PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC);
+    PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC);
 typedef void (*PFNNVNCOMMANDBUFFERSETMEMORYCALLBACKDATAPROC)(NVNcommandBuffer*, void*);
 typedef void (*PFNNVNCOMMANDBUFFERADDCOMMANDMEMORYPROC)(NVNcommandBuffer*, const NVNmemoryPool*,
-                                                        ptrdiff_t, size_t);
+    ptrdiff_t, size_t);
 typedef void (*PFNNVNCOMMANDBUFFERADDCONTROLMEMORYPROC)(NVNcommandBuffer*, void*, size_t);
 typedef size_t (*PFNNVNCOMMANDBUFFERGETCOMMANDMEMORYSIZEPROC)(const NVNcommandBuffer*);
 typedef size_t (*PFNNVNCOMMANDBUFFERGETCOMMANDMEMORYUSEDPROC)(const NVNcommandBuffer*);
@@ -1529,47 +1529,47 @@ typedef size_t (*PFNNVNCOMMANDBUFFERGETCONTROLMEMORYFREEPROC)(const NVNcommandBu
 typedef void (*PFNNVNCOMMANDBUFFERBEGINRECORDINGPROC)(NVNcommandBuffer*);
 typedef NVNcommandHandle (*PFNNVNCOMMANDBUFFERENDRECORDINGPROC)(NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERCALLCOMMANDSPROC)(NVNcommandBuffer*, int,
-                                                    const NVNcommandHandle*);
+    const NVNcommandHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERCOPYCOMMANDSPROC)(NVNcommandBuffer*, int,
-                                                    const NVNcommandHandle*);
+    const NVNcommandHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDBLENDSTATEPROC)(NVNcommandBuffer*, const NVNblendState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDCHANNELMASKSTATEPROC)(NVNcommandBuffer*,
-                                                            const NVNchannelMaskState*);
+    const NVNchannelMaskState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDCOLORSTATEPROC)(NVNcommandBuffer*, const NVNcolorState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDMULTISAMPLESTATEPROC)(NVNcommandBuffer*,
-                                                            const NVNmultisampleState*);
+    const NVNmultisampleState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDPOLYGONSTATEPROC)(NVNcommandBuffer*, const NVNpolygonState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDDEPTHSTENCILSTATEPROC)(NVNcommandBuffer*,
-                                                             const NVNdepthStencilState*);
+    const NVNdepthStencilState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDVERTEXATTRIBSTATEPROC)(NVNcommandBuffer*, int,
-                                                             const NVNvertexAttribState*);
+    const NVNvertexAttribState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDVERTEXSTREAMSTATEPROC)(NVNcommandBuffer*, int,
-                                                             const NVNvertexStreamState*);
+    const NVNvertexStreamState*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDPROGRAMPROC)(NVNcommandBuffer*, const NVNprogram*, int);
 typedef void (*PFNNVNCOMMANDBUFFERBINDVERTEXBUFFERPROC)(NVNcommandBuffer*, int, NVNbufferAddress,
-                                                        size_t);
+    size_t);
 typedef void (*PFNNVNCOMMANDBUFFERBINDVERTEXBUFFERSPROC)(NVNcommandBuffer*, int, int,
-                                                         const NVNbufferRange*);
+    const NVNbufferRange*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDUNIFORMBUFFERPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                         NVNbufferAddress, size_t);
+    NVNbufferAddress, size_t);
 typedef void (*PFNNVNCOMMANDBUFFERBINDUNIFORMBUFFERSPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                          int, const NVNbufferRange*);
+    int, const NVNbufferRange*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDTRANSFORMFEEDBACKBUFFERPROC)(NVNcommandBuffer*, int,
-                                                                   NVNbufferAddress, size_t);
+    NVNbufferAddress, size_t);
 typedef void (*PFNNVNCOMMANDBUFFERBINDTRANSFORMFEEDBACKBUFFERSPROC)(NVNcommandBuffer*, int, int,
-                                                                    const NVNbufferRange*);
+    const NVNbufferRange*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSTORAGEBUFFERPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                         NVNbufferAddress, size_t);
+    NVNbufferAddress, size_t);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSTORAGEBUFFERSPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                          int, const NVNbufferRange*);
+    int, const NVNbufferRange*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDTEXTUREPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                   NVNtextureHandle);
+    NVNtextureHandle);
 typedef void (*PFNNVNCOMMANDBUFFERBINDTEXTURESPROC)(NVNcommandBuffer*, NVNshaderStage, int, int,
-                                                    const NVNtextureHandle*);
+    const NVNtextureHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDIMAGEPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                 NVNimageHandle);
+    NVNimageHandle);
 typedef void (*PFNNVNCOMMANDBUFFERBINDIMAGESPROC)(NVNcommandBuffer*, NVNshaderStage, int, int,
-                                                  const NVNimageHandle*);
+    const NVNimageHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERSETPATCHSIZEPROC)(NVNcommandBuffer*, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETINNERTESSELLATIONLEVELSPROC)(NVNcommandBuffer*, const float*);
 typedef void (*PFNNVNCOMMANDBUFFERSETOUTERTESSELLATIONLEVELSPROC)(NVNcommandBuffer*, const float*);
@@ -1579,23 +1579,23 @@ typedef void (*PFNNVNCOMMANDBUFFERENDTRANSFORMFEEDBACKPROC)(NVNcommandBuffer*, N
 typedef void (*PFNNVNCOMMANDBUFFERPAUSETRANSFORMFEEDBACKPROC)(NVNcommandBuffer*, NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERRESUMETRANSFORMFEEDBACKPROC)(NVNcommandBuffer*, NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWTRANSFORMFEEDBACKPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                             NVNbufferAddress);
+    NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWARRAYSPROC)(NVNcommandBuffer*, NVNdrawPrimitive, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWELEMENTSPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                    NVNindexType, int, NVNbufferAddress);
+    NVNindexType, int, NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWELEMENTSBASEVERTEXPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                              NVNindexType, int, NVNbufferAddress,
-                                                              int);
+    NVNindexType, int, NVNbufferAddress,
+    int);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWARRAYSINSTANCEDPROC)(NVNcommandBuffer*, NVNdrawPrimitive, int,
-                                                           int, int, int);
+    int, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWELEMENTSINSTANCEDPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                             NVNindexType, int, NVNbufferAddress,
-                                                             int, int, int);
+    NVNindexType, int, NVNbufferAddress,
+    int, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWARRAYSINDIRECTPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                          NVNbufferAddress);
+    NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWELEMENTSINDIRECTPROC)(NVNcommandBuffer*, NVNdrawPrimitive,
-                                                            NVNindexType, NVNbufferAddress,
-                                                            NVNbufferAddress);
+    NVNindexType, NVNbufferAddress,
+    NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERMULTIDRAWARRAYSINDIRECTCOUNTPROC)(
     NVNcommandBuffer*, NVNdrawPrimitive, NVNbufferAddress, NVNbufferAddress, int, ptrdiff_t);
 typedef void (*PFNNVNCOMMANDBUFFERMULTIDRAWELEMENTSINDIRECTCOUNTPROC)(
@@ -1605,13 +1605,13 @@ typedef void (*PFNNVNCOMMANDBUFFERCLEARCOLORPROC)(NVNcommandBuffer*, int, const 
 typedef void (*PFNNVNCOMMANDBUFFERCLEARCOLORIPROC)(NVNcommandBuffer*, int, const int*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARCOLORUIPROC)(NVNcommandBuffer*, int, const uint32_t*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARDEPTHSTENCILPROC)(NVNcommandBuffer*, float, NVNboolean, int,
-                                                         int);
+    int);
 typedef void (*PFNNVNCOMMANDBUFFERDISPATCHCOMPUTEPROC)(NVNcommandBuffer*, int, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERDISPATCHCOMPUTEINDIRECTPROC)(NVNcommandBuffer*, NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERSETVIEWPORTPROC)(NVNcommandBuffer*, int, int, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETVIEWPORTSPROC)(NVNcommandBuffer*, int, int, const float*);
 typedef void (*PFNNVNCOMMANDBUFFERSETVIEWPORTSWIZZLESPROC)(NVNcommandBuffer*, int, int,
-                                                           const NVNviewportSwizzle*);
+    const NVNviewportSwizzle*);
 typedef void (*PFNNVNCOMMANDBUFFERSETSCISSORPROC)(NVNcommandBuffer*, int, int, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETSCISSORSPROC)(NVNcommandBuffer*, int, int, const int*);
 typedef void (*PFNNVNCOMMANDBUFFERSETDEPTHRANGEPROC)(NVNcommandBuffer*, float, float);
@@ -1620,13 +1620,13 @@ typedef void (*PFNNVNCOMMANDBUFFERSETDEPTHRANGESPROC)(NVNcommandBuffer*, int, in
 typedef void (*PFNNVNCOMMANDBUFFERSETTILEDCACHEACTIONPROC)(NVNcommandBuffer*, NVNtiledCacheAction);
 typedef void (*PFNNVNCOMMANDBUFFERSETTILEDCACHETILESIZEPROC)(NVNcommandBuffer*, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSEPARATETEXTUREPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                           NVNseparateTextureHandle);
+    NVNseparateTextureHandle);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSEPARATESAMPLERPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                           NVNseparateSamplerHandle);
+    NVNseparateSamplerHandle);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSEPARATETEXTURESPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                            int, const NVNseparateTextureHandle*);
+    int, const NVNseparateTextureHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDSEPARATESAMPLERSPROC)(NVNcommandBuffer*, NVNshaderStage, int,
-                                                            int, const NVNseparateSamplerHandle*);
+    int, const NVNseparateSamplerHandle*);
 typedef void (*PFNNVNCOMMANDBUFFERSETSTENCILVALUEMASKPROC)(NVNcommandBuffer*, NVNface, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETSTENCILMASKPROC)(NVNcommandBuffer*, NVNface, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETSTENCILREFPROC)(NVNcommandBuffer*, NVNface, int);
@@ -1634,7 +1634,7 @@ typedef void (*PFNNVNCOMMANDBUFFERSETBLENDCOLORPROC)(NVNcommandBuffer*, const fl
 typedef void (*PFNNVNCOMMANDBUFFERSETPOINTSIZEPROC)(NVNcommandBuffer*, float);
 typedef void (*PFNNVNCOMMANDBUFFERSETLINEWIDTHPROC)(NVNcommandBuffer*, float);
 typedef void (*PFNNVNCOMMANDBUFFERSETPOLYGONOFFSETCLAMPPROC)(NVNcommandBuffer*, float, float,
-                                                             float);
+    float);
 typedef void (*PFNNVNCOMMANDBUFFERSETALPHAREFPROC)(NVNcommandBuffer*, float);
 typedef void (*PFNNVNCOMMANDBUFFERSETSAMPLEMASKPROC)(NVNcommandBuffer*, int);
 typedef void (*PFNNVNCOMMANDBUFFERSETRASTERIZERDISCARDPROC)(NVNcommandBuffer*, NVNboolean);
@@ -1643,96 +1643,96 @@ typedef void (*PFNNVNCOMMANDBUFFERSETCONSERVATIVERASTERENABLEPROC)(NVNcommandBuf
 typedef void (*PFNNVNCOMMANDBUFFERSETCONSERVATIVERASTERDILATEPROC)(NVNcommandBuffer*, float);
 typedef void (*PFNNVNCOMMANDBUFFERSETSUBPIXELPRECISIONBIASPROC)(NVNcommandBuffer*, int, int);
 typedef void (*PFNNVNCOMMANDBUFFERCOPYBUFFERTOTEXTUREPROC)(NVNcommandBuffer*, NVNbufferAddress,
-                                                           const NVNtexture*, const NVNtextureView*,
-                                                           const NVNcopyRegion*, int);
+    const NVNtexture*, const NVNtextureView*,
+    const NVNcopyRegion*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCOPYTEXTURETOBUFFERPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                           const NVNtextureView*,
-                                                           const NVNcopyRegion*, NVNbufferAddress,
-                                                           int);
+    const NVNtextureView*,
+    const NVNcopyRegion*, NVNbufferAddress,
+    int);
 typedef void (*PFNNVNCOMMANDBUFFERCOPYTEXTURETOTEXTUREPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                            const NVNtextureView*,
-                                                            const NVNcopyRegion*, const NVNtexture*,
-                                                            const NVNtextureView*,
-                                                            const NVNcopyRegion*, int);
+    const NVNtextureView*,
+    const NVNcopyRegion*, const NVNtexture*,
+    const NVNtextureView*,
+    const NVNcopyRegion*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCOPYBUFFERTOBUFFERPROC)(NVNcommandBuffer*, NVNbufferAddress,
-                                                          NVNbufferAddress, size_t, int);
+    NVNbufferAddress, size_t, int);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARBUFFERPROC)(NVNcommandBuffer*, NVNbufferAddress, size_t,
-                                                   uint32_t);
+    uint32_t);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARTEXTUREPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                    const NVNtextureView*, const NVNcopyRegion*,
-                                                    const float*, int);
+    const NVNtextureView*, const NVNcopyRegion*,
+    const float*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARTEXTUREIPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                     const NVNtextureView*, const NVNcopyRegion*,
-                                                     const int*, int);
+    const NVNtextureView*, const NVNcopyRegion*,
+    const int*, int);
 typedef void (*PFNNVNCOMMANDBUFFERCLEARTEXTUREUIPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                      const NVNtextureView*, const NVNcopyRegion*,
-                                                      const uint32_t*, int);
+    const NVNtextureView*, const NVNcopyRegion*,
+    const uint32_t*, int);
 typedef void (*PFNNVNCOMMANDBUFFERUPDATEUNIFORMBUFFERPROC)(NVNcommandBuffer*, NVNbufferAddress,
-                                                           size_t, ptrdiff_t, size_t, const void*);
+    size_t, ptrdiff_t, size_t, const void*);
 typedef void (*PFNNVNCOMMANDBUFFERREPORTCOUNTERPROC)(NVNcommandBuffer*, NVNcounterType,
-                                                     NVNbufferAddress);
+    NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERRESETCOUNTERPROC)(NVNcommandBuffer*, NVNcounterType);
 typedef void (*PFNNVNCOMMANDBUFFERREPORTVALUEPROC)(NVNcommandBuffer*, uint32_t, NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERSETRENDERENABLEPROC)(NVNcommandBuffer*, NVNboolean);
 typedef void (*PFNNVNCOMMANDBUFFERSETRENDERENABLECONDITIONALPROC)(NVNcommandBuffer*,
-                                                                  NVNconditionalRenderMode,
-                                                                  NVNbufferAddress);
+    NVNconditionalRenderMode,
+    NVNbufferAddress);
 typedef void (*PFNNVNCOMMANDBUFFERSETRENDERTARGETSPROC)(NVNcommandBuffer*, int,
-                                                        const NVNtexture* const*,
-                                                        const NVNtextureView* const*,
-                                                        const NVNtexture*, const NVNtextureView*);
+    const NVNtexture* const*,
+    const NVNtextureView* const*,
+    const NVNtexture*, const NVNtextureView*);
 typedef void (*PFNNVNCOMMANDBUFFERDISCARDCOLORPROC)(NVNcommandBuffer*, int);
 typedef void (*PFNNVNCOMMANDBUFFERDISCARDDEPTHSTENCILPROC)(NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERDOWNSAMPLEPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                  const NVNtexture*);
+    const NVNtexture*);
 typedef void (*PFNNVNCOMMANDBUFFERTILEDDOWNSAMPLEPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                       const NVNtexture*);
+    const NVNtexture*);
 typedef void (*PFNNVNCOMMANDBUFFERDOWNSAMPLETEXTUREVIEWPROC)(NVNcommandBuffer*, const NVNtexture*,
-                                                             const NVNtextureView*,
-                                                             const NVNtexture*,
-                                                             const NVNtextureView*);
+    const NVNtextureView*,
+    const NVNtexture*,
+    const NVNtextureView*);
 typedef void (*PFNNVNCOMMANDBUFFERTILEDDOWNSAMPLETEXTUREVIEWPROC)(NVNcommandBuffer*,
-                                                                  const NVNtexture*,
-                                                                  const NVNtextureView*,
-                                                                  const NVNtexture*,
-                                                                  const NVNtextureView*);
+    const NVNtexture*,
+    const NVNtextureView*,
+    const NVNtexture*,
+    const NVNtextureView*);
 typedef void (*PFNNVNCOMMANDBUFFERBARRIERPROC)(NVNcommandBuffer*, int);
 typedef void (*PFNNVNCOMMANDBUFFERWAITSYNCPROC)(NVNcommandBuffer*, const NVNsync*);
 typedef void (*PFNNVNCOMMANDBUFFERFENCESYNCPROC)(NVNcommandBuffer*, NVNsync*, NVNsyncCondition,
-                                                 int);
+    int);
 typedef void (*PFNNVNCOMMANDBUFFERSETTEXTUREPOOLPROC)(NVNcommandBuffer*, const NVNtexturePool*);
 typedef void (*PFNNVNCOMMANDBUFFERSETSAMPLERPOOLPROC)(NVNcommandBuffer*, const NVNsamplerPool*);
 typedef void (*PFNNVNCOMMANDBUFFERSETSHADERSCRATCHMEMORYPROC)(NVNcommandBuffer*,
-                                                              const NVNmemoryPool*, ptrdiff_t,
-                                                              size_t);
+    const NVNmemoryPool*, ptrdiff_t,
+    size_t);
 typedef void (*PFNNVNCOMMANDBUFFERSAVEZCULLDATAPROC)(NVNcommandBuffer*, NVNbufferAddress, size_t);
 typedef void (*PFNNVNCOMMANDBUFFERRESTOREZCULLDATAPROC)(NVNcommandBuffer*, NVNbufferAddress,
-                                                        size_t);
+    size_t);
 typedef void (*PFNNVNCOMMANDBUFFERSETCOPYROWSTRIDEPROC)(NVNcommandBuffer*, ptrdiff_t);
 typedef void (*PFNNVNCOMMANDBUFFERSETCOPYIMAGESTRIDEPROC)(NVNcommandBuffer*, ptrdiff_t);
 typedef ptrdiff_t (*PFNNVNCOMMANDBUFFERGETCOPYROWSTRIDEPROC)(const NVNcommandBuffer*);
 typedef ptrdiff_t (*PFNNVNCOMMANDBUFFERGETCOPYIMAGESTRIDEPROC)(const NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERDRAWTEXTUREPROC)(NVNcommandBuffer*, NVNtextureHandle,
-                                                   const NVNdrawTextureRegion*,
-                                                   const NVNdrawTextureRegion*);
+    const NVNdrawTextureRegion*,
+    const NVNdrawTextureRegion*);
 typedef NVNboolean (*PFNNVNPROGRAMSETSUBROUTINELINKAGEPROC)(NVNprogram*, int,
-                                                            const NVNsubroutineLinkageMapPtr*);
+    const NVNsubroutineLinkageMapPtr*);
 typedef void (*PFNNVNCOMMANDBUFFERSETPROGRAMSUBROUTINESPROC)(NVNcommandBuffer*, NVNprogram*,
-                                                             NVNshaderStage, const int, const int,
-                                                             const int*);
+    NVNshaderStage, const int, const int,
+    const int*);
 typedef void (*PFNNVNCOMMANDBUFFERBINDCOVERAGEMODULATIONTABLEPROC)(NVNcommandBuffer*, const float*);
 typedef void (*PFNNVNCOMMANDBUFFERRESOLVEDEPTHBUFFERPROC)(NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERPUSHDEBUGGROUPSTATICPROC)(NVNcommandBuffer*, uint32_t,
-                                                            const char*);
+    const char*);
 typedef void (*PFNNVNCOMMANDBUFFERPUSHDEBUGGROUPDYNAMICPROC)(NVNcommandBuffer*, uint32_t,
-                                                             const char*);
+    const char*);
 typedef void (*PFNNVNCOMMANDBUFFERPUSHDEBUGGROUPPROC)(NVNcommandBuffer*, uint32_t, const char*);
 typedef void (*PFNNVNCOMMANDBUFFERPOPDEBUGGROUPPROC)(NVNcommandBuffer*);
 typedef void (*PFNNVNCOMMANDBUFFERPOPDEBUGGROUPIDPROC)(NVNcommandBuffer*, uint32_t);
 typedef void (*PFNNVNCOMMANDBUFFERINSERTDEBUGMARKERSTATICPROC)(NVNcommandBuffer*, uint32_t,
-                                                               const char*);
+    const char*);
 typedef void (*PFNNVNCOMMANDBUFFERINSERTDEBUGMARKERDYNAMICPROC)(NVNcommandBuffer*, uint32_t,
-                                                                const char*);
+    const char*);
 typedef void (*PFNNVNCOMMANDBUFFERINSERTDEBUGMARKERPROC)(NVNcommandBuffer*, const char*);
 typedef PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC (*PFNNVNCOMMANDBUFFERGETMEMORYCALLBACKPROC)(
     const NVNcommandBuffer*);
@@ -1751,7 +1751,7 @@ typedef void (*PFNNVNEVENTFINALIZEPROC)(NVNevent*);
 typedef uint32_t (*PFNNVNEVENTGETVALUEPROC)(const NVNevent*);
 typedef void (*PFNNVNEVENTSIGNALPROC)(NVNevent*, NVNeventSignalMode, uint32_t);
 typedef void (*PFNNVNCOMMANDBUFFERWAITEVENTPROC)(NVNcommandBuffer*, const NVNevent*,
-                                                 NVNeventWaitMode, uint32_t);
+    NVNeventWaitMode, uint32_t);
 typedef void (*PFNNVNCOMMANDBUFFERSIGNALEVENTPROC)(NVNcommandBuffer*, const NVNevent*,
-                                                   NVNeventSignalMode, NVNeventSignalLocation, int,
-                                                   uint32_t);
+    NVNeventSignalMode, NVNeventSignalLocation, int,
+    uint32_t);

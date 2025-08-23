@@ -42,8 +42,7 @@ namespace hk::sf::hipc {
         }
     };
 
-    enum class BufferMode : u32
-    {
+    enum class BufferMode : u32 {
         Normal = 0,
         NonSecure = 1,
         NonDevice = 3,

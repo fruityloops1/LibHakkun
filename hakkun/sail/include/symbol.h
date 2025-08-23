@@ -7,8 +7,7 @@
 namespace sail {
 
     struct Symbol {
-        enum Type
-        {
+        enum Type {
             Immediate,
             Dynamic,
             DataBlock,
@@ -16,14 +15,12 @@ namespace sail {
             Arithmetic,
             MultipleCandidate,
         };
-        enum DataBlockVersionBoundary
-        {
+        enum DataBlockVersionBoundary {
             None,
             Older, // older than version
             From, // version or newer than version
         };
-        enum Section
-        {
+        enum Section {
             All,
             Text,
             Rodata,
