@@ -36,29 +36,29 @@ namespace nn::ro::detail {
         RoModule* prev;
 
         union {
-            const Elf_Rel* rel = nullptr;
+            const Elf_Rel* rel;
             const Elf_Rela* rela;
             ptr raw;
         } m_pPlt;
         union {
-            const Elf_Rel* rel = nullptr;
+            const Elf_Rel* rel;
             const Elf_Rela* rela;
         } m_pDyn;
 #ifdef __RTLD_PAST_19XX__
-        bool m_IsPltRela = false;
-        uintptr_t m_Base = 0;
-        Elf_Dyn* m_pDynamicSection = nullptr;
+        bool m_IsPltRela;
+        uintptr_t m_Base;
+        Elf_Dyn* m_pDynamicSection;
 #else
-        uintptr_t m_Base = 0;
-        const Elf_Dyn* m_pDynamicSection = nullptr;
-        bool m_IsPltRela = false;
+        uintptr_t m_Base;
+        const Elf_Dyn* m_pDynamicSection;
+        bool m_IsPltRela;
 #endif
-        size_t m_PltRelSz = 0;
-        void (*m_pInit)() = nullptr;
-        void (*m_pFini)() = nullptr;
+        size_t m_PltRelSz;
+        void (*m_pInit)();
+        void (*m_pFini)();
         union {
             struct {
-                uint32_t* m_pBuckets = nullptr;
+                uint32_t* m_pBuckets;
                 uint32_t* m_pChains;
             };
             struct {
@@ -66,17 +66,17 @@ namespace nn::ro::detail {
                 uint32_t m_GnuHashMaskwords;
             };
         };
-        const char* m_pStrTab = nullptr;
-        const Elf_Sym* m_pDynSym = nullptr;
-        size_t m_StrSz = 0;
-        uintptr_t* m_pGot = nullptr;
-        size_t m_DynRelaSz = 0;
-        size_t m_DynRelSz = 0;
-        size_t m_RelCount = 0;
-        size_t m_RelaCount = 0;
+        const char* m_pStrTab;
+        const Elf_Sym* m_pDynSym;
+        size_t m_StrSz;
+        uintptr_t* m_pGot;
+        size_t m_DynRelaSz;
+        size_t m_DynRelSz;
+        size_t m_RelCount;
+        size_t m_RelaCount;
         union {
             struct {
-                size_t m_Symbols = 0;
+                size_t m_Symbols;
                 size_t m_HashSize;
             };
             struct {
@@ -92,7 +92,7 @@ namespace nn::ro::detail {
             bool _m_IsPltRela : 1;
             bool m_BindNow : 1;
             bool _C3_3 : 1;
-            bool m_IsGnuHash : 1 = 0;
+            bool m_IsGnuHash : 1;
         };
 
     private:
