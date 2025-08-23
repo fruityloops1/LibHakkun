@@ -73,6 +73,18 @@ constexpr size operator""_GB(unsigned long long val) { return val * 1024 * 1024 
 
 namespace hk {
 
+    constexpr bool is32Bit() {
+        return
+#ifdef __aarch64__
+            false
+#else
+            true
+#endif
+            ;
+    }
+
+    constexpr bool is64Bit() { return !is32Bit(); }
+
     using Handle = u32;
 
     constexpr size cPageSize = 4_KB;

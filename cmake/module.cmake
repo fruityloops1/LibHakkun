@@ -24,10 +24,17 @@ set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_options(${PROJECT_NAME} PRIVATE -T${MISC_LINKER_SCRIPT})
 
+apply_config(${PROJECT_NAME})
+
 add_subdirectory(sys/hakkun)
 add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module.txt)
 if (HAKKUN_STANDALONE)
-    add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module_standalone.txt)
+    if (IS_32_BIT)
+        set(REGISTER_WIDTH 32)
+    else()
+        set(REGISTER_WIDTH 64)
+    endif()
+    add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module_standalone_${REGISTER_WIDTH}.txt)
 endif()
 apply_module_config(${PROJECT_NAME} TRUE __module_entry__)
 target_link_libraries(${PROJECT_NAME} PRIVATE LibHakkunForModule)
