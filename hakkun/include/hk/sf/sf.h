@@ -118,7 +118,6 @@ namespace hk::sf {
         u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
-        u32 mOutPointerSizes = 0;
         util::FixedCapacityArray<u32, 8> mObjects;
         util::FixedCapacityArray<Handle, 8> mHipcCopyHandles;
         util::FixedCapacityArray<Handle, 8> mHipcMoveHandles;
@@ -133,16 +132,16 @@ namespace hk::sf {
     public:
         Request(Service* service, u32 command)
             : mCommandId(command)
-            , mOutPointerSizes(service->pointerBufferSize()) { }
+            , mServerPointerSize(service->pointerBufferSize()) { }
         template <typename T>
         Request(Service* service, u32 command, const T* data)
             : mCommandId(command)
-            , mOutPointerSizes(service->pointerBufferSize())
+            , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data), sizeof(T)) { }
         template <typename T>
         Request(Service* service, u32 command, const std::span<T>& data)
             : mCommandId(command)
-            , mOutPointerSizes(service->pointerBufferSize())
+            , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
 
         constexpr void enableDebug(bool before = true, bool after = true) {
@@ -171,46 +170,50 @@ namespace hk::sf {
             mHipcMoveHandles.add(handle);
         }
 
-        constexpr void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
-            mHipcSendStatics.add(hipc::Static(
-                mHipcStaticIdx++,
-                0,
-                0));
-            mHipcSendBuffers.add(hipc::Buffer(
-                mode,
-                u64(data),
-                u64(size)));
-        }
-
-        void addOutAutoselect(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
-            mHipcReceiveStatics.add(hipc::ReceiveStatic());
-            mHipcReceiveBuffers.add(hipc::Buffer(
-                mode,
-                u64(data),
-                size));
-            mOutPointerSizes++;
-        }
-
         void addInPointer(const void* data, u16 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             mHipcSendStatics.add(hipc::Static(
                 mHipcStaticIdx++,
                 u64(data),
                 size));
-        }
-
-        void addOutPointer(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
-            mHipcReceiveStatics.add(hipc::ReceiveStatic());
-            mHipcReceiveBuffers.add(hipc::Buffer(
-                mode,
-                u64(data),
-                size));
-            mOutPointerSizes++;
+            mServerPointerSize -= size;
         }
 
         void addOutFixedSizePointer(void* data, u16 size) {
             mHipcReceiveStatics.add(hipc::ReceiveStatic(
                 u64(data),
                 size));
+            mServerPointerSize -= size;
+        }
+
+        void addOutPointer(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addOutFixedSizePointer(data, size);
+            mHipcOutPointerSizes.add(size);
+        }
+
+        constexpr void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            if (mServerPointerSize > 0 && size <= mServerPointerSize) {
+                addInPointer(data, size);
+                mHipcSendBuffers.add(hipc::Buffer(mode, u64(nullptr), 0));
+            } else {
+                addInPointer(nullptr, 0);
+                mHipcSendBuffers.add(hipc::Buffer(mode, u64(data), size));
+            }
+        }
+
+        void addOutAutoselect(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            if (mServerPointerSize > 0 && size <= mServerPointerSize) {
+                mHipcReceiveStatics.add(hipc::ReceiveStatic(u64(data), size));
+                mHipcReceiveBuffers.add(hipc::Buffer(
+                    mode,
+                    u64(nullptr),
+                    0));
+            } else {
+                mHipcReceiveStatics.add(hipc::ReceiveStatic());
+                mHipcReceiveBuffers.add(hipc::Buffer(
+                    mode,
+                    u64(data),
+                    size));
+            }
         }
 
         void addInMapAlias(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
@@ -256,7 +259,7 @@ namespace hk::sf {
                     hipcDataSize += sizeof(u32) * mObjects.size();
                 }
 
-                hipcDataSize += sizeof(u16) * mOutPointerSizes;
+                hipcDataSize += sizeof(u16) * mHipcOutPointerSizes.size();
                 hipcDataSize = alignUp(hipcDataSize, sizeof(u16));
 
                 hipcDataSize += cmifDataSize;
@@ -320,7 +323,7 @@ namespace hk::sf {
                 writer.writeIterator<u32>(mObjects);
 
             writer.seek(alignUp(writer.tell(), 16));
-            writer.writeIterator<hipc::ReceiveStatic>(mHipcReceiveStatics);
+            writer.writeIterator<u16>(mHipcOutPointerSizes);
 
             if (mPrintRequest) {
                 u8 buf[256] = {};
