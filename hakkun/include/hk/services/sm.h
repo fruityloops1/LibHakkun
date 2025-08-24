@@ -25,8 +25,11 @@ namespace hk::sm {
         }
 
         Result registerClient() {
-            auto request = sf::Request(0);
+            u64 placeholderPid = 0;
+
+            auto request = sf::Request(0, &placeholderPid);
             request.setSendPid();
+
             return invokeRequest(move(request), [](sf::Response&) {
                 return 1;
             });
@@ -39,8 +42,6 @@ namespace hk::sm {
             char nameBuf[9] = {};
             std::memcpy(nameBuf, Name.value, sizeof(Name));
             auto request = sf::Request(1, nameBuf, 8);
-
-            request.enableDebug();
 
             return invokeRequest(move(request), [](sf::Response& response) {
                 return sf::Service::fromHandle(response.hipcMoveHandles[0]);
