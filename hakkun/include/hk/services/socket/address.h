@@ -32,7 +32,7 @@ namespace hk::socket {
         AddressFamily mFamily;
 
         friend class SocketAddrIpv4;
-        SocketAddr(u8 length, AddressFamily family)
+        constexpr SocketAddr(u8 length, AddressFamily family)
             : mLength(length)
             , mFamily(family) { }
     };
@@ -50,6 +50,9 @@ namespace hk::socket {
             : SocketAddr(6, AddressFamily::Ipv4)
             , mPort(std::byteswap(port))
             , mAddress(address) { }
+
+        constexpr u16 getPort() const { return mPort; }
+        constexpr u32 getAddress() const { return mAddress; }
 
         constexpr static ValueOrResult<u32> parseAddress(const char* text) {
             size len = __builtin_strlen(text);
@@ -92,7 +95,7 @@ namespace hk::socket {
         }
 
         template <util::TemplateString address>
-        constexpr static SocketAddrIpv4 parse(u16 port) {
+        consteval static SocketAddrIpv4 parse(u16 port) {
             static_assert(__builtin_strlen(address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
             constexpr ValueOrResult<u32> result = parseAddress(address.value);
             static_assert(Result(result).getDescription() == 0);

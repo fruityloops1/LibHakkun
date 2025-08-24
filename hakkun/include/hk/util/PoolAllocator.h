@@ -12,7 +12,7 @@ namespace hk::util {
         T* mBuffer = nullptr;
 
         T* getData(size index) const {
-            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator: invalid index (%d not in buffer)", index);
+            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid index (%d not in buffer)", getTypeName<T>(), Capacity, index);
             return mBuffer + index;
         }
 
@@ -36,16 +36,16 @@ namespace hk::util {
         }
 
         void freeIdx(s32 index) {
-            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator: invalid free (%d not in buffer)", index);
-            HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator: double free (idx %d)", index);
+            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid free (%d not in buffer)", getTypeName<T>(), Capacity, index);
+            HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator<%s, %zu>: double free (idx %d)", getTypeName<T>(), Capacity, index);
 
             mAllocations[index] = false;
         }
 
         void free(T* data) {
             size index = data - mBuffer;
-            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator: invalid free (%p not in buffer)", data);
-            HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator: double free (ptr %p, idx %d)", data, index);
+            HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid free (%p not in buffer)", getTypeName<T>(), Capacity, data);
+            HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator<%s, %zu>: double free (ptr %p, idx %d)", getTypeName<T>(), Capacity, data, index);
 
             freeIdx(index);
         }

@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
+#include "hk/util/TypeName.h"
 #include <array>
 
 namespace hk::sf {
@@ -32,7 +33,7 @@ namespace hk::sf {
     template <typename T>
     auto simpleDataHandler() {
         return [](sf::Response& response) -> T {
-            HK_ASSERT(response.data.size_bytes() >= sizeof(T));
+            HK_ABORT_UNLESS(response.data.size_bytes() >= sizeof(T), "hk::sf::simpleDataHandler: response too small (%zu < sizeof(%s)==%zu)", response.data.size_bytes(), util::getTypeName<T>(), sizeof(T));
             return *cast<T*>(response.data.data());
         };
     }
