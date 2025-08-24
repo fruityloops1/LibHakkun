@@ -11,6 +11,7 @@
 #include "hk/util/FixedCapacityArray.h"
 #include "hk/util/Lambda.h"
 #include "hk/util/Stream.h"
+#include <cstddef>
 #include <cstring>
 #include <optional>
 #include <span>
@@ -129,6 +130,9 @@ namespace hk::sf {
         util::FixedCapacityArray<u16, 8> mHipcOutPointerSizes;
         std::span<const u8> mData = {};
 
+        friend class Service;
+        // dedicated constructor for cmif::QueryPointerSize
+        Request(std::nullptr_t, Service* service, u32 command) : mCommandId(command) {}
     public:
         Request(Service* service, u32 command)
             : mCommandId(command)
