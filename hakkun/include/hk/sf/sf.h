@@ -136,7 +136,7 @@ namespace hk::sf {
             : mCommandId(command)
             , mData(cast<const u8*>(data), sizeof(T) * size) { }
 
-        constexpr void enableDebug(bool before, bool after) {
+        constexpr void enableDebug(bool before = true, bool after = true) {
             mPrintRequest = before;
             mPrintResponse = after;
         }

@@ -16,12 +16,18 @@ namespace hk::sm {
     public:
         ServiceManager(Handle session)
             : sf::Service(session) { }
-        static ServiceManager* connect();
+        static ServiceManager* initialize() {
+            Handle outHandle;
+            HK_ABORT_UNLESS_R(svc::ConnectToNamedPort(&outHandle, "sm:"));
+
+            createInstance(outHandle);
+            return instance();
+        }
 
         Result registerClient() {
             auto request = sf::Request(0);
             request.setSendPid();
-            return invokeRequest(std::move(request), [](sf::Response&) {
+            return invokeRequest(move(request), [](sf::Response&) {
                 return 1;
             });
         }
@@ -32,7 +38,11 @@ namespace hk::sm {
 
             char nameBuf[9] = {};
             std::memcpy(nameBuf, Name.value, sizeof(Name));
-            return invokeRequest(sf::Request(1, nameBuf, 8), [](sf::Response& response) {
+            auto request = sf::Request(1, nameBuf, 8);
+
+            request.enableDebug();
+
+            return invokeRequest(move(request), [](sf::Response& response) {
                 return sf::Service::fromHandle(response.hipcMoveHandles[0]);
             });
         }

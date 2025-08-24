@@ -73,4 +73,148 @@ namespace hk {
         H h;
     };
 
+    template <typename... Types>
+    struct OutTuple;
+
+    template <typename A>
+    struct OutTuple<A&> {
+        A& a;
+
+        constexpr OutTuple& operator=(const Tuple<A>&& v) {
+            a = v.a;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B>
+    struct OutTuple<A&, B&> {
+        A& a;
+        B& b;
+
+        constexpr OutTuple& operator=(const Tuple<A, B>&& v) {
+            a = v.a;
+            b = v.b;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C>
+    struct OutTuple<A&, B&, C&> {
+        A& a;
+        B& b;
+        C& c;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C, typename D>
+    struct OutTuple<A&, B&, C&, D&> {
+        A& a;
+        B& b;
+        C& c;
+        D& d;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            d = v.d;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C, typename D, typename E>
+    struct OutTuple<A&, B&, C&, D&, E&> {
+        A& a;
+        B& b;
+        C& c;
+        D& d;
+        E& e;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            d = v.d;
+            e = v.e;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C, typename D, typename E, typename F>
+    struct OutTuple<A&, B&, C&, D&, E&, F&> {
+        A& a;
+        B& b;
+        C& c;
+        D& d;
+        E& e;
+        F& f;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            d = v.d;
+            e = v.e;
+            f = v.f;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C, typename D, typename E, typename F, typename G>
+    struct OutTuple<A&, B&, C&, D&, E&, F&, G&> {
+        A& a;
+        B& b;
+        C& c;
+        D& d;
+        E& e;
+        F& f;
+        G& g;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            d = v.d;
+            e = v.e;
+            f = v.f;
+            g = v.g;
+            return *this;
+        }
+    };
+
+    template <typename A, typename B, typename C, typename D, typename E, typename F, typename G, typename H>
+    struct OutTuple<A&, B&, C&, D&, E&, F&, G&, H&> {
+        A& a;
+        B& b;
+        C& c;
+        D& d;
+        E& e;
+        F& f;
+        G& g;
+        H& h;
+
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G, H>&& v) {
+            a = v.a;
+            b = v.b;
+            c = v.c;
+            d = v.d;
+            e = v.e;
+            f = v.f;
+            g = v.g;
+            h = v.h;
+            return *this;
+        }
+    };
+
 } // namespace hk
+
+template <typename... Args>
+constexpr hk::OutTuple<Args...> tie(Args&&... args) {
+    return { args... };
+}

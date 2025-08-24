@@ -69,7 +69,7 @@ namespace hk::lm {
 
             auto request = sf::Request(0);
             request.addInAutoselect(logData, stream.tell());
-            HK_UNWRAP(service.invokeRequest(std::move(request), [](sf::Response& response) {
+            HK_UNWRAP(service.invokeRequest(move(request), [](sf::Response& response) {
                 return 0;
             }));
         }
@@ -80,9 +80,9 @@ namespace hk::lm {
 
     public:
         LogManager(sf::Service&& service)
-            : sf::Service(std::move(service)) { }
+            : sf::Service(move(service)) { }
 
-        static LogManager* connect() {
+        static LogManager* initialize() {
             createInstance(HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<"lm">()));
             return instance();
         }
@@ -91,9 +91,9 @@ namespace hk::lm {
             u64 pidReserved = 0;
             auto request = sf::Request(0, &pidReserved, sizeof(pidReserved));
             request.setSendPid();
-            return invokeRequest(std::move(request), [this](sf::Response& response) {
+            return invokeRequest(move(request), [this](sf::Response& response) {
                 sf::Service subservice = response.nextSubservice(this);
-                return Logger(std::move(subservice));
+                return Logger(move(subservice));
             });
         }
     };

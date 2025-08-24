@@ -38,15 +38,18 @@ namespace hk::socket {
     };
 
     class SocketAddrIpv4 : public SocketAddr {
+        u16 mPort = 0;
+        u32 mAddress = 0;
+        u64 _8 = {};
+
+    public:
+        constexpr SocketAddrIpv4()
+            : SocketAddr(6, AddressFamily::Ipv4) { }
+
         constexpr SocketAddrIpv4(u16 port, u32 address)
             : SocketAddr(6, AddressFamily::Ipv4)
             , mPort(std::byteswap(port))
             , mAddress(address) { }
-
-    public:
-        u16 mPort;
-        u32 mAddress;
-        u64 _8 = {};
 
         constexpr static ValueOrResult<u32> parseAddress(const char* text) {
             size len = __builtin_strlen(text);

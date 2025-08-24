@@ -12,6 +12,7 @@
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
+#include "hk/util/Tuple.h"
 #include <type_traits>
 #include <utility>
 
@@ -26,23 +27,23 @@ namespace hk::socket {
             : sf::Service(std::forward<sf::Service>(service))
             , mMonitorService(std::forward<sf::Service>(monitor)) { }
 
-        template <util::TemplateString name = "bsd:u">
+        template <util::TemplateString Name = "bsd:u">
         static Socket* initialize(const ServiceConfig& config, const std::span<u8> socketBuffer) {
-            auto monitor = startMonitoring<name>();
+            auto monitor = startMonitoring<Name>();
             createInstance(
-                sm::ServiceManager::instance()->getServiceHandle<name>(),
-                std::move(monitor));
+                sm::ServiceManager::instance()->getServiceHandle<Name>(),
+                move(monitor));
             instance()->registerClient(config, socketBuffer);
             return instance();
         }
 
-        template <util::TemplateString name>
+        template <util::TemplateString Name>
         static sf::Service startMonitoring() {
-            auto monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<name>());
+            auto monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
             auto input = u64(0);
             auto request = sf::Request(1, &input);
             request.setSendPid();
-            HK_ABORT_UNLESS_R(monitorService.invokeRequest(std::move(request)));
+            HK_ABORT_UNLESS_R(monitorService.invokeRequest(move(request)));
             return monitorService;
         }
 
@@ -53,38 +54,68 @@ namespace hk::socket {
             auto request = sf::Request(0, &input);
             request.addCopyHandle(handle);
             request.setSendPid();
-            HK_ABORT_UNLESS_R(invokeRequest(std::move(request)));
+            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
         }
 
-        struct Ret {
-            s32 returnValue;
-            s32 errno;
-        };
+        using Ret = Tuple<s32, s32>;
 
         Ret socket(AddressFamily domain, Type type, Protocol protocol) {
             std::array<u8, 12> input = sf::packInput(u32(domain), u32(type), u32(protocol));
             return HK_UNWRAP(invokeRequest(sf::Request(2, &input), sf::simpleDataHandler<Ret>()));
         }
 
-        template <typename A, typename B>
+        Ret recv(s32 fd, std::span<u8> buffer, s32 flags) {
+            auto input = sf::packInput(fd, flags);
+            auto request = sf::Request(8, &input);
+
+            request.addOutAutoselect(buffer.data(), buffer.size_bytes());
+            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+        }
+
+        template <typename T>
+        Ret send(s32 fd, std::span<const T> data, s32 flags) {
+            auto input = sf::packInput(fd, flags);
+            auto request = sf::Request(10, &input);
+
+            request.addInAutoselect(data.data(), data.size_bytes());
+
+            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+        }
+
+        Tuple<s32, s32, SocketAddrIpv4> accept(s32 fd) {
+            SocketAddrIpv4 outAddr;
+            auto input = sf::packInput(fd, sizeof(outAddr));
+            auto request = sf::Request(12, &input);
+
+            request.addOutAutoselect(&outAddr, sizeof(outAddr));
+            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Tuple<s32, s32, SocketAddrIpv4>>()));
+        }
+
+        template <typename A>
             requires(std::is_convertible<A*, SocketAddr*>::value)
-        Ret bind(s32 fd, const A& address);
+        Ret bind(s32 fd, const A& address) {
+            auto input = sf::packInput(fd);
+            auto request = sf::Request(13, &input);
+
+            request.addInAutoselect(&address, sizeof(A));
+            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+        }
 
         template <typename A, typename B>
             requires(std::is_convertible<A*, SocketAddr*>::value)
         Ret connect(s32 fd, const A& address) {
         }
 
-        template <typename B>
+        template <typename T>
         // requires(std::is_convertible_v<A*, SocketAddr*>)
-        Ret sendTo(s32 fd, std::span<const B> data, s32 flags, const SocketAddrIpv4& address) {
+        Ret sendTo(s32 fd, std::span<const T> data, s32 flags, const SocketAddrIpv4& address) {
             auto input = sf::packInput(fd, flags);
             diag::debugLog("sized %x %x %x %x", fd, flags, input.size(), address);
             auto request = sf::Request(11, &input);
             request.addInAutoselect(data.data(), data.size_bytes());
             request.addInAutoselect(&address, sizeof(SocketAddrIpv4));
             request.enableDebug(true, true);
-            return HK_UNWRAP(invokeRequest(std::move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
         }
     };
 

@@ -26,7 +26,7 @@ namespace hk {
                 mResult.getValue());
             mResult = diag::ResultValueDisowned();
 
-            return std::move(mValue);
+            return move(mValue);
         }
 
     public:
@@ -60,7 +60,7 @@ namespace hk {
                 return mResult;
         }
 
-        const T& value() const {
+        constexpr const T& value() const {
             HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::value(): No value (%04d-%04d/0x%x)",
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
@@ -69,7 +69,7 @@ namespace hk {
         }
 
         constexpr operator Result() const { return mResult; }
-        constexpr operator T() { return std::move(disown()); }
+        constexpr operator T() { return move(disown()); }
     };
 
     template <>
@@ -82,25 +82,25 @@ namespace hk {
         ValueOrResult() = default;
     };
 
-#define HK_UNWRAP(VALUE)                                      \
-    ([&]() hk_alwaysinline {                                  \
-        auto&& v = VALUE;                                     \
-        using T = std::remove_reference_t<decltype(v)>::Type; \
-        ::hk::Result _result_temp = v;                        \
-        if (_result_temp.succeeded())                         \
-            return (T)v;                                      \
-        else {                                                \
-            ::hk::diag::abortImpl(                            \
-                ::hk::svc::BreakReason_User,                  \
-                _result_temp,                                 \
-                __FILE__,                                     \
-                __LINE__,                                     \
-                ::hk::diag::cAbortUnlessResultFormat,         \
-                _result_temp.getModule() + 2000,              \
-                _result_temp.getDescription(),                \
-                _result_temp.getValue(),                      \
-                "HK_UNWRAP(" #VALUE ")");                     \
-        }                                                     \
+#define HK_UNWRAP(VALUE)                                                     \
+    ([&]() hk_alwaysinline {                                                 \
+        auto&& v = VALUE;                                                    \
+        using _ValueOrResult_T = std::remove_reference_t<decltype(v)>::Type; \
+        ::hk::Result _result_temp = v;                                       \
+        if (_result_temp.succeeded())                                        \
+            return (_ValueOrResult_T)v;                                      \
+        else {                                                               \
+            ::hk::diag::abortImpl(                                           \
+                ::hk::svc::BreakReason_User,                                 \
+                _result_temp,                                                \
+                __FILE__,                                                    \
+                __LINE__,                                                    \
+                ::hk::diag::cAbortUnlessResultFormat,                        \
+                _result_temp.getModule() + 2000,                             \
+                _result_temp.getDescription(),                               \
+                _result_temp.getValue(),                                     \
+                "HK_UNWRAP(" #VALUE ")");                                    \
+        }                                                                    \
     })()
 
 } // namespace hk
