@@ -1,112 +1,12 @@
 #pragma once
 
-#include "hk/svc/types.h"
+#include "hk/ValueOrResult.h"
 #include "hk/types.h"
+#include "hk/util/Tuple.h"
+
+#include "hk/svc/cpu.h"
 
 namespace hk::svc {
-#ifdef __aarch64__
-    inline hk_alwaysinline u64 getSystemTickFrequency() {
-        volatile u64 freq;
-        asm volatile("mrs %x0, cntfrq_el0" : "=r"(freq));
-        return freq;
-    }
-    inline hk_alwaysinline u64 getSystemTick() {
-        volatile u64 tick;
-        asm volatile("mrs %x0, cntpct_el0" : "=r"(tick));
-        return tick;
-    }
-    inline hk_alwaysinline void* getTLSPtr() {
-        void* volatile ptr;
-        asm volatile("mrs %0, tpidrro_el0" : "=r"(ptr));
-        return ptr;
-    }
-
-    inline u32 loadExclusive(volatile u32* ptr) {
-        u32 value;
-        asm volatile(
-            "ldaxr %w[value], %[ptr]"
-            : [value] "=&r"(value)
-            : [ptr] "Q"(*ptr)
-            : "memory");
-        return value;
-    }
-
-    inline bool storeExclusive(volatile u32* ptr, u32 value) {
-        int result;
-        asm volatile(
-            "stlxr %w[result], %w[value], %[ptr]"
-            : [result] "=&r"(result)
-            : [value] "r"(value), [ptr] "Q"(*ptr)
-            : "memory");
-        return result == 0;
-    }
-
-    inline void clearExclusive() {
-        asm volatile("clrex" ::: "memory");
-    }
-#else
-    inline hk_alwaysinline u64 getSystemTickFrequency() {
-        volatile u32 freq;
-        asm volatile("mrc p15, 0, %0, cr14, c0, 0" : "=r"(freq));
-        return freq;
-    }
-    inline hk_alwaysinline u64 getSystemTick() {
-        volatile u64 tick;
-        asm volatile("mrrc p15, 0x0, %Q0, %R0, cr14" : "=r"(tick));
-        return tick;
-    }
-    inline __attribute__((always_inline)) void* getTLSPtr() {
-        void* volatile ptr;
-        asm volatile("mrc p15, 0, %0, cr13, c0, 0x3" : "=r"(ptr));
-        return ptr;
-    }
-
-    inline uint32_t loadExclusive(volatile uint32_t* ptr) {
-        uint32_t value;
-        asm volatile(
-            "ldrex %0, [%1]"
-            : "=r"(value)
-            : "r"(ptr)
-            : "memory");
-        return value;
-    }
-
-    inline bool storeExclusive(volatile uint32_t* ptr, uint32_t value) {
-        uint32_t result;
-        asm volatile(
-            "strex %0, %1, [%2]"
-            : "=r"(result)
-            : "r"(value), "r"(ptr)
-            : "memory");
-        return result == 0;
-    }
-
-    inline void clearExclusive() {
-        // ...
-    }
-#endif
-
-    inline hk_alwaysinline ThreadLocalRegion* getTLS() {
-        return cast<ThreadLocalRegion*>(getTLSPtr());
-    }
-
-    inline hk_alwaysinline void prefetchRegion(ptr addr, ptrdiff size) {
-#pragma clang loop unroll(enable)
-        while (size > 0) {
-            __builtin_prefetch((void*)addr);
-            size -= 64;
-            addr += 64;
-        }
-    }
-
-    inline hk_alwaysinline void prefetchRegionStream(ptr addr, ptrdiff size) {
-#pragma clang loop unroll(enable)
-        while (size > 0) {
-            __builtin_prefetch((void*)addr, 0, 0);
-            size -= 64;
-            addr += 64;
-        }
-    }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
     hk_noreturn void ExitProcess();
@@ -138,8 +38,80 @@ namespace hk::svc {
     Result GetSystemInfo(u64* outInfo, svc::SystemInfoType infoType, svc::Handle handle, svc::PhysicalMemorySystemInfo infoSubType);
     Result ManageNamedPort(Handle* outHandle, const char* name, s32 maxSessions);
     Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
+    Result GetInfo(u64* out, InfoType type, Handle handle, u64 subType);
+    Result InvalidateProcessDataCache(Handle process, ptr addr, size size);
+    Result FlushProcessDataCache(Handle process, ptr addr, size size);
+    Result DebugActiveProcess(Handle* outHandle, u64 processId);
+    Result BreakDebugProcess(Handle debugHandle);
+    Result TerminateDebugProcess(Handle debugHandle);
+    Result GetDebugEvent(DebugEventInfo* outInfo, Handle debugHandle);
+    Result ContinueDebugEvent(Handle debugHandle, u32 flags, const u64* threadIds, s32 numThreadIds);
+    Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
+    Result GetSystemInfo(u64* outInfo, SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType);
+    Result MapProcessMemory(ptr dest, Handle process, u64 source, size size);
 
-    hk_noreturn Result hkBreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
+    // ValueOrResult wrappers
+
+    inline hk_alwaysinline ValueOrResult<Tuple<MemoryInfo, u32>> QueryMemory(ptr address) {
+        MemoryInfo info;
+        u32 pageInfo;
+
+        HK_TRY(QueryMemory(&info, &pageInfo, address));
+
+        return Tuple<MemoryInfo, u32> { info, pageInfo };
+    }
+
+    inline hk_alwaysinline ValueOrResult<Handle> CreateTransferMemory(ptr address, size size, MemoryPermission perm) {
+        Handle outHandle;
+
+        HK_TRY(CreateTransferMemory(&outHandle, address, size, perm));
+
+        return outHandle;
+    }
+
+    inline hk_alwaysinline ValueOrResult<Handle> ConnectToNamedPort(const char* name) {
+        Handle outHandle;
+
+        HK_TRY(ConnectToNamedPort(&outHandle, name));
+
+        return outHandle;
+    }
+
+    inline hk_alwaysinline ValueOrResult<s32> WaitSynchronization(const Handle* handles, s32 numHandles, s64 timeout) {
+        s32 outIdx;
+
+        HK_TRY(WaitSynchronization(&outIdx, handles, numHandles, timeout));
+
+        return outIdx;
+    }
+
+    inline hk_alwaysinline ValueOrResult<u64> GetInfo(InfoType type, Handle handle, u64 subType) {
+        u64 value;
+
+        HK_TRY(GetInfo(&value, type, handle, subType));
+
+        return value;
+    }
+
+    inline hk_alwaysinline ValueOrResult<Handle> DebugActiveProcess(u64 processId) {
+        Handle outHandle;
+
+        HK_TRY(DebugActiveProcess(&outHandle, processId));
+
+        return outHandle;
+    }
+
+    inline hk_alwaysinline ValueOrResult<u64> GetSystemInfo(SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType) {
+        u64 value;
+
+        HK_TRY(GetSystemInfo(&value, infoType, handle, infoSubType));
+
+        return value;
+    }
+
+    // Misc.
+
+    hk_noreturn Result BreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
 
     inline hk_alwaysinline Result getProcessHandleMesosphere(Handle* out) {
         u64 value = 0;
@@ -155,13 +127,13 @@ namespace hk::svc {
 #ifdef __aarch64__
         __builtin___clear_cache((char*)addr, (char*)addr + size);
 #else // ILP32 userland cannot flush by itself
-        svc::Handle process;
+        Handle process;
         Result rc = getProcessHandleMesosphere(&process);
 #ifndef HK_RELEASE
         HK_ABORT_UNLESS_R(rc);
 #endif
-        svc::FlushProcessDataCache(process, addr, size);
-        svc::InvalidateProcessDataCache(process, addr, size);
+        FlushProcessDataCache(process, addr, size);
+        InvalidateProcessDataCache(process, addr, size);
 #endif
         tls->cacheMaintanenceFlag = false;
     }

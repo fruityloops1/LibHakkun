@@ -82,25 +82,25 @@ namespace hk {
         ValueOrResult() = default;
     };
 
-#define HK_UNWRAP(VALUE)                                                     \
-    ([&]() hk_alwaysinline {                                                 \
-        auto&& v = VALUE;                                                    \
-        using _ValueOrResult_T = std::remove_reference_t<decltype(v)>::Type; \
-        ::hk::Result _result_temp = v;                                       \
-        if (_result_temp.succeeded())                                        \
-            return (_ValueOrResult_T)v;                                      \
-        else {                                                               \
-            ::hk::diag::abortImpl(                                           \
-                ::hk::svc::BreakReason_User,                                 \
-                _result_temp,                                                \
-                __FILE__,                                                    \
-                __LINE__,                                                    \
-                ::hk::diag::cAbortUnlessResultFormat,                        \
-                _result_temp.getModule() + 2000,                             \
-                _result_temp.getDescription(),                               \
-                _result_temp.getValue(),                                     \
-                "HK_UNWRAP(" #VALUE ")");                                    \
-        }                                                                    \
+#define HK_UNWRAP(VALUE)                                                                \
+    ([&]() hk_alwaysinline {                                                            \
+        auto&& _hk_unwrap_v = VALUE;                                                    \
+        using _ValueOrResult_T = std::remove_reference_t<decltype(_hk_unwrap_v)>::Type; \
+        ::hk::Result _result_temp = _hk_unwrap_v;                                       \
+        if (_result_temp.succeeded())                                                   \
+            return (_ValueOrResult_T)_hk_unwrap_v;                                      \
+        else {                                                                          \
+            ::hk::diag::abortImpl(                                                      \
+                ::hk::svc::BreakReason_User,                                            \
+                _result_temp,                                                           \
+                __FILE__,                                                               \
+                __LINE__,                                                               \
+                ::hk::diag::cAbortUnlessResultFormat,                                   \
+                _result_temp.getModule() + 2000,                                        \
+                _result_temp.getDescription(),                                          \
+                _result_temp.getValue(),                                                \
+                "HK_UNWRAP(" #VALUE ")");                                               \
+        }                                                                               \
     })()
 
 } // namespace hk
