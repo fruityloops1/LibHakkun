@@ -71,7 +71,7 @@ File: %s:%d
         if (module) {
             void* headerSym = setAbortMsg(module, headerMsgBuf, 0);
             void* userSym = setAbortMsg(module, userMsgBuf, 1);
-            svc::hkBreakWithMessage(reason, &result, sizeof(result), headerSym, userSym);
+            svc::BreakWithMessage(reason, &result, sizeof(result), headerSym, userSym);
         } else
 #endif
             svc::Break(reason, &result, sizeof(result));
