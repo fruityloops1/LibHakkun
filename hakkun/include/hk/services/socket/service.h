@@ -81,13 +81,12 @@ namespace hk::socket {
 
         Tuple<s32, s32, SocketAddrIpv4> accept(s32 fd) {
             SocketAddrIpv4 outAddr;
-            constexpr u32 cSocklen = sizeof(outAddr);
-            auto input = sf::packInput(fd, cSocklen);
+            auto input = sf::packInput(fd);
             auto request = sf::Request(this, 12, &input);
 
-            request.addOutAutoselect(&outAddr, cSocklen);
+            request.addOutAutoselect(&outAddr, sizeof(outAddr));
 
-            auto response = HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            auto response = HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Tuple<s32, s32, u32>>()));
             return { response.a, response.b, outAddr };
         }
 
@@ -99,6 +98,12 @@ namespace hk::socket {
 
             request.addInAutoselect(&address, sizeof(A));
             return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+        }
+
+        Ret listen(s32 fd, s32 backlog) {
+            auto input = sf::packInput(fd, backlog);
+
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 18, &input), sf::simpleDataHandler<Ret>()));
         }
 
         template <typename A, typename B>

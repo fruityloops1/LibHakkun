@@ -4,7 +4,7 @@
 
 namespace hk::sf {
     u16 Service::pointerBufferSize() {
-        return mPointerBufferSize = invokeControl(Request(nullptr, this, 1), simpleDataHandler<u16>());
+        return mPointerBufferSize = invokeControl(Request(nullptr, this, 3), simpleDataHandler<u16>());
     }
 
     Result Service::convertToDomain() {
