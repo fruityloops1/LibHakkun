@@ -108,7 +108,7 @@ namespace hk::socket {
 
         template <typename A, typename T>
             requires(std::is_convertible<A*, SocketAddr*>::value)
-        Ret sendTo(s32 fd, std::span<const T> data, s32 flags, const SocketAddrIpv4& address) {
+        Ret sendTo(s32 fd, std::span<const T> data, s32 flags, const A& address) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 11, &input);
             request.addInAutoselect(data.data(), data.size_bytes());
