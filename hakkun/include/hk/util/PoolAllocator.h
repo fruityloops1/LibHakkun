@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/BitArray.h"
+#include "hk/util/TypeName.h"
 
 namespace hk::util {
 
