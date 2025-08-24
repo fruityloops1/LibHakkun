@@ -24,6 +24,8 @@ set(SOURCES
     src/hk/services/pm.cpp
     src/hk/services/lm.cpp
 
+    src/hk/sf/sf.cpp
+
     src/hk/util/Context.cpp
 
     src/rtld/RoModule.cpp

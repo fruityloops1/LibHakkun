@@ -39,9 +39,9 @@ namespace hk::socket {
 
         template <util::TemplateString Name>
         static sf::Service startMonitoring() {
-            auto monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
+            sf::Service monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
             auto input = u64(0);
-            auto request = sf::Request(1, &input);
+            auto request = sf::Request(&monitorService, 1, &input);
             request.setSendPid();
             HK_ABORT_UNLESS_R(monitorService.invokeRequest(move(request)));
             return monitorService;
@@ -51,7 +51,7 @@ namespace hk::socket {
             Handle handle;
             HK_ABORT_UNLESS_R(svc::CreateTransferMemory(&handle, ptr(socketBuffer.data()), socketBuffer.size_bytes(), svc::MemoryPermission_None));
             std::array<u8, 0x30> input = sf::packInput(config, u64(0), u64(socketBuffer.size_bytes()));
-            auto request = sf::Request(0, &input);
+            auto request = sf::Request(this, 0, &input);
             request.addCopyHandle(handle);
             request.setSendPid();
             HK_ABORT_UNLESS_R(invokeRequest(move(request)));
@@ -61,12 +61,12 @@ namespace hk::socket {
 
         Ret socket(AddressFamily domain, Type type, Protocol protocol) {
             std::array<u8, 12> input = sf::packInput(u32(domain), u32(type), u32(protocol));
-            return HK_UNWRAP(invokeRequest(sf::Request(2, &input), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 2, &input), sf::simpleDataHandler<Ret>()));
         }
 
         Ret recv(s32 fd, std::span<u8> buffer, s32 flags) {
             auto input = sf::packInput(fd, flags);
-            auto request = sf::Request(8, &input);
+            auto request = sf::Request(this, 8, &input);
 
             request.addOutAutoselect(buffer.data(), buffer.size_bytes());
             return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
@@ -75,7 +75,7 @@ namespace hk::socket {
         template <typename T>
         Ret send(s32 fd, std::span<const T> data, s32 flags) {
             auto input = sf::packInput(fd, flags);
-            auto request = sf::Request(10, &input);
+            auto request = sf::Request(this, 10, &input);
 
             request.addInAutoselect(data.data(), data.size_bytes());
 
@@ -86,7 +86,7 @@ namespace hk::socket {
             SocketAddrIpv4 outAddr;
             constexpr u32 cSocklen = sizeof(outAddr);
             auto input = sf::packInput(fd, cSocklen);
-            auto request = sf::Request(12, &input);
+            auto request = sf::Request(this, 12, &input);
 
             request.addOutAutoselect(&outAddr, cSocklen);
 
@@ -98,7 +98,7 @@ namespace hk::socket {
             requires(std::is_convertible<A*, SocketAddr*>::value)
         Ret bind(s32 fd, const A& address) {
             auto input = sf::packInput(fd);
-            auto request = sf::Request(13, &input);
+            auto request = sf::Request(this, 13, &input);
 
             request.addInAutoselect(&address, sizeof(A));
             return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
@@ -109,12 +109,11 @@ namespace hk::socket {
         Ret connect(s32 fd, const A& address) {
         }
 
-        template <typename T>
-        // requires(std::is_convertible_v<A*, SocketAddr*>)
+        template <typename A, typename T>
+            requires(std::is_convertible<A*, SocketAddr*>::value)
         Ret sendTo(s32 fd, std::span<const T> data, s32 flags, const SocketAddrIpv4& address) {
             auto input = sf::packInput(fd, flags);
-            diag::debugLog("sized %x %x %x %x", fd, flags, input.size(), address);
-            auto request = sf::Request(11, &input);
+            auto request = sf::Request(this, 11, &input);
             request.addInAutoselect(data.data(), data.size_bytes());
             request.addInAutoselect(&address, sizeof(SocketAddrIpv4));
             request.enableDebug(true, true);

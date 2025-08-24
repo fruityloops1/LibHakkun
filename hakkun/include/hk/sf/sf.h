@@ -39,6 +39,8 @@ namespace hk::sf {
         // Whether the session handle is owned by the current service.
         // Domain subservices don't own their own handles.
         bool mOwnedHandle;
+        // uninitialized when -1
+        u16 mPointerBufferSize = -1;
 
         template <typename ResponseHandler>
         inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler);
@@ -91,6 +93,8 @@ namespace hk::sf {
             return !mOwnedHandle;
         }
 
+        u16 pointerBufferSize();
+
         // A service might have many interfaces, and the kernel only has so many session handles,
         // so the client may choose to convert its active object handle to a domain object.
         // Domain objects allow a session to multiplex accesses to interfaces, saving on session handles.
@@ -111,6 +115,7 @@ namespace hk::sf {
         bool mPrintResponse = false;
         bool mSendPid = false;
         u8 mHipcStaticIdx = 0;
+        u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
         u32 mOutPointerSizes = 0;
@@ -122,19 +127,23 @@ namespace hk::sf {
         util::FixedCapacityArray<hipc::Buffer, 8> mHipcReceiveBuffers;
         util::FixedCapacityArray<hipc::Buffer, 8> mHipcExchangeBuffers;
         util::FixedCapacityArray<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
+        util::FixedCapacityArray<u16, 8> mHipcOutPointerSizes;
         std::span<const u8> mData = {};
 
     public:
-        Request(u32 command)
-            : mCommandId(command) { }
-        template <typename T>
-        Request(u32 command, const T* data)
+        Request(Service* service, u32 command)
             : mCommandId(command)
+            , mOutPointerSizes(service->pointerBufferSize()) { }
+        template <typename T>
+        Request(Service* service, u32 command, const T* data)
+            : mCommandId(command)
+            , mOutPointerSizes(service->pointerBufferSize())
             , mData(cast<const u8*>(data), sizeof(T)) { }
         template <typename T>
-        Request(u32 command, const T* data, size size)
+        Request(Service* service, u32 command, const std::span<T>& data)
             : mCommandId(command)
-            , mData(cast<const u8*>(data), sizeof(T) * size) { }
+            , mOutPointerSizes(service->pointerBufferSize())
+            , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
 
         constexpr void enableDebug(bool before = true, bool after = true) {
             mPrintRequest = before;

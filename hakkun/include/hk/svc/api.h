@@ -1,6 +1,5 @@
 #pragma once
 
-#include "hk/diag/diag.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
 

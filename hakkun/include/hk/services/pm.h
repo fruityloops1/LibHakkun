@@ -2,6 +2,7 @@
 
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
+#include "hk/sf/utils.h"
 #include "hk/util/Singleton.h"
 
 namespace hk::pm {
@@ -17,11 +18,11 @@ namespace hk::pm {
         }
 
         u64 getApplicationProcessId() {
-            auto request = sf::Request(4);
+            auto request = sf::Request(this, 4);
             request.enableDebug(true, true);
             return invokeRequest(move(request), [](sf::Response& response) {
                 HK_ASSERT(response.data.size_bytes() >= 8);
-                return *cast<u64*>(response.data.data());
+                return sf::simpleDataHandler<u64>()(response);
             });
         }
     };

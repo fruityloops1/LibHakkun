@@ -2,6 +2,7 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
+#include "hk/diag/diag.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
@@ -14,12 +15,11 @@
 
 namespace hk::lm {
 
-    class Logger {
+    class Logger : sf::Service {
         friend class LogManager;
-        sf::Service service;
 
         Logger(sf::Service&& service)
-            : service(std::forward<sf::Service>(service)) { };
+            : sf::Service(std::forward<sf::Service>(service)) { };
 
         util::FixedCapacityArray<u8, 4> encodeUleb128(u32 value) {
             util::FixedCapacityArray<u8, 4> result;
@@ -67,11 +67,9 @@ namespace hk::lm {
             stream.writeIterator<u8>(sizeBytes);
             stream.writeIterator<char>(std::span<const char>(text, len));
 
-            auto request = sf::Request(0);
+            auto request = sf::Request(this, 0);
             request.addInAutoselect(logData, stream.tell());
-            HK_UNWRAP(service.invokeRequest(move(request), [](sf::Response& response) {
-                return 0;
-            }));
+            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
         }
     };
 
@@ -89,7 +87,7 @@ namespace hk::lm {
 
         ValueOrResult<Logger> getLogger() {
             u64 pidReserved = 0;
-            auto request = sf::Request(0, &pidReserved, sizeof(pidReserved));
+            auto request = sf::Request(this, 0, &pidReserved);
             request.setSendPid();
             return invokeRequest(move(request), [this](sf::Response& response) {
                 sf::Service subservice = response.nextSubservice(this);
