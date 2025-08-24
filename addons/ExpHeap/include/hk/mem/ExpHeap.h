@@ -4,14 +4,12 @@
 
 namespace hk::mem {
 
-    enum AllocationMode
-    {
+    enum AllocationMode {
         AllocationMode_FirstFit,
         AllocationMode_BestFit,
     };
 
-    enum AllocationDirection
-    {
+    enum AllocationDirection {
         AllocationDirection_Front,
         AllocationDirection_Back,
     };

@@ -27,7 +27,7 @@ static inline void nvnDeviceSetDebugLabel(NVNdevice* device, const char* label) 
 }
 
 static inline PFNNVNGENERICFUNCPTRPROC nvnDeviceGetProcAddress(const NVNdevice* device,
-                                                               const char* s) {
+    const char* s) {
     return pfnc_nvnDeviceGetProcAddress(device, s);
 }
 
@@ -44,12 +44,12 @@ static inline void nvnDeviceSetIntermediateShaderCache(NVNdevice* device, int i)
 }
 
 static inline NVNtextureHandle nvnDeviceGetTextureHandle(const NVNdevice* device, int textureID,
-                                                         int samplerID) {
+    int samplerID) {
     return pfnc_nvnDeviceGetTextureHandle(device, textureID, samplerID);
 }
 
 static inline NVNtextureHandle nvnDeviceGetTexelFetchHandle(const NVNdevice* device,
-                                                            int textureID) {
+    int textureID) {
     return pfnc_nvnDeviceGetTexelFetchHandle(device, textureID);
 }
 
@@ -58,18 +58,18 @@ static inline NVNimageHandle nvnDeviceGetImageHandle(const NVNdevice* device, in
 }
 
 static inline void nvnDeviceInstallDebugCallback(NVNdevice* device,
-                                                 const PFNNVNDEBUGCALLBACKPROC callback,
-                                                 void* callbackData, NVNboolean enable) {
+    const PFNNVNDEBUGCALLBACKPROC callback,
+    void* callbackData, NVNboolean enable) {
     pfnc_nvnDeviceInstallDebugCallback(device, callback, callbackData, enable);
 }
 
 static inline NVNdebugDomainId nvnDeviceGenerateDebugDomainId(const NVNdevice* device,
-                                                              const char* s) {
+    const char* s) {
     return pfnc_nvnDeviceGenerateDebugDomainId(device, s);
 }
 
 static inline void nvnDeviceSetWindowOriginMode(NVNdevice* device,
-                                                NVNwindowOriginMode windowOriginMode) {
+    NVNwindowOriginMode windowOriginMode) {
     pfnc_nvnDeviceSetWindowOriginMode(device, windowOriginMode);
 }
 
@@ -78,17 +78,17 @@ static inline void nvnDeviceSetDepthMode(NVNdevice* device, NVNdepthMode depthMo
 }
 
 static inline NVNboolean nvnDeviceRegisterFastClearColor(NVNdevice* device, const float* color,
-                                                         NVNformat format) {
+    NVNformat format) {
     return pfnc_nvnDeviceRegisterFastClearColor(device, color, format);
 }
 
 static inline NVNboolean nvnDeviceRegisterFastClearColori(NVNdevice* device, const int* color,
-                                                          NVNformat format) {
+    NVNformat format) {
     return pfnc_nvnDeviceRegisterFastClearColori(device, color, format);
 }
 
 static inline NVNboolean nvnDeviceRegisterFastClearColorui(NVNdevice* device, const uint32_t* color,
-                                                           NVNformat format) {
+    NVNformat format) {
     return pfnc_nvnDeviceRegisterFastClearColorui(device, color, format);
 }
 
@@ -105,7 +105,7 @@ static inline NVNdepthMode nvnDeviceGetDepthMode(const NVNdevice* device) {
 }
 
 static inline uint64_t nvnDeviceGetTimestampInNanoseconds(const NVNdevice* device,
-                                                          const NVNcounterData* counterData) {
+    const NVNcounterData* counterData) {
     return pfnc_nvnDeviceGetTimestampInNanoseconds(device, counterData);
 }
 
@@ -118,19 +118,19 @@ static inline void nvnDeviceFinalizeCommandHandle(NVNdevice* device, NVNcommandH
 }
 
 static inline void nvnDeviceWalkDebugDatabase(const NVNdevice* device,
-                                              NVNdebugObjectType debugObjectType,
-                                              PFNNVNWALKDEBUGDATABASECALLBACKPROC callback,
-                                              void* callbackData) {
+    NVNdebugObjectType debugObjectType,
+    PFNNVNWALKDEBUGDATABASECALLBACKPROC callback,
+    void* callbackData) {
     pfnc_nvnDeviceWalkDebugDatabase(device, debugObjectType, callback, callbackData);
 }
 
 static inline NVNseparateTextureHandle nvnDeviceGetSeparateTextureHandle(const NVNdevice* device,
-                                                                         int textureID) {
+    int textureID) {
     return pfnc_nvnDeviceGetSeparateTextureHandle(device, textureID);
 }
 
 static inline NVNseparateSamplerHandle nvnDeviceGetSeparateSamplerHandle(const NVNdevice* device,
-                                                                         int textureID) {
+    int textureID) {
     return pfnc_nvnDeviceGetSeparateSamplerHandle(device, textureID);
 }
 
@@ -187,7 +187,7 @@ static inline size_t nvnQueueBuilderGetQueueMemorySize(const NVNqueueBuilder* bu
 }
 
 static inline void nvnQueueBuilderSetQueueMemory(NVNqueueBuilder* builder, void* memory,
-                                                 size_t size) {
+    size_t size) {
     pfnc_nvnQueueBuilderSetQueueMemory(builder, memory, size);
 }
 
@@ -208,7 +208,7 @@ static inline void nvnQueueSetDebugLabel(NVNqueue* queue, const char* label) {
 }
 
 static inline void nvnQueueSubmitCommands(NVNqueue* queue, int numCommands,
-                                          const NVNcommandHandle* handles) {
+    const NVNcommandHandle* handles) {
     pfnc_nvnQueueSubmitCommands(queue, numCommands, handles);
 }
 
@@ -238,17 +238,17 @@ static inline void nvnWindowBuilderSetDefaults(NVNwindowBuilder* builder) {
 }
 
 static inline void nvnWindowBuilderSetNativeWindow(NVNwindowBuilder* builder,
-                                                   NVNnativeWindow nativeWindow) {
+    NVNnativeWindow nativeWindow) {
     pfnc_nvnWindowBuilderSetNativeWindow(builder, nativeWindow);
 }
 
 static inline void nvnWindowBuilderSetTextures(NVNwindowBuilder* builder, int numTextures,
-                                               NVNtexture* const* textures) {
+    NVNtexture* const* textures) {
     pfnc_nvnWindowBuilderSetTextures(builder, numTextures, textures);
 }
 
 static inline void nvnWindowBuilderSetPresentInterval(NVNwindowBuilder* builder,
-                                                      int presentInterval) {
+    int presentInterval) {
     pfnc_nvnWindowBuilderSetPresentInterval(builder, presentInterval);
 }
 
@@ -310,7 +310,7 @@ static inline void nvnProgramSetDebugLabel(NVNprogram* program, const char* labe
 }
 
 static inline NVNboolean nvnProgramSetShaders(NVNprogram* program, int count,
-                                              const NVNshaderData* stageData) {
+    const NVNshaderData* stageData) {
     return pfnc_nvnProgramSetShaders(program, count, stageData);
 }
 
@@ -323,7 +323,7 @@ static inline void nvnMemoryPoolBuilderSetDefaults(NVNmemoryPoolBuilder* builder
 }
 
 static inline void nvnMemoryPoolBuilderSetStorage(NVNmemoryPoolBuilder* builder, void* memory,
-                                                  size_t size) {
+    size_t size) {
     pfnc_nvnMemoryPoolBuilderSetStorage(builder, memory, size);
 }
 
@@ -344,7 +344,7 @@ static inline NVNmemoryPoolFlags nvnMemoryPoolBuilderGetFlags(const NVNmemoryPoo
 }
 
 static inline NVNboolean nvnMemoryPoolInitialize(NVNmemoryPool* pool,
-                                                 const NVNmemoryPoolBuilder* builder) {
+    const NVNmemoryPoolBuilder* builder) {
     return pfnc_nvnMemoryPoolInitialize(pool, builder);
 }
 
@@ -361,12 +361,12 @@ static inline void* nvnMemoryPoolMap(const NVNmemoryPool* pool) {
 }
 
 static inline void nvnMemoryPoolFlushMappedRange(const NVNmemoryPool* pool, ptrdiff_t offset,
-                                                 size_t size) {
+    size_t size) {
     pfnc_nvnMemoryPoolFlushMappedRange(pool, offset, size);
 }
 
 static inline void nvnMemoryPoolInvalidateMappedRange(const NVNmemoryPool* pool, ptrdiff_t offset,
-                                                      size_t size) {
+    size_t size) {
     pfnc_nvnMemoryPoolInvalidateMappedRange(pool, offset, size);
 }
 
@@ -375,7 +375,7 @@ static inline NVNbufferAddress nvnMemoryPoolGetBufferAddress(const NVNmemoryPool
 }
 
 static inline NVNboolean nvnMemoryPoolMapVirtual(NVNmemoryPool* pool, int numRequests,
-                                                 const NVNmappingRequest* requests) {
+    const NVNmappingRequest* requests) {
     return pfnc_nvnMemoryPoolMapVirtual(pool, numRequests, requests);
 }
 
@@ -388,8 +388,8 @@ static inline NVNmemoryPoolFlags nvnMemoryPoolGetFlags(const NVNmemoryPool* pool
 }
 
 static inline NVNboolean nvnTexturePoolInitialize(NVNtexturePool* texturePool,
-                                                  const NVNmemoryPool* memoryPool, ptrdiff_t offset,
-                                                  int numDescriptors) {
+    const NVNmemoryPool* memoryPool, ptrdiff_t offset,
+    int numDescriptors) {
     return pfnc_nvnTexturePoolInitialize(texturePool, memoryPool, offset, numDescriptors);
 }
 
@@ -402,14 +402,14 @@ static inline void nvnTexturePoolFinalize(NVNtexturePool* pool) {
 }
 
 static inline void nvnTexturePoolRegisterTexture(const NVNtexturePool* pool, int id,
-                                                 const NVNtexture* texture,
-                                                 const NVNtextureView* view) {
+    const NVNtexture* texture,
+    const NVNtextureView* view) {
     pfnc_nvnTexturePoolRegisterTexture(pool, id, texture, view);
 }
 
 static inline void nvnTexturePoolRegisterImage(const NVNtexturePool* pool, int id,
-                                               const NVNtexture* texture,
-                                               const NVNtextureView* view) {
+    const NVNtexture* texture,
+    const NVNtextureView* view) {
     pfnc_nvnTexturePoolRegisterImage(pool, id, texture, view);
 }
 
@@ -426,8 +426,8 @@ static inline int nvnTexturePoolGetSize(const NVNtexturePool* pool) {
 }
 
 static inline NVNboolean nvnSamplerPoolInitialize(NVNsamplerPool* samplerPool,
-                                                  const NVNmemoryPool* memoryPool, ptrdiff_t offset,
-                                                  int numDescriptors) {
+    const NVNmemoryPool* memoryPool, ptrdiff_t offset,
+    int numDescriptors) {
     return pfnc_nvnSamplerPoolInitialize(samplerPool, memoryPool, offset, numDescriptors);
 }
 
@@ -440,12 +440,12 @@ static inline void nvnSamplerPoolFinalize(NVNsamplerPool* pool) {
 }
 
 static inline void nvnSamplerPoolRegisterSampler(const NVNsamplerPool* pool, int id,
-                                                 const NVNsampler* sampler) {
+    const NVNsampler* sampler) {
     pfnc_nvnSamplerPoolRegisterSampler(pool, id, sampler);
 }
 
 static inline void nvnSamplerPoolRegisterSamplerBuilder(const NVNsamplerPool* pool, int id,
-                                                        const NVNsamplerBuilder* builder) {
+    const NVNsamplerBuilder* builder) {
     pfnc_nvnSamplerPoolRegisterSamplerBuilder(pool, id, builder);
 }
 
@@ -470,7 +470,7 @@ static inline void nvnBufferBuilderSetDefaults(NVNbufferBuilder* builder) {
 }
 
 static inline void nvnBufferBuilderSetStorage(NVNbufferBuilder* builder, NVNmemoryPool* pool,
-                                              ptrdiff_t offset, size_t size) {
+    ptrdiff_t offset, size_t size) {
     pfnc_nvnBufferBuilderSetStorage(builder, pool, offset, size);
 }
 
@@ -507,12 +507,12 @@ static inline NVNbufferAddress nvnBufferGetAddress(const NVNbuffer* buffer) {
 }
 
 static inline void nvnBufferFlushMappedRange(const NVNbuffer* buffer, ptrdiff_t offset,
-                                             size_t size) {
+    size_t size) {
     pfnc_nvnBufferFlushMappedRange(buffer, offset, size);
 }
 
 static inline void nvnBufferInvalidateMappedRange(const NVNbuffer* buffer, ptrdiff_t offset,
-                                                  size_t size) {
+    size_t size) {
     pfnc_nvnBufferInvalidateMappedRange(buffer, offset, size);
 }
 
@@ -569,7 +569,7 @@ static inline void nvnTextureBuilderSetSize2D(NVNtextureBuilder* builder, int wi
 }
 
 static inline void nvnTextureBuilderSetSize3D(NVNtextureBuilder* builder, int width, int height,
-                                              int depth) {
+    int depth) {
     pfnc_nvnTextureBuilderSetSize3D(builder, width, height, depth);
 }
 
@@ -586,13 +586,13 @@ static inline void nvnTextureBuilderSetSamples(NVNtextureBuilder* builder, int s
 }
 
 static inline void nvnTextureBuilderSetSwizzle(NVNtextureBuilder* builder, NVNtextureSwizzle r,
-                                               NVNtextureSwizzle g, NVNtextureSwizzle b,
-                                               NVNtextureSwizzle a) {
+    NVNtextureSwizzle g, NVNtextureSwizzle b,
+    NVNtextureSwizzle a) {
     pfnc_nvnTextureBuilderSetSwizzle(builder, r, g, b, a);
 }
 
 static inline void nvnTextureBuilderSetDepthStencilMode(NVNtextureBuilder* builder,
-                                                        NVNtextureDepthStencilMode mode) {
+    NVNtextureDepthStencilMode mode) {
     pfnc_nvnTextureBuilderSetDepthStencilMode(builder, mode);
 }
 
@@ -605,18 +605,18 @@ static inline size_t nvnTextureBuilderGetStorageAlignment(const NVNtextureBuilde
 }
 
 static inline void nvnTextureBuilderSetStorage(NVNtextureBuilder* builder, NVNmemoryPool* pool,
-                                               ptrdiff_t offset) {
+    ptrdiff_t offset) {
     pfnc_nvnTextureBuilderSetStorage(builder, pool, offset);
 }
 
 static inline void nvnTextureBuilderSetPackagedTextureData(NVNtextureBuilder* builder,
-                                                           const void* data) {
+    const void* data) {
     pfnc_nvnTextureBuilderSetPackagedTextureData(builder, data);
 }
 
 static inline void
 nvnTextureBuilderSetPackagedTextureLayout(NVNtextureBuilder* builder,
-                                          const NVNpackagedTextureLayout* layout) {
+    const NVNpackagedTextureLayout* layout) {
     pfnc_nvnTextureBuilderSetPackagedTextureLayout(builder, layout);
 }
 
@@ -665,8 +665,8 @@ static inline int nvnTextureBuilderGetSamples(const NVNtextureBuilder* builder) 
 }
 
 static inline void nvnTextureBuilderGetSwizzle(const NVNtextureBuilder* builder,
-                                               NVNtextureSwizzle* r, NVNtextureSwizzle* g,
-                                               NVNtextureSwizzle* b, NVNtextureSwizzle* a) {
+    NVNtextureSwizzle* r, NVNtextureSwizzle* g,
+    NVNtextureSwizzle* b, NVNtextureSwizzle* a) {
     pfnc_nvnTextureBuilderGetSwizzle(builder, r, g, b, a);
 }
 
@@ -685,7 +685,7 @@ static inline ptrdiff_t nvnTextureBuilderGetStride(const NVNtextureBuilder* buil
 }
 
 static inline void nvnTextureBuilderGetSparseTileLayout(const NVNtextureBuilder* builder,
-                                                        NVNtextureSparseTileLayout* layout) {
+    NVNtextureSparseTileLayout* layout) {
     pfnc_nvnTextureBuilderGetSparseTileLayout(builder, layout);
 }
 
@@ -722,13 +722,13 @@ static inline void nvnTextureViewSetFormat(NVNtextureView* view, NVNformat forma
 }
 
 static inline void nvnTextureViewSetSwizzle(NVNtextureView* view, NVNtextureSwizzle r,
-                                            NVNtextureSwizzle g, NVNtextureSwizzle b,
-                                            NVNtextureSwizzle a) {
+    NVNtextureSwizzle g, NVNtextureSwizzle b,
+    NVNtextureSwizzle a) {
     pfnc_nvnTextureViewSetSwizzle(view, r, g, b, a);
 }
 
 static inline void nvnTextureViewSetDepthStencilMode(NVNtextureView* view,
-                                                     NVNtextureDepthStencilMode mode) {
+    NVNtextureDepthStencilMode mode) {
     pfnc_nvnTextureViewSetDepthStencilMode(view, mode);
 }
 
@@ -737,12 +737,12 @@ static inline void nvnTextureViewSetTarget(NVNtextureView* view, NVNtextureTarge
 }
 
 static inline NVNboolean nvnTextureViewGetLevels(const NVNtextureView* view, int* baseLevel,
-                                                 int* numLevels) {
+    int* numLevels) {
     return pfnc_nvnTextureViewGetLevels(view, baseLevel, numLevels);
 }
 
 static inline NVNboolean nvnTextureViewGetLayers(const NVNtextureView* view, int* minLayer,
-                                                 int* numLayers) {
+    int* numLayers) {
     return pfnc_nvnTextureViewGetLayers(view, minLayer, numLayers);
 }
 
@@ -751,28 +751,28 @@ static inline NVNboolean nvnTextureViewGetFormat(const NVNtextureView* view, NVN
 }
 
 static inline NVNboolean nvnTextureViewGetSwizzle(const NVNtextureView* view, NVNtextureSwizzle* r,
-                                                  NVNtextureSwizzle* g, NVNtextureSwizzle* b,
-                                                  NVNtextureSwizzle* a) {
+    NVNtextureSwizzle* g, NVNtextureSwizzle* b,
+    NVNtextureSwizzle* a) {
     return pfnc_nvnTextureViewGetSwizzle(view, r, g, b, a);
 }
 
 static inline NVNboolean nvnTextureViewGetDepthStencilMode(const NVNtextureView* view,
-                                                           NVNtextureDepthStencilMode* mode) {
+    NVNtextureDepthStencilMode* mode) {
     return pfnc_nvnTextureViewGetDepthStencilMode(view, mode);
 }
 
 static inline NVNboolean nvnTextureViewGetTarget(const NVNtextureView* view,
-                                                 NVNtextureTarget* target) {
+    NVNtextureTarget* target) {
     return pfnc_nvnTextureViewGetTarget(view, target);
 }
 
 static inline NVNboolean nvnTextureViewCompare(const NVNtextureView* view1,
-                                               const NVNtextureView* view2) {
+    const NVNtextureView* view2) {
     return pfnc_nvnTextureViewCompare(view1, view2);
 }
 
 static inline NVNboolean nvnTextureInitialize(NVNtexture* texture,
-                                              const NVNtextureBuilder* builder) {
+    const NVNtextureBuilder* builder) {
     return pfnc_nvnTextureInitialize(texture, builder);
 }
 
@@ -793,7 +793,7 @@ static inline NVNstorageClass nvnTextureGetStorageClass(const NVNtexture* textur
 }
 
 static inline ptrdiff_t nvnTextureGetViewOffset(const NVNtexture* texture,
-                                                const NVNtextureView* view) {
+    const NVNtextureView* view) {
     return pfnc_nvnTextureGetViewOffset(texture, view);
 }
 
@@ -830,8 +830,8 @@ static inline int nvnTextureGetSamples(const NVNtexture* texture) {
 }
 
 static inline void nvnTextureGetSwizzle(const NVNtexture* texture, NVNtextureSwizzle* r,
-                                        NVNtextureSwizzle* g, NVNtextureSwizzle* b,
-                                        NVNtextureSwizzle* a) {
+    NVNtextureSwizzle* g, NVNtextureSwizzle* b,
+    NVNtextureSwizzle* a) {
     pfnc_nvnTextureGetSwizzle(texture, r, g, b, a);
 }
 
@@ -848,41 +848,41 @@ static inline NVNtextureAddress nvnTextureGetTextureAddress(const NVNtexture* te
 }
 
 static inline void nvnTextureGetSparseTileLayout(const NVNtexture* texture,
-                                                 NVNtextureSparseTileLayout* layout) {
+    NVNtextureSparseTileLayout* layout) {
     pfnc_nvnTextureGetSparseTileLayout(texture, layout);
 }
 
 static inline void nvnTextureWriteTexels(const NVNtexture* texture, const NVNtextureView* view,
-                                         const NVNcopyRegion* region, const void* p) {
+    const NVNcopyRegion* region, const void* p) {
     pfnc_nvnTextureWriteTexels(texture, view, region, p);
 }
 
 static inline void nvnTextureWriteTexelsStrided(const NVNtexture* texture,
-                                                const NVNtextureView* view,
-                                                const NVNcopyRegion* region, const void* p,
-                                                ptrdiff_t o1, ptrdiff_t o2) {
+    const NVNtextureView* view,
+    const NVNcopyRegion* region, const void* p,
+    ptrdiff_t o1, ptrdiff_t o2) {
     pfnc_nvnTextureWriteTexelsStrided(texture, view, region, p, o1, o2);
 }
 
 static inline void nvnTextureReadTexels(const NVNtexture* texture, const NVNtextureView* view,
-                                        const NVNcopyRegion* region, void* p) {
+    const NVNcopyRegion* region, void* p) {
     pfnc_nvnTextureReadTexels(texture, view, region, p);
 }
 
 static inline void nvnTextureReadTexelsStrided(const NVNtexture* texture,
-                                               const NVNtextureView* view,
-                                               const NVNcopyRegion* region, void* p, ptrdiff_t o1,
-                                               ptrdiff_t o2) {
+    const NVNtextureView* view,
+    const NVNcopyRegion* region, void* p, ptrdiff_t o1,
+    ptrdiff_t o2) {
     pfnc_nvnTextureReadTexelsStrided(texture, view, region, p, o1, o2);
 }
 
 static inline void nvnTextureFlushTexels(const NVNtexture* texture, const NVNtextureView* view,
-                                         const NVNcopyRegion* region) {
+    const NVNcopyRegion* region) {
     pfnc_nvnTextureFlushTexels(texture, view, region);
 }
 
 static inline void nvnTextureInvalidateTexels(const NVNtexture* texture, const NVNtextureView* view,
-                                              const NVNcopyRegion* region) {
+    const NVNcopyRegion* region) {
     pfnc_nvnTextureInvalidateTexels(texture, view, region);
 }
 
@@ -915,12 +915,12 @@ static inline void nvnSamplerBuilderSetDefaults(NVNsamplerBuilder* builder) {
 }
 
 static inline void nvnSamplerBuilderSetMinMagFilter(NVNsamplerBuilder* builder, NVNminFilter min,
-                                                    NVNmagFilter mag) {
+    NVNmagFilter mag) {
     pfnc_nvnSamplerBuilderSetMinMagFilter(builder, min, mag);
 }
 
 static inline void nvnSamplerBuilderSetWrapMode(NVNsamplerBuilder* builder, NVNwrapMode s,
-                                                NVNwrapMode t, NVNwrapMode r) {
+    NVNwrapMode t, NVNwrapMode r) {
     pfnc_nvnSamplerBuilderSetWrapMode(builder, s, t, r);
 }
 
@@ -933,22 +933,22 @@ static inline void nvnSamplerBuilderSetLodBias(NVNsamplerBuilder* builder, float
 }
 
 static inline void nvnSamplerBuilderSetCompare(NVNsamplerBuilder* builder, NVNcompareMode mode,
-                                               NVNcompareFunc func) {
+    NVNcompareFunc func) {
     pfnc_nvnSamplerBuilderSetCompare(builder, mode, func);
 }
 
 static inline void nvnSamplerBuilderSetBorderColor(NVNsamplerBuilder* builder,
-                                                   const float* borderColor) {
+    const float* borderColor) {
     pfnc_nvnSamplerBuilderSetBorderColor(builder, borderColor);
 }
 
 static inline void nvnSamplerBuilderSetBorderColori(NVNsamplerBuilder* builder,
-                                                    const int* borderColor) {
+    const int* borderColor) {
     pfnc_nvnSamplerBuilderSetBorderColori(builder, borderColor);
 }
 
 static inline void nvnSamplerBuilderSetBorderColorui(NVNsamplerBuilder* builder,
-                                                     const uint32_t* borderColor) {
+    const uint32_t* borderColor) {
     pfnc_nvnSamplerBuilderSetBorderColorui(builder, borderColor);
 }
 
@@ -957,7 +957,7 @@ static inline void nvnSamplerBuilderSetMaxAnisotropy(NVNsamplerBuilder* builder,
 }
 
 static inline void nvnSamplerBuilderSetReductionFilter(NVNsamplerBuilder* builder,
-                                                       NVNsamplerReduction filter) {
+    NVNsamplerReduction filter) {
     pfnc_nvnSamplerBuilderSetReductionFilter(builder, filter);
 }
 
@@ -966,17 +966,17 @@ static inline void nvnSamplerBuilderSetLodSnap(NVNsamplerBuilder* builder, float
 }
 
 static inline void nvnSamplerBuilderGetMinMagFilter(const NVNsamplerBuilder* builder,
-                                                    NVNminFilter* min, NVNmagFilter* mag) {
+    NVNminFilter* min, NVNmagFilter* mag) {
     pfnc_nvnSamplerBuilderGetMinMagFilter(builder, min, mag);
 }
 
 static inline void nvnSamplerBuilderGetWrapMode(const NVNsamplerBuilder* builder, NVNwrapMode* s,
-                                                NVNwrapMode* t, NVNwrapMode* r) {
+    NVNwrapMode* t, NVNwrapMode* r) {
     pfnc_nvnSamplerBuilderGetWrapMode(builder, s, t, r);
 }
 
 static inline void nvnSamplerBuilderGetLodClamp(const NVNsamplerBuilder* builder, float* min,
-                                                float* max) {
+    float* max) {
     pfnc_nvnSamplerBuilderGetLodClamp(builder, min, max);
 }
 
@@ -985,22 +985,22 @@ static inline float nvnSamplerBuilderGetLodBias(const NVNsamplerBuilder* builder
 }
 
 static inline void nvnSamplerBuilderGetCompare(const NVNsamplerBuilder* builder,
-                                               NVNcompareMode* mode, NVNcompareFunc* func) {
+    NVNcompareMode* mode, NVNcompareFunc* func) {
     pfnc_nvnSamplerBuilderGetCompare(builder, mode, func);
 }
 
 static inline void nvnSamplerBuilderGetBorderColor(const NVNsamplerBuilder* builder,
-                                                   float* borderColor) {
+    float* borderColor) {
     pfnc_nvnSamplerBuilderGetBorderColor(builder, borderColor);
 }
 
 static inline void nvnSamplerBuilderGetBorderColori(const NVNsamplerBuilder* builder,
-                                                    int* borderColor) {
+    int* borderColor) {
     pfnc_nvnSamplerBuilderGetBorderColori(builder, borderColor);
 }
 
 static inline void nvnSamplerBuilderGetBorderColorui(const NVNsamplerBuilder* builder,
-                                                     uint32_t* borderColor) {
+    uint32_t* borderColor) {
     pfnc_nvnSamplerBuilderGetBorderColorui(builder, borderColor);
 }
 
@@ -1018,7 +1018,7 @@ static inline float nvnSamplerBuilderGetLodSnap(const NVNsamplerBuilder* builder
 }
 
 static inline NVNboolean nvnSamplerInitialize(NVNsampler* sampler,
-                                              const NVNsamplerBuilder* builder) {
+    const NVNsamplerBuilder* builder) {
     return pfnc_nvnSamplerInitialize(sampler, builder);
 }
 
@@ -1031,12 +1031,12 @@ static inline void nvnSamplerSetDebugLabel(NVNsampler* sampler, const char* labe
 }
 
 static inline void nvnSamplerGetMinMagFilter(const NVNsampler* sampler, NVNminFilter* min,
-                                             NVNmagFilter* mag) {
+    NVNmagFilter* mag) {
     pfnc_nvnSamplerGetMinMagFilter(sampler, min, mag);
 }
 
 static inline void nvnSamplerGetWrapMode(const NVNsampler* sampler, NVNwrapMode* s, NVNwrapMode* t,
-                                         NVNwrapMode* r) {
+    NVNwrapMode* r) {
     pfnc_nvnSamplerGetWrapMode(sampler, s, t, r);
 }
 
@@ -1049,7 +1049,7 @@ static inline float nvnSamplerGetLodBias(const NVNsampler* sampler) {
 }
 
 static inline void nvnSamplerGetCompare(const NVNsampler* sampler, NVNcompareMode* mode,
-                                        NVNcompareFunc* func) {
+    NVNcompareFunc* func) {
     pfnc_nvnSamplerGetCompare(sampler, mode, func);
 }
 
@@ -1090,13 +1090,13 @@ static inline void nvnBlendStateSetBlendTarget(NVNblendState* blend, int target)
 }
 
 static inline void nvnBlendStateSetBlendFunc(NVNblendState* blend, NVNblendFunc srcFunc,
-                                             NVNblendFunc dstFunc, NVNblendFunc srcFuncAlpha,
-                                             NVNblendFunc dstFuncAlpha) {
+    NVNblendFunc dstFunc, NVNblendFunc srcFuncAlpha,
+    NVNblendFunc dstFuncAlpha) {
     pfnc_nvnBlendStateSetBlendFunc(blend, srcFunc, dstFunc, srcFuncAlpha, dstFuncAlpha);
 }
 
 static inline void nvnBlendStateSetBlendEquation(NVNblendState* blend, NVNblendEquation modeRGB,
-                                                 NVNblendEquation modeAlpha) {
+    NVNblendEquation modeAlpha) {
     pfnc_nvnBlendStateSetBlendEquation(blend, modeRGB, modeAlpha);
 }
 
@@ -1105,7 +1105,7 @@ static inline void nvnBlendStateSetAdvancedMode(NVNblendState* blend, NVNblendAd
 }
 
 static inline void nvnBlendStateSetAdvancedOverlap(NVNblendState* blend,
-                                                   NVNblendAdvancedOverlap overlap) {
+    NVNblendAdvancedOverlap overlap) {
     pfnc_nvnBlendStateSetAdvancedOverlap(blend, overlap);
 }
 
@@ -1122,14 +1122,14 @@ static inline int nvnBlendStateGetBlendTarget(const NVNblendState* blend) {
 }
 
 static inline void nvnBlendStateGetBlendFunc(const NVNblendState* blend, NVNblendFunc* srcFunc,
-                                             NVNblendFunc* dstFunc, NVNblendFunc* srcFuncAlpha,
-                                             NVNblendFunc* dstFuncAlpha) {
+    NVNblendFunc* dstFunc, NVNblendFunc* srcFuncAlpha,
+    NVNblendFunc* dstFuncAlpha) {
     pfnc_nvnBlendStateGetBlendFunc(blend, srcFunc, dstFunc, srcFuncAlpha, dstFuncAlpha);
 }
 
 static inline void nvnBlendStateGetBlendEquation(const NVNblendState* blend,
-                                                 NVNblendEquation* modeRGB,
-                                                 NVNblendEquation* modeAlpha) {
+    NVNblendEquation* modeRGB,
+    NVNblendEquation* modeAlpha) {
     pfnc_nvnBlendStateGetBlendEquation(blend, modeRGB, modeAlpha);
 }
 
@@ -1182,14 +1182,14 @@ static inline void nvnChannelMaskStateSetDefaults(NVNchannelMaskState* channelMa
 }
 
 static inline void nvnChannelMaskStateSetChannelMask(NVNchannelMaskState* channelMask, int index,
-                                                     NVNboolean r, NVNboolean g, NVNboolean b,
-                                                     NVNboolean a) {
+    NVNboolean r, NVNboolean g, NVNboolean b,
+    NVNboolean a) {
     pfnc_nvnChannelMaskStateSetChannelMask(channelMask, index, r, g, b, a);
 }
 
 static inline void nvnChannelMaskStateGetChannelMask(const NVNchannelMaskState* channelMask,
-                                                     int index, NVNboolean* r, NVNboolean* g,
-                                                     NVNboolean* b, NVNboolean* a) {
+    int index, NVNboolean* r, NVNboolean* g,
+    NVNboolean* b, NVNboolean* a) {
     pfnc_nvnChannelMaskStateGetChannelMask(channelMask, index, r, g, b, a);
 }
 
@@ -1198,7 +1198,7 @@ static inline void nvnMultisampleStateSetDefaults(NVNmultisampleState* multisamp
 }
 
 static inline void nvnMultisampleStateSetMultisampleEnable(NVNmultisampleState* multisample,
-                                                           NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetMultisampleEnable(multisample, enable);
 }
 
@@ -1207,12 +1207,12 @@ static inline void nvnMultisampleStateSetSamples(NVNmultisampleState* multisampl
 }
 
 static inline void nvnMultisampleStateSetAlphaToCoverageEnable(NVNmultisampleState* multisample,
-                                                               NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetAlphaToCoverageEnable(multisample, enable);
 }
 
 static inline void nvnMultisampleStateSetAlphaToCoverageDither(NVNmultisampleState* multisample,
-                                                               NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetAlphaToCoverageDither(multisample, enable);
 }
 
@@ -1236,7 +1236,7 @@ nvnMultisampleStateGetAlphaToCoverageDither(const NVNmultisampleState* multisamp
 }
 
 static inline void nvnMultisampleStateSetRasterSamples(NVNmultisampleState* multisample,
-                                                       int samples) {
+    int samples) {
     pfnc_nvnMultisampleStateSetRasterSamples(multisample, samples);
 }
 
@@ -1245,7 +1245,7 @@ static inline int nvnMultisampleStateGetRasterSamples(NVNmultisampleState* multi
 }
 
 static inline void nvnMultisampleStateSetCoverageModulationMode(NVNmultisampleState* multisample,
-                                                                NVNcoverageModulationMode mode) {
+    NVNcoverageModulationMode mode) {
     pfnc_nvnMultisampleStateSetCoverageModulationMode(multisample, mode);
 }
 
@@ -1255,7 +1255,7 @@ nvnMultisampleStateGetCoverageModulationMode(const NVNmultisampleState* multisam
 }
 
 static inline void nvnMultisampleStateSetCoverageToColorEnable(NVNmultisampleState* multisample,
-                                                               NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetCoverageToColorEnable(multisample, enable);
 }
 
@@ -1265,7 +1265,7 @@ nvnMultisampleStateGetCoverageToColorEnable(const NVNmultisampleState* multisamp
 }
 
 static inline void nvnMultisampleStateSetCoverageToColorOutput(NVNmultisampleState* multisample,
-                                                               int i) {
+    int i) {
     pfnc_nvnMultisampleStateSetCoverageToColorOutput(multisample, i);
 }
 
@@ -1275,7 +1275,7 @@ nvnMultisampleStateGetCoverageToColorOutput(const NVNmultisampleState* multisamp
 }
 
 static inline void nvnMultisampleStateSetSampleLocationsEnable(NVNmultisampleState* multisample,
-                                                               NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetSampleLocationsEnable(multisample, enable);
 }
 
@@ -1285,12 +1285,12 @@ nvnMultisampleStateGetSampleLocationsEnable(const NVNmultisampleState* multisamp
 }
 
 static inline void nvnMultisampleStateGetSampleLocationsGrid(NVNmultisampleState* multisample,
-                                                             int* w, int* h) {
+    int* w, int* h) {
     pfnc_nvnMultisampleStateGetSampleLocationsGrid(multisample, w, h);
 }
 
 static inline void nvnMultisampleStateSetSampleLocationsGridEnable(NVNmultisampleState* multisample,
-                                                                   NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnMultisampleStateSetSampleLocationsGridEnable(multisample, enable);
 }
 
@@ -1300,7 +1300,7 @@ nvnMultisampleStateGetSampleLocationsGridEnable(const NVNmultisampleState* multi
 }
 
 static inline void nvnMultisampleStateSetSampleLocations(NVNmultisampleState* multisample, int i1,
-                                                         int i2, const float* f) {
+    int i2, const float* f) {
     pfnc_nvnMultisampleStateSetSampleLocations(multisample, i1, i2, f);
 }
 
@@ -1317,7 +1317,7 @@ static inline void nvnPolygonStateSetFrontFace(NVNpolygonState* polygon, NVNfron
 }
 
 static inline void nvnPolygonStateSetPolygonMode(NVNpolygonState* polygon,
-                                                 NVNpolygonMode polygonMode) {
+    NVNpolygonMode polygonMode) {
     pfnc_nvnPolygonStateSetPolygonMode(polygon, polygonMode);
 }
 
@@ -1347,34 +1347,34 @@ static inline void nvnDepthStencilStateSetDefaults(NVNdepthStencilState* depthSt
 }
 
 static inline void nvnDepthStencilStateSetDepthTestEnable(NVNdepthStencilState* depthStencil,
-                                                          NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnDepthStencilStateSetDepthTestEnable(depthStencil, enable);
 }
 
 static inline void nvnDepthStencilStateSetDepthWriteEnable(NVNdepthStencilState* depthStencil,
-                                                           NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnDepthStencilStateSetDepthWriteEnable(depthStencil, enable);
 }
 
 static inline void nvnDepthStencilStateSetDepthFunc(NVNdepthStencilState* depthStencil,
-                                                    NVNdepthFunc func) {
+    NVNdepthFunc func) {
     pfnc_nvnDepthStencilStateSetDepthFunc(depthStencil, func);
 }
 
 static inline void nvnDepthStencilStateSetStencilTestEnable(NVNdepthStencilState* depthStencil,
-                                                            NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnDepthStencilStateSetStencilTestEnable(depthStencil, enable);
 }
 
 static inline void nvnDepthStencilStateSetStencilFunc(NVNdepthStencilState* depthStencil,
-                                                      NVNface faces, NVNstencilFunc func) {
+    NVNface faces, NVNstencilFunc func) {
     pfnc_nvnDepthStencilStateSetStencilFunc(depthStencil, faces, func);
 }
 
 static inline void nvnDepthStencilStateSetStencilOp(NVNdepthStencilState* depthStencil,
-                                                    NVNface faces, NVNstencilOp fail,
-                                                    NVNstencilOp depthFail,
-                                                    NVNstencilOp depthPass) {
+    NVNface faces, NVNstencilOp fail,
+    NVNstencilOp depthFail,
+    NVNstencilOp depthPass) {
     pfnc_nvnDepthStencilStateSetStencilOp(depthStencil, faces, fail, depthFail, depthPass);
 }
 
@@ -1404,9 +1404,9 @@ nvnDepthStencilStateGetStencilFunc(const NVNdepthStencilState* depthStencil, NVN
 }
 
 static inline void nvnDepthStencilStateGetStencilOp(const NVNdepthStencilState* depthStencil,
-                                                    NVNface faces, NVNstencilOp* fail,
-                                                    NVNstencilOp* depthFail,
-                                                    NVNstencilOp* depthPass) {
+    NVNface faces, NVNstencilOp* fail,
+    NVNstencilOp* depthFail,
+    NVNstencilOp* depthPass) {
     pfnc_nvnDepthStencilStateGetStencilOp(depthStencil, faces, fail, depthFail, depthPass);
 }
 
@@ -1415,17 +1415,17 @@ static inline void nvnVertexAttribStateSetDefaults(NVNvertexAttribState* attrib)
 }
 
 static inline void nvnVertexAttribStateSetFormat(NVNvertexAttribState* attrib, NVNformat format,
-                                                 ptrdiff_t relativeOffset) {
+    ptrdiff_t relativeOffset) {
     pfnc_nvnVertexAttribStateSetFormat(attrib, format, relativeOffset);
 }
 
 static inline void nvnVertexAttribStateSetStreamIndex(NVNvertexAttribState* attrib,
-                                                      int streamIndex) {
+    int streamIndex) {
     pfnc_nvnVertexAttribStateSetStreamIndex(attrib, streamIndex);
 }
 
 static inline void nvnVertexAttribStateGetFormat(const NVNvertexAttribState* attrib,
-                                                 NVNformat* format, ptrdiff_t* relativeOffset) {
+    NVNformat* format, ptrdiff_t* relativeOffset) {
     pfnc_nvnVertexAttribStateGetFormat(attrib, format, relativeOffset);
 }
 
@@ -1467,23 +1467,23 @@ static inline void nvnCommandBufferSetDebugLabel(NVNcommandBuffer* cmdBuf, const
 
 static inline void
 nvnCommandBufferSetMemoryCallback(NVNcommandBuffer* cmdBuf,
-                                  PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC callback) {
+    PFNNVNCOMMANDBUFFERMEMORYCALLBACKPROC callback) {
     pfnc_nvnCommandBufferSetMemoryCallback(cmdBuf, callback);
 }
 
 static inline void nvnCommandBufferSetMemoryCallbackData(NVNcommandBuffer* cmdBuf,
-                                                         void* callbackData) {
+    void* callbackData) {
     pfnc_nvnCommandBufferSetMemoryCallbackData(cmdBuf, callbackData);
 }
 
 static inline void nvnCommandBufferAddCommandMemory(NVNcommandBuffer* cmdBuf,
-                                                    const NVNmemoryPool* pool, ptrdiff_t offset,
-                                                    size_t size) {
+    const NVNmemoryPool* pool, ptrdiff_t offset,
+    size_t size) {
     pfnc_nvnCommandBufferAddCommandMemory(cmdBuf, pool, offset, size);
 }
 
 static inline void nvnCommandBufferAddControlMemory(NVNcommandBuffer* cmdBuf, void* memory,
-                                                    size_t size) {
+    size_t size) {
     pfnc_nvnCommandBufferAddControlMemory(cmdBuf, memory, size);
 }
 
@@ -1520,124 +1520,124 @@ static inline NVNcommandHandle nvnCommandBufferEndRecording(NVNcommandBuffer* cm
 }
 
 static inline void nvnCommandBufferCallCommands(NVNcommandBuffer* cmdBuf, int numCommands,
-                                                const NVNcommandHandle* handles) {
+    const NVNcommandHandle* handles) {
     pfnc_nvnCommandBufferCallCommands(cmdBuf, numCommands, handles);
 }
 
 static inline void nvnCommandBufferCopyCommands(NVNcommandBuffer* cmdBuf, int numCommands,
-                                                const NVNcommandHandle* handles) {
+    const NVNcommandHandle* handles) {
     pfnc_nvnCommandBufferCopyCommands(cmdBuf, numCommands, handles);
 }
 
 static inline void nvnCommandBufferBindBlendState(NVNcommandBuffer* cmdBuf,
-                                                  const NVNblendState* blend) {
+    const NVNblendState* blend) {
     pfnc_nvnCommandBufferBindBlendState(cmdBuf, blend);
 }
 
 static inline void nvnCommandBufferBindChannelMaskState(NVNcommandBuffer* cmdBuf,
-                                                        const NVNchannelMaskState* channelMask) {
+    const NVNchannelMaskState* channelMask) {
     pfnc_nvnCommandBufferBindChannelMaskState(cmdBuf, channelMask);
 }
 
 static inline void nvnCommandBufferBindColorState(NVNcommandBuffer* cmdBuf,
-                                                  const NVNcolorState* color) {
+    const NVNcolorState* color) {
     pfnc_nvnCommandBufferBindColorState(cmdBuf, color);
 }
 
 static inline void nvnCommandBufferBindMultisampleState(NVNcommandBuffer* cmdBuf,
-                                                        const NVNmultisampleState* multisample) {
+    const NVNmultisampleState* multisample) {
     pfnc_nvnCommandBufferBindMultisampleState(cmdBuf, multisample);
 }
 
 static inline void nvnCommandBufferBindPolygonState(NVNcommandBuffer* cmdBuf,
-                                                    const NVNpolygonState* polygon) {
+    const NVNpolygonState* polygon) {
     pfnc_nvnCommandBufferBindPolygonState(cmdBuf, polygon);
 }
 
 static inline void nvnCommandBufferBindDepthStencilState(NVNcommandBuffer* cmdBuf,
-                                                         const NVNdepthStencilState* depthStencil) {
+    const NVNdepthStencilState* depthStencil) {
     pfnc_nvnCommandBufferBindDepthStencilState(cmdBuf, depthStencil);
 }
 
 static inline void nvnCommandBufferBindVertexAttribState(NVNcommandBuffer* cmdBuf, int numAttribs,
-                                                         const NVNvertexAttribState* attribs) {
+    const NVNvertexAttribState* attribs) {
     pfnc_nvnCommandBufferBindVertexAttribState(cmdBuf, numAttribs, attribs);
 }
 
 static inline void nvnCommandBufferBindVertexStreamState(NVNcommandBuffer* cmdBuf, int numStreams,
-                                                         const NVNvertexStreamState* streams) {
+    const NVNvertexStreamState* streams) {
     pfnc_nvnCommandBufferBindVertexStreamState(cmdBuf, numStreams, streams);
 }
 
 static inline void nvnCommandBufferBindProgram(NVNcommandBuffer* cmdBuf, const NVNprogram* program,
-                                               int stages) {
+    int stages) {
     pfnc_nvnCommandBufferBindProgram(cmdBuf, program, stages);
 }
 
 static inline void nvnCommandBufferBindVertexBuffer(NVNcommandBuffer* cmdBuf, int index,
-                                                    NVNbufferAddress buffer, size_t size) {
+    NVNbufferAddress buffer, size_t size) {
     pfnc_nvnCommandBufferBindVertexBuffer(cmdBuf, index, buffer, size);
 }
 
 static inline void nvnCommandBufferBindVertexBuffers(NVNcommandBuffer* cmdBuf, int first, int count,
-                                                     const NVNbufferRange* buffers) {
+    const NVNbufferRange* buffers) {
     pfnc_nvnCommandBufferBindVertexBuffers(cmdBuf, first, count, buffers);
 }
 
 static inline void nvnCommandBufferBindUniformBuffer(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                                     int index, NVNbufferAddress buffer,
-                                                     size_t size) {
+    int index, NVNbufferAddress buffer,
+    size_t size) {
     pfnc_nvnCommandBufferBindUniformBuffer(cmdBuf, stage, index, buffer, size);
 }
 
 static inline void nvnCommandBufferBindUniformBuffers(NVNcommandBuffer* cmdBuf,
-                                                      NVNshaderStage stage, int first, int count,
-                                                      const NVNbufferRange* buffers) {
+    NVNshaderStage stage, int first, int count,
+    const NVNbufferRange* buffers) {
     pfnc_nvnCommandBufferBindUniformBuffers(cmdBuf, stage, first, count, buffers);
 }
 
 static inline void nvnCommandBufferBindTransformFeedbackBuffer(NVNcommandBuffer* cmdBuf, int index,
-                                                               NVNbufferAddress buffer,
-                                                               size_t size) {
+    NVNbufferAddress buffer,
+    size_t size) {
     pfnc_nvnCommandBufferBindTransformFeedbackBuffer(cmdBuf, index, buffer, size);
 }
 
 static inline void nvnCommandBufferBindTransformFeedbackBuffers(NVNcommandBuffer* cmdBuf, int first,
-                                                                int count,
-                                                                const NVNbufferRange* buffers) {
+    int count,
+    const NVNbufferRange* buffers) {
     pfnc_nvnCommandBufferBindTransformFeedbackBuffers(cmdBuf, first, count, buffers);
 }
 
 static inline void nvnCommandBufferBindStorageBuffer(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                                     int index, NVNbufferAddress buffer,
-                                                     size_t size) {
+    int index, NVNbufferAddress buffer,
+    size_t size) {
     pfnc_nvnCommandBufferBindStorageBuffer(cmdBuf, stage, index, buffer, size);
 }
 
 static inline void nvnCommandBufferBindStorageBuffers(NVNcommandBuffer* cmdBuf,
-                                                      NVNshaderStage stage, int first, int count,
-                                                      const NVNbufferRange* buffers) {
+    NVNshaderStage stage, int first, int count,
+    const NVNbufferRange* buffers) {
     pfnc_nvnCommandBufferBindStorageBuffers(cmdBuf, stage, first, count, buffers);
 }
 
 static inline void nvnCommandBufferBindTexture(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                               int index, NVNtextureHandle texture) {
+    int index, NVNtextureHandle texture) {
     pfnc_nvnCommandBufferBindTexture(cmdBuf, stage, index, texture);
 }
 
 static inline void nvnCommandBufferBindTextures(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                                int first, int count,
-                                                const NVNtextureHandle* textures) {
+    int first, int count,
+    const NVNtextureHandle* textures) {
     pfnc_nvnCommandBufferBindTextures(cmdBuf, stage, first, count, textures);
 }
 
 static inline void nvnCommandBufferBindImage(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                             int index, NVNimageHandle image) {
+    int index, NVNimageHandle image) {
     pfnc_nvnCommandBufferBindImage(cmdBuf, stage, index, image);
 }
 
 static inline void nvnCommandBufferBindImages(NVNcommandBuffer* cmdBuf, NVNshaderStage stage,
-                                              int first, int count, const NVNimageHandle* images) {
+    int first, int count, const NVNimageHandle* images) {
     pfnc_nvnCommandBufferBindImages(cmdBuf, stage, first, count, images);
 }
 
@@ -1646,98 +1646,98 @@ static inline void nvnCommandBufferSetPatchSize(NVNcommandBuffer* cmdBuf, int i)
 }
 
 static inline void nvnCommandBufferSetInnerTessellationLevels(NVNcommandBuffer* cmdBuf,
-                                                              const float* f) {
+    const float* f) {
     pfnc_nvnCommandBufferSetInnerTessellationLevels(cmdBuf, f);
 }
 
 static inline void nvnCommandBufferSetOuterTessellationLevels(NVNcommandBuffer* cmdBuf,
-                                                              const float* f) {
+    const float* f) {
     pfnc_nvnCommandBufferSetOuterTessellationLevels(cmdBuf, f);
 }
 
 static inline void nvnCommandBufferSetPrimitiveRestart(NVNcommandBuffer* cmdBuf, NVNboolean b,
-                                                       int i) {
+    int i) {
     pfnc_nvnCommandBufferSetPrimitiveRestart(cmdBuf, b, i);
 }
 
 static inline void nvnCommandBufferBeginTransformFeedback(NVNcommandBuffer* cmdBuf,
-                                                          NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferBeginTransformFeedback(cmdBuf, buffer);
 }
 
 static inline void nvnCommandBufferEndTransformFeedback(NVNcommandBuffer* cmdBuf,
-                                                        NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferEndTransformFeedback(cmdBuf, buffer);
 }
 
 static inline void nvnCommandBufferPauseTransformFeedback(NVNcommandBuffer* cmdBuf,
-                                                          NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferPauseTransformFeedback(cmdBuf, buffer);
 }
 
 static inline void nvnCommandBufferResumeTransformFeedback(NVNcommandBuffer* cmdBuf,
-                                                           NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferResumeTransformFeedback(cmdBuf, buffer);
 }
 
 static inline void nvnCommandBufferDrawTransformFeedback(NVNcommandBuffer* cmdBuf,
-                                                         NVNdrawPrimitive mode,
-                                                         NVNbufferAddress buffer) {
+    NVNdrawPrimitive mode,
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferDrawTransformFeedback(cmdBuf, mode, buffer);
 }
 
 static inline void nvnCommandBufferDrawArrays(NVNcommandBuffer* cmdBuf, NVNdrawPrimitive mode,
-                                              int first, int count) {
+    int first, int count) {
     pfnc_nvnCommandBufferDrawArrays(cmdBuf, mode, first, count);
 }
 
 static inline void nvnCommandBufferDrawElements(NVNcommandBuffer* cmdBuf, NVNdrawPrimitive mode,
-                                                NVNindexType type, int count,
-                                                NVNbufferAddress indexBuffer) {
+    NVNindexType type, int count,
+    NVNbufferAddress indexBuffer) {
     pfnc_nvnCommandBufferDrawElements(cmdBuf, mode, type, count, indexBuffer);
 }
 
 static inline void nvnCommandBufferDrawElementsBaseVertex(NVNcommandBuffer* cmdBuf,
-                                                          NVNdrawPrimitive mode, NVNindexType type,
-                                                          int count, NVNbufferAddress indexBuffer,
-                                                          int baseVertex) {
+    NVNdrawPrimitive mode, NVNindexType type,
+    int count, NVNbufferAddress indexBuffer,
+    int baseVertex) {
     pfnc_nvnCommandBufferDrawElementsBaseVertex(cmdBuf, mode, type, count, indexBuffer, baseVertex);
 }
 
 static inline void nvnCommandBufferDrawArraysInstanced(NVNcommandBuffer* cmdBuf,
-                                                       NVNdrawPrimitive mode, int first, int count,
-                                                       int baseInstance, int instanceCount) {
+    NVNdrawPrimitive mode, int first, int count,
+    int baseInstance, int instanceCount) {
     pfnc_nvnCommandBufferDrawArraysInstanced(cmdBuf, mode, first, count, baseInstance,
-                                             instanceCount);
+        instanceCount);
 }
 
 static inline void nvnCommandBufferDrawElementsInstanced(NVNcommandBuffer* cmdBuf,
-                                                         NVNdrawPrimitive mode, NVNindexType type,
-                                                         int count, NVNbufferAddress indexBuffer,
-                                                         int baseVertex, int baseInstance,
-                                                         int instanceCount) {
+    NVNdrawPrimitive mode, NVNindexType type,
+    int count, NVNbufferAddress indexBuffer,
+    int baseVertex, int baseInstance,
+    int instanceCount) {
     pfnc_nvnCommandBufferDrawElementsInstanced(cmdBuf, mode, type, count, indexBuffer, baseVertex,
-                                               baseInstance, instanceCount);
+        baseInstance, instanceCount);
 }
 
 static inline void nvnCommandBufferDrawArraysIndirect(NVNcommandBuffer* cmdBuf,
-                                                      NVNdrawPrimitive mode,
-                                                      NVNbufferAddress buffer) {
+    NVNdrawPrimitive mode,
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferDrawArraysIndirect(cmdBuf, mode, buffer);
 }
 
 static inline void nvnCommandBufferDrawElementsIndirect(NVNcommandBuffer* cmdBuf,
-                                                        NVNdrawPrimitive mode, NVNindexType type,
-                                                        NVNbufferAddress buffer1,
-                                                        NVNbufferAddress buffer2) {
+    NVNdrawPrimitive mode, NVNindexType type,
+    NVNbufferAddress buffer1,
+    NVNbufferAddress buffer2) {
     pfnc_nvnCommandBufferDrawElementsIndirect(cmdBuf, mode, type, buffer1, buffer2);
 }
 
 static inline void nvnCommandBufferMultiDrawArraysIndirectCount(NVNcommandBuffer* cmdBuf,
-                                                                NVNdrawPrimitive mode,
-                                                                NVNbufferAddress buffer1,
-                                                                NVNbufferAddress buffer2, int i,
-                                                                ptrdiff_t o) {
+    NVNdrawPrimitive mode,
+    NVNbufferAddress buffer1,
+    NVNbufferAddress buffer2, int i,
+    ptrdiff_t o) {
     pfnc_nvnCommandBufferMultiDrawArraysIndirectCount(cmdBuf, mode, buffer1, buffer2, i, o);
 }
 
@@ -1745,64 +1745,64 @@ static inline void nvnCommandBufferMultiDrawElementsIndirectCount(
     NVNcommandBuffer* cmdBuf, NVNdrawPrimitive mode, NVNindexType type, NVNbufferAddress buffer1,
     NVNbufferAddress buffer2, NVNbufferAddress buffer3, int i, ptrdiff_t o) {
     pfnc_nvnCommandBufferMultiDrawElementsIndirectCount(cmdBuf, mode, type, buffer1, buffer2,
-                                                        buffer3, i, o);
+        buffer3, i, o);
 }
 
 static inline void nvnCommandBufferClearColor(NVNcommandBuffer* cmdBuf, int index,
-                                              const float* color, int mask) {
+    const float* color, int mask) {
     pfnc_nvnCommandBufferClearColor(cmdBuf, index, color, mask);
 }
 
 static inline void nvnCommandBufferClearColori(NVNcommandBuffer* cmdBuf, int index,
-                                               const int* color, int mask) {
+    const int* color, int mask) {
     pfnc_nvnCommandBufferClearColori(cmdBuf, index, color, mask);
 }
 
 static inline void nvnCommandBufferClearColorui(NVNcommandBuffer* cmdBuf, int index,
-                                                const uint32_t* color, int mask) {
+    const uint32_t* color, int mask) {
     pfnc_nvnCommandBufferClearColorui(cmdBuf, index, color, mask);
 }
 
 static inline void nvnCommandBufferClearDepthStencil(NVNcommandBuffer* cmdBuf, float depthValue,
-                                                     NVNboolean depthMask, int stencilValue,
-                                                     int stencilMask) {
+    NVNboolean depthMask, int stencilValue,
+    int stencilMask) {
     pfnc_nvnCommandBufferClearDepthStencil(cmdBuf, depthValue, depthMask, stencilValue,
-                                           stencilMask);
+        stencilMask);
 }
 
 static inline void nvnCommandBufferDispatchCompute(NVNcommandBuffer* cmdBuf, int groupsX,
-                                                   int groupsY, int groupsZ) {
+    int groupsY, int groupsZ) {
     pfnc_nvnCommandBufferDispatchCompute(cmdBuf, groupsX, groupsY, groupsZ);
 }
 
 static inline void nvnCommandBufferDispatchComputeIndirect(NVNcommandBuffer* cmdBuf,
-                                                           NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferDispatchComputeIndirect(cmdBuf, buffer);
 }
 
 static inline void nvnCommandBufferSetViewport(NVNcommandBuffer* cmdBuf, int x, int y, int w,
-                                               int h) {
+    int h) {
     pfnc_nvnCommandBufferSetViewport(cmdBuf, x, y, w, h);
 }
 
 static inline void nvnCommandBufferSetViewports(NVNcommandBuffer* cmdBuf, int first, int count,
-                                                const float* ranges) {
+    const float* ranges) {
     pfnc_nvnCommandBufferSetViewports(cmdBuf, first, count, ranges);
 }
 
 static inline void nvnCommandBufferSetViewportSwizzles(NVNcommandBuffer* cmdBuf, int first,
-                                                       int count,
-                                                       const NVNviewportSwizzle* swizzles) {
+    int count,
+    const NVNviewportSwizzle* swizzles) {
     pfnc_nvnCommandBufferSetViewportSwizzles(cmdBuf, first, count, swizzles);
 }
 
 static inline void nvnCommandBufferSetScissor(NVNcommandBuffer* cmdBuf, int x, int y, int w,
-                                              int h) {
+    int h) {
     pfnc_nvnCommandBufferSetScissor(cmdBuf, x, y, w, h);
 }
 
 static inline void nvnCommandBufferSetScissors(NVNcommandBuffer* cmdBuf, int first, int count,
-                                               const int* rects) {
+    const int* rects) {
     pfnc_nvnCommandBufferSetScissors(cmdBuf, first, count, rects);
 }
 
@@ -1811,17 +1811,17 @@ static inline void nvnCommandBufferSetDepthRange(NVNcommandBuffer* cmdBuf, float
 }
 
 static inline void nvnCommandBufferSetDepthBounds(NVNcommandBuffer* cmdBuf, NVNboolean enable,
-                                                  float n, float f) {
+    float n, float f) {
     pfnc_nvnCommandBufferSetDepthBounds(cmdBuf, enable, n, f);
 }
 
 static inline void nvnCommandBufferSetDepthRanges(NVNcommandBuffer* cmdBuf, int first, int count,
-                                                  const float* ranges) {
+    const float* ranges) {
     pfnc_nvnCommandBufferSetDepthRanges(cmdBuf, first, count, ranges);
 }
 
 static inline void nvnCommandBufferSetTiledCacheAction(NVNcommandBuffer* cmdBuf,
-                                                       NVNtiledCacheAction action) {
+    NVNtiledCacheAction action) {
     pfnc_nvnCommandBufferSetTiledCacheAction(cmdBuf, action);
 }
 
@@ -1830,36 +1830,36 @@ static inline void nvnCommandBufferSetTiledCacheTileSize(NVNcommandBuffer* cmdBu
 }
 
 static inline void nvnCommandBufferBindSeparateTexture(NVNcommandBuffer* cmdBuf,
-                                                       NVNshaderStage stage, int i,
-                                                       NVNseparateTextureHandle handle) {
+    NVNshaderStage stage, int i,
+    NVNseparateTextureHandle handle) {
     pfnc_nvnCommandBufferBindSeparateTexture(cmdBuf, stage, i, handle);
 }
 
 static inline void nvnCommandBufferBindSeparateSampler(NVNcommandBuffer* cmdBuf,
-                                                       NVNshaderStage stage, int i,
-                                                       NVNseparateSamplerHandle handle) {
+    NVNshaderStage stage, int i,
+    NVNseparateSamplerHandle handle) {
     pfnc_nvnCommandBufferBindSeparateSampler(cmdBuf, stage, i, handle);
 }
 
 static inline void nvnCommandBufferBindSeparateTextures(NVNcommandBuffer* cmdBuf,
-                                                        NVNshaderStage stage, int i1, int i2,
-                                                        const NVNseparateTextureHandle* handle) {
+    NVNshaderStage stage, int i1, int i2,
+    const NVNseparateTextureHandle* handle) {
     pfnc_nvnCommandBufferBindSeparateTextures(cmdBuf, stage, i1, i2, handle);
 }
 
 static inline void nvnCommandBufferBindSeparateSamplers(NVNcommandBuffer* cmdBuf,
-                                                        NVNshaderStage stage, int i1, int i2,
-                                                        const NVNseparateSamplerHandle* handle) {
+    NVNshaderStage stage, int i1, int i2,
+    const NVNseparateSamplerHandle* handle) {
     pfnc_nvnCommandBufferBindSeparateSamplers(cmdBuf, stage, i1, i2, handle);
 }
 
 static inline void nvnCommandBufferSetStencilValueMask(NVNcommandBuffer* cmdBuf, NVNface faces,
-                                                       int mask) {
+    int mask) {
     pfnc_nvnCommandBufferSetStencilValueMask(cmdBuf, faces, mask);
 }
 
 static inline void nvnCommandBufferSetStencilMask(NVNcommandBuffer* cmdBuf, NVNface faces,
-                                                  int mask) {
+    int mask) {
     pfnc_nvnCommandBufferSetStencilMask(cmdBuf, faces, mask);
 }
 
@@ -1868,7 +1868,7 @@ static inline void nvnCommandBufferSetStencilRef(NVNcommandBuffer* cmdBuf, NVNfa
 }
 
 static inline void nvnCommandBufferSetBlendColor(NVNcommandBuffer* cmdBuf,
-                                                 const float* blendColor) {
+    const float* blendColor) {
     pfnc_nvnCommandBufferSetBlendColor(cmdBuf, blendColor);
 }
 
@@ -1881,7 +1881,7 @@ static inline void nvnCommandBufferSetLineWidth(NVNcommandBuffer* cmdBuf, float 
 }
 
 static inline void nvnCommandBufferSetPolygonOffsetClamp(NVNcommandBuffer* cmdBuf, float factor,
-                                                         float units, float clamp) {
+    float units, float clamp) {
     pfnc_nvnCommandBufferSetPolygonOffsetClamp(cmdBuf, factor, units, clamp);
 }
 
@@ -1894,7 +1894,7 @@ static inline void nvnCommandBufferSetSampleMask(NVNcommandBuffer* cmdBuf, int m
 }
 
 static inline void nvnCommandBufferSetRasterizerDiscard(NVNcommandBuffer* cmdBuf,
-                                                        NVNboolean discard) {
+    NVNboolean discard) {
     pfnc_nvnCommandBufferSetRasterizerDiscard(cmdBuf, discard);
 }
 
@@ -1903,7 +1903,7 @@ static inline void nvnCommandBufferSetDepthClamp(NVNcommandBuffer* cmdBuf, NVNbo
 }
 
 static inline void nvnCommandBufferSetConservativeRasterEnable(NVNcommandBuffer* cmdBuf,
-                                                               NVNboolean enable) {
+    NVNboolean enable) {
     pfnc_nvnCommandBufferSetConservativeRasterEnable(cmdBuf, enable);
 }
 
@@ -1912,78 +1912,78 @@ static inline void nvnCommandBufferSetConservativeRasterDilate(NVNcommandBuffer*
 }
 
 static inline void nvnCommandBufferSetSubpixelPrecisionBias(NVNcommandBuffer* cmdBuf, int i1,
-                                                            int i2) {
+    int i2) {
     pfnc_nvnCommandBufferSetSubpixelPrecisionBias(cmdBuf, i1, i2);
 }
 
 static inline void nvnCommandBufferCopyBufferToTexture(NVNcommandBuffer* cmdBuf,
-                                                       NVNbufferAddress buffer,
-                                                       const NVNtexture* dstTexture,
-                                                       const NVNtextureView* dstView,
-                                                       const NVNcopyRegion* dstRegion, int flags) {
+    NVNbufferAddress buffer,
+    const NVNtexture* dstTexture,
+    const NVNtextureView* dstView,
+    const NVNcopyRegion* dstRegion, int flags) {
     pfnc_nvnCommandBufferCopyBufferToTexture(cmdBuf, buffer, dstTexture, dstView, dstRegion, flags);
 }
 
 static inline void nvnCommandBufferCopyTextureToBuffer(NVNcommandBuffer* cmdBuf,
-                                                       const NVNtexture* srcTexture,
-                                                       const NVNtextureView* srcView,
-                                                       const NVNcopyRegion* srcRegion,
-                                                       NVNbufferAddress buffer, int flags) {
+    const NVNtexture* srcTexture,
+    const NVNtextureView* srcView,
+    const NVNcopyRegion* srcRegion,
+    NVNbufferAddress buffer, int flags) {
     pfnc_nvnCommandBufferCopyTextureToBuffer(cmdBuf, srcTexture, srcView, srcRegion, buffer, flags);
 }
 
 static inline void
 nvnCommandBufferCopyTextureToTexture(NVNcommandBuffer* cmdBuf, const NVNtexture* srcTexture,
-                                     const NVNtextureView* srcView, const NVNcopyRegion* srcRegion,
-                                     const NVNtexture* dstTexture, const NVNtextureView* dstView,
-                                     const NVNcopyRegion* dstRegion, int flags) {
+    const NVNtextureView* srcView, const NVNcopyRegion* srcRegion,
+    const NVNtexture* dstTexture, const NVNtextureView* dstView,
+    const NVNcopyRegion* dstRegion, int flags) {
     pfnc_nvnCommandBufferCopyTextureToTexture(cmdBuf, srcTexture, srcView, srcRegion, dstTexture,
-                                              dstView, dstRegion, flags);
+        dstView, dstRegion, flags);
 }
 
 static inline void nvnCommandBufferCopyBufferToBuffer(NVNcommandBuffer* cmdBuf,
-                                                      NVNbufferAddress src, NVNbufferAddress dst,
-                                                      size_t size, int flags) {
+    NVNbufferAddress src, NVNbufferAddress dst,
+    size_t size, int flags) {
     pfnc_nvnCommandBufferCopyBufferToBuffer(cmdBuf, src, dst, size, flags);
 }
 
 static inline void nvnCommandBufferClearBuffer(NVNcommandBuffer* cmdBuf, NVNbufferAddress buffer,
-                                               size_t size, uint32_t i) {
+    size_t size, uint32_t i) {
     pfnc_nvnCommandBufferClearBuffer(cmdBuf, buffer, size, i);
 }
 
 static inline void nvnCommandBufferClearTexture(NVNcommandBuffer* cmdBuf,
-                                                const NVNtexture* dstTexture,
-                                                const NVNtextureView* dstView,
-                                                const NVNcopyRegion* dstRegion, const float* color,
-                                                int mask) {
+    const NVNtexture* dstTexture,
+    const NVNtextureView* dstView,
+    const NVNcopyRegion* dstRegion, const float* color,
+    int mask) {
     pfnc_nvnCommandBufferClearTexture(cmdBuf, dstTexture, dstView, dstRegion, color, mask);
 }
 
 static inline void nvnCommandBufferClearTexturei(NVNcommandBuffer* cmdBuf,
-                                                 const NVNtexture* dstTexture,
-                                                 const NVNtextureView* dstView,
-                                                 const NVNcopyRegion* dstRegion, const int* color,
-                                                 int mask) {
+    const NVNtexture* dstTexture,
+    const NVNtextureView* dstView,
+    const NVNcopyRegion* dstRegion, const int* color,
+    int mask) {
     pfnc_nvnCommandBufferClearTexturei(cmdBuf, dstTexture, dstView, dstRegion, color, mask);
 }
 
 static inline void nvnCommandBufferClearTextureui(NVNcommandBuffer* cmdBuf,
-                                                  const NVNtexture* dstTexture,
-                                                  const NVNtextureView* dstView,
-                                                  const NVNcopyRegion* dstRegion,
-                                                  const uint32_t* color, int mask) {
+    const NVNtexture* dstTexture,
+    const NVNtextureView* dstView,
+    const NVNcopyRegion* dstRegion,
+    const uint32_t* color, int mask) {
     pfnc_nvnCommandBufferClearTextureui(cmdBuf, dstTexture, dstView, dstRegion, color, mask);
 }
 
 static inline void nvnCommandBufferUpdateUniformBuffer(NVNcommandBuffer* cmdBuf,
-                                                       NVNbufferAddress buffer, size_t size,
-                                                       ptrdiff_t o, size_t s, const void* p) {
+    NVNbufferAddress buffer, size_t size,
+    ptrdiff_t o, size_t s, const void* p) {
     pfnc_nvnCommandBufferUpdateUniformBuffer(cmdBuf, buffer, size, o, s, p);
 }
 
 static inline void nvnCommandBufferReportCounter(NVNcommandBuffer* cmdBuf, NVNcounterType counter,
-                                                 NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferReportCounter(cmdBuf, counter, buffer);
 }
 
@@ -1992,7 +1992,7 @@ static inline void nvnCommandBufferResetCounter(NVNcommandBuffer* cmdBuf, NVNcou
 }
 
 static inline void nvnCommandBufferReportValue(NVNcommandBuffer* cmdBuf, uint32_t value,
-                                               NVNbufferAddress buffer) {
+    NVNbufferAddress buffer) {
     pfnc_nvnCommandBufferReportValue(cmdBuf, value, buffer);
 }
 
@@ -2001,18 +2001,18 @@ static inline void nvnCommandBufferSetRenderEnable(NVNcommandBuffer* cmdBuf, NVN
 }
 
 static inline void nvnCommandBufferSetRenderEnableConditional(NVNcommandBuffer* cmdBuf,
-                                                              NVNconditionalRenderMode mode,
-                                                              NVNbufferAddress addr) {
+    NVNconditionalRenderMode mode,
+    NVNbufferAddress addr) {
     pfnc_nvnCommandBufferSetRenderEnableConditional(cmdBuf, mode, addr);
 }
 
 static inline void nvnCommandBufferSetRenderTargets(NVNcommandBuffer* cmdBuf, int numColors,
-                                                    const NVNtexture* const* colors,
-                                                    const NVNtextureView* const* colorViews,
-                                                    const NVNtexture* depthStencil,
-                                                    const NVNtextureView* depthStencilView) {
+    const NVNtexture* const* colors,
+    const NVNtextureView* const* colorViews,
+    const NVNtexture* depthStencil,
+    const NVNtextureView* depthStencilView) {
     pfnc_nvnCommandBufferSetRenderTargets(cmdBuf, numColors, colors, colorViews, depthStencil,
-                                          depthStencilView);
+        depthStencilView);
 }
 
 static inline void nvnCommandBufferDiscardColor(NVNcommandBuffer* cmdBuf, int i) {
@@ -2024,29 +2024,29 @@ static inline void nvnCommandBufferDiscardDepthStencil(NVNcommandBuffer* cmdBuf)
 }
 
 static inline void nvnCommandBufferDownsample(NVNcommandBuffer* cmdBuf, const NVNtexture* src,
-                                              const NVNtexture* dst) {
+    const NVNtexture* dst) {
     pfnc_nvnCommandBufferDownsample(cmdBuf, src, dst);
 }
 
 static inline void nvnCommandBufferTiledDownsample(NVNcommandBuffer* cmdBuf,
-                                                   const NVNtexture* texture1,
-                                                   const NVNtexture* texture2) {
+    const NVNtexture* texture1,
+    const NVNtexture* texture2) {
     pfnc_nvnCommandBufferTiledDownsample(cmdBuf, texture1, texture2);
 }
 
 static inline void nvnCommandBufferDownsampleTextureView(NVNcommandBuffer* cmdBuf,
-                                                         const NVNtexture* texture1,
-                                                         const NVNtextureView* view1,
-                                                         const NVNtexture* texture2,
-                                                         const NVNtextureView* view2) {
+    const NVNtexture* texture1,
+    const NVNtextureView* view1,
+    const NVNtexture* texture2,
+    const NVNtextureView* view2) {
     pfnc_nvnCommandBufferDownsampleTextureView(cmdBuf, texture1, view1, texture2, view2);
 }
 
 static inline void nvnCommandBufferTiledDownsampleTextureView(NVNcommandBuffer* cmdBuf,
-                                                              const NVNtexture* texture1,
-                                                              const NVNtextureView* view1,
-                                                              const NVNtexture* texture2,
-                                                              const NVNtextureView* view2) {
+    const NVNtexture* texture1,
+    const NVNtextureView* view1,
+    const NVNtexture* texture2,
+    const NVNtextureView* view2) {
     pfnc_nvnCommandBufferTiledDownsampleTextureView(cmdBuf, texture1, view1, texture2, view2);
 }
 
@@ -2059,33 +2059,33 @@ static inline void nvnCommandBufferWaitSync(NVNcommandBuffer* cmdBuf, const NVNs
 }
 
 static inline void nvnCommandBufferFenceSync(NVNcommandBuffer* cmdBuf, NVNsync* sync,
-                                             NVNsyncCondition condition, int fence) {
+    NVNsyncCondition condition, int fence) {
     pfnc_nvnCommandBufferFenceSync(cmdBuf, sync, condition, fence);
 }
 
 static inline void nvnCommandBufferSetTexturePool(NVNcommandBuffer* cmdBuf,
-                                                  const NVNtexturePool* pool) {
+    const NVNtexturePool* pool) {
     pfnc_nvnCommandBufferSetTexturePool(cmdBuf, pool);
 }
 
 static inline void nvnCommandBufferSetSamplerPool(NVNcommandBuffer* cmdBuf,
-                                                  const NVNsamplerPool* pool) {
+    const NVNsamplerPool* pool) {
     pfnc_nvnCommandBufferSetSamplerPool(cmdBuf, pool);
 }
 
 static inline void nvnCommandBufferSetShaderScratchMemory(NVNcommandBuffer* cmdBuf,
-                                                          const NVNmemoryPool* pool,
-                                                          ptrdiff_t offset, size_t size) {
+    const NVNmemoryPool* pool,
+    ptrdiff_t offset, size_t size) {
     pfnc_nvnCommandBufferSetShaderScratchMemory(cmdBuf, pool, offset, size);
 }
 
 static inline void nvnCommandBufferSaveZCullData(NVNcommandBuffer* cmdBuf, NVNbufferAddress addr,
-                                                 size_t size) {
+    size_t size) {
     pfnc_nvnCommandBufferSaveZCullData(cmdBuf, addr, size);
 }
 
 static inline void nvnCommandBufferRestoreZCullData(NVNcommandBuffer* cmdBuf, NVNbufferAddress addr,
-                                                    size_t size) {
+    size_t size) {
     pfnc_nvnCommandBufferRestoreZCullData(cmdBuf, addr, size);
 }
 
@@ -2106,25 +2106,25 @@ static inline ptrdiff_t nvnCommandBufferGetCopyImageStride(const NVNcommandBuffe
 }
 
 static inline void nvnCommandBufferDrawTexture(NVNcommandBuffer* cmdBuf, NVNtextureHandle handle,
-                                               const NVNdrawTextureRegion* region1,
-                                               const NVNdrawTextureRegion* region2) {
+    const NVNdrawTextureRegion* region1,
+    const NVNdrawTextureRegion* region2) {
     pfnc_nvnCommandBufferDrawTexture(cmdBuf, handle, region1, region2);
 }
 
 static inline NVNboolean nvnProgramSetSubroutineLinkage(NVNprogram* program, int i,
-                                                        const NVNsubroutineLinkageMapPtr* ptr) {
+    const NVNsubroutineLinkageMapPtr* ptr) {
     return pfnc_nvnProgramSetSubroutineLinkage(program, i, ptr);
 }
 
 static inline void nvnCommandBufferSetProgramSubroutines(NVNcommandBuffer* cmdBuf,
-                                                         NVNprogram* program, NVNshaderStage stage,
-                                                         const int i1, const int i2,
-                                                         const int* i3) {
+    NVNprogram* program, NVNshaderStage stage,
+    const int i1, const int i2,
+    const int* i3) {
     pfnc_nvnCommandBufferSetProgramSubroutines(cmdBuf, program, stage, i1, i2, i3);
 }
 
 static inline void nvnCommandBufferBindCoverageModulationTable(NVNcommandBuffer* cmdBuf,
-                                                               const float* f) {
+    const float* f) {
     pfnc_nvnCommandBufferBindCoverageModulationTable(cmdBuf, f);
 }
 
@@ -2133,17 +2133,17 @@ static inline void nvnCommandBufferResolveDepthBuffer(NVNcommandBuffer* cmdBuf) 
 }
 
 static inline void nvnCommandBufferPushDebugGroupStatic(NVNcommandBuffer* cmdBuf, uint32_t i,
-                                                        const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferPushDebugGroupStatic(cmdBuf, i, description);
 }
 
 static inline void nvnCommandBufferPushDebugGroupDynamic(NVNcommandBuffer* cmdBuf, uint32_t i,
-                                                         const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferPushDebugGroupDynamic(cmdBuf, i, description);
 }
 
 static inline void nvnCommandBufferPushDebugGroup(NVNcommandBuffer* cmdBuf, uint32_t i,
-                                                  const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferPushDebugGroup(cmdBuf, i, description);
 }
 
@@ -2156,17 +2156,17 @@ static inline void nvnCommandBufferPopDebugGroupId(NVNcommandBuffer* cmdBuf, uin
 }
 
 static inline void nvnCommandBufferInsertDebugMarkerStatic(NVNcommandBuffer* cmdBuf, uint32_t i,
-                                                           const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferInsertDebugMarkerStatic(cmdBuf, i, description);
 }
 
 static inline void nvnCommandBufferInsertDebugMarkerDynamic(NVNcommandBuffer* cmdBuf, uint32_t i,
-                                                            const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferInsertDebugMarkerDynamic(cmdBuf, i, description);
 }
 
 static inline void nvnCommandBufferInsertDebugMarker(NVNcommandBuffer* cmdBuf,
-                                                     const char* description) {
+    const char* description) {
     pfnc_nvnCommandBufferInsertDebugMarker(cmdBuf, description);
 }
 
@@ -2196,7 +2196,7 @@ static inline void nvnSyncSetDebugLabel(NVNsync* sync, const char* label) {
 }
 
 static inline void nvnQueueFenceSync(NVNqueue* queue, NVNsync* sync, NVNsyncCondition condition,
-                                     int flags) {
+    int flags) {
     pfnc_nvnQueueFenceSync(queue, sync, condition, flags);
 }
 
@@ -2213,7 +2213,7 @@ static inline void nvnEventBuilderSetDefaults(NVNeventBuilder* builder) {
 }
 
 static inline void nvnEventBuilderSetStorage(NVNeventBuilder* builder, const NVNmemoryPool* pool,
-                                             int64_t size) {
+    int64_t size) {
     pfnc_nvnEventBuilderSetStorage(builder, pool, size);
 }
 
@@ -2234,14 +2234,14 @@ static inline void nvnEventSignal(NVNevent* event, NVNeventSignalMode mode, uint
 }
 
 static inline void nvnCommandBufferWaitEvent(NVNcommandBuffer* cmdBuf, const NVNevent* event,
-                                             NVNeventWaitMode mode, uint32_t i) {
+    NVNeventWaitMode mode, uint32_t i) {
     pfnc_nvnCommandBufferWaitEvent(cmdBuf, event, mode, i);
 }
 
 static inline void nvnCommandBufferSignalEvent(NVNcommandBuffer* cmdBuf, const NVNevent* event,
-                                               NVNeventSignalMode mode,
-                                               NVNeventSignalLocation location, int flags,
-                                               uint32_t i) {
+    NVNeventSignalMode mode,
+    NVNeventSignalLocation location, int flags,
+    uint32_t i) {
     pfnc_nvnCommandBufferSignalEvent(cmdBuf, event, mode, location, flags, i);
 }
 

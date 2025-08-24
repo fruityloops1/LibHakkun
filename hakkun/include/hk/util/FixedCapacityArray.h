@@ -2,6 +2,7 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+#include "hk/util/TypeName.h"
 #include <algorithm>
 
 namespace hk::util {
@@ -21,14 +22,14 @@ namespace hk::util {
 
     public:
         void add(T value) {
-            HK_ABORT_UNLESS(mSize < Capacity, "hk::util::FixedCapacityArray<T, %zu>::add: Full", Capacity);
+            HK_ABORT_UNLESS(mSize < Capacity, "hk::util::FixedCapacityArray<%s, %zu>::add: Full", getTypeName<T>(), Capacity);
             *valueAt(mSize++) = value;
         }
 
         T remove(size index) {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::remove(%zu): out of range (size: %zu)", Capacity, index, mSize);
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<%s, %zu>::remove(%zu): out of range (size: %zu)", getTypeName<T>(), Capacity, index, mSize);
 
-            T removedValue = std::move(*valueAt(index));
+            T removedValue = move(*valueAt(index));
 
             if (index < mSize - 1) {
                 ::size toMove = mSize - index - 1;
@@ -37,16 +38,16 @@ namespace hk::util {
 
             mSize--;
 
-            return std::move(removedValue);
+            return move(removedValue);
         }
 
         T& operator[](size index) {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::operator[](%zu): out of range (size: %zu)", Capacity, index, mSize);
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<%s, %zu>::operator[](%zu): out of range (size: %zu)", getTypeName<T>(), Capacity, index, mSize);
             return *valueAt(index);
         }
 
         const T& operator[](size index) const {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<T, %zu>::operator[](%zu): out of range (size: %zu)", Capacity, index, mSize);
+            HK_ABORT_UNLESS(index < mSize, "hk::util::FixedCapacityArray<%s, %zu>::operator[](%zu): out of range (size: %zu)", getTypeName<T>(), Capacity, index, mSize);
 
             return *valueAt(index);
         }

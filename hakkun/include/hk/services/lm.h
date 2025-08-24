@@ -2,23 +2,24 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
+#include "hk/diag/diag.h"
 #include "hk/services/sm.h"
-#include "hk/sf/hipc.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
 #include "hk/util/FixedCapacityArray.h"
+#include "hk/util/Singleton.h"
 #include "hk/util/Stream.h"
-#include <cstring>
 #include <alloca.h>
+#include <cstring>
 #include <span>
 
 namespace hk::lm {
-    class Logger {
+
+    class Logger : sf::Service {
         friend class LogManager;
-        sf::Service service;
 
         Logger(sf::Service&& service)
-            : service(std::forward<sf::Service>(service)) { };
+            : sf::Service(std::forward<sf::Service>(service)) { };
 
         util::FixedCapacityArray<u8, 4> encodeUleb128(u32 value) {
             util::FixedCapacityArray<u8, 4> result;
@@ -49,8 +50,8 @@ namespace hk::lm {
             };
 
             size len = strlen(text);
-            auto sizeBytes  = encodeUleb128(len);
-auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + len));
+            auto sizeBytes = encodeUleb128(len);
+            auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + len));
             util::Stream stream(logData);
             stream.write(LogPacketHeader {
                 .processId = 0,
@@ -66,32 +67,33 @@ auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() +
             stream.writeIterator<u8>(sizeBytes);
             stream.writeIterator<char>(std::span<const char>(text, len));
 
-            auto request = sf::Request(0);
-            request.addInAutoselect(sf::hipc::BufferMode::Normal, logData, stream.tell());
-            HK_UNWRAP(service.invokeRequest(std::move(request), [](sf::Response& response) {
-                return 0;
-            }));
+            auto request = sf::Request(this, 0);
+            request.addInAutoselect(logData, stream.tell());
+            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
         }
     };
 
     class LogManager : public sf::Service {
-        LogManager(sf::Service&& service)
-            : sf::Service(std::move(service)) { }
+        HK_SINGLETON(LogManager);
 
-        static ValueOrResult<LogManager> connect() {
-            return sm::ServiceManager::instance()->getServiceHandle<"lm">().map([](sf::Service service) {
-                return LogManager(std::move(service));
-            });
+    public:
+        LogManager(sf::Service&& service)
+            : sf::Service(move(service)) { }
+
+        static LogManager* initialize() {
+            createInstance(HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<"lm">()));
+            return instance();
         }
 
         ValueOrResult<Logger> getLogger() {
             u64 pidReserved = 0;
-            auto request = sf::Request(0, &pidReserved, sizeof(pidReserved));
+            auto request = sf::Request(this, 0, &pidReserved);
             request.setSendPid();
-            return invokeRequest(std::move(request), [this](sf::Response& response) {
+            return invokeRequest(move(request), [this](sf::Response& response) {
                 sf::Service subservice = response.nextSubservice(this);
-                return Logger(std::move(subservice));
+                return Logger(move(subservice));
             });
         }
     };
-}
+
+} // namespace hk::lm

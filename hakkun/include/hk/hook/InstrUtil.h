@@ -18,8 +18,7 @@ namespace hk::hook {
 
     namespace detail {
 
-        enum UnconditionalBranchOp
-        {
+        enum UnconditionalBranchOp {
             Branch = 0b000101,
             BranchLink = 0b100101,
         };
@@ -98,8 +97,7 @@ namespace hk::hook {
 
     namespace detail {
 
-        enum UnconditionalBranchOp
-        {
+        enum UnconditionalBranchOp {
             Branch = 0b11101010,
             BranchLink = 0b11101011,
         };

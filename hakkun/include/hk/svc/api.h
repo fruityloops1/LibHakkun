@@ -1,7 +1,7 @@
 #pragma once
 
-#include "hk/diag/diag.h"
 #include "hk/svc/types.h"
+#include "hk/types.h"
 
 namespace hk::svc {
 #ifdef __aarch64__
@@ -109,7 +109,12 @@ namespace hk::svc {
     }
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
-    void ExitProcess();
+    hk_noreturn void ExitProcess();
+    hk_noreturn void ExitThread();
+    // values 0, -1, and -2 will yield the thread.
+    // see https://switchbrew.org/wiki/SVC#SleepThread
+    void SleepThread(s64 nanoseconds);
+    Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
     Result CloseHandle(Handle handle);
     Result ResetSignal(Handle handle);
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
@@ -125,8 +130,8 @@ namespace hk::svc {
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
-    Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
     Result GetSystemInfo(u64* outInfo, svc::SystemInfoType infoType, svc::Handle handle, svc::PhysicalMemorySystemInfo infoSubType);
+    Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
 
     hk_noreturn Result hkBreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
 

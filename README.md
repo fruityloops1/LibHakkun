@@ -1,10 +1,12 @@
 # <span style="font-size: 48px">Hakkun</span> ![goober](https://mario.wiki.gallery/images/0/0e/Ninji_PMSS.png)
 
-Modular code modification framework for RTLD-based userspace Nintendo Switch programs with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
+Modular C++ toolchain and set of libraries for userspace Nintendo Switch processes with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
 
 ## Features
 * Clang/LLVM toolchain, linking musl libc + LLVM libc++
-* Compiled into module to be loaded by RTLD
+* Can be used for standalone programs, or for modification of existing ones
+* Compatible with RTLD
+* Bundled with RTLD reimplementation [WIP]
 * Compatible with programs that statically link RTLD into their main executable
 * Runtime Replace, Trampoline, B/BL hooking, RW access to code memory
 * Sophisticated symbol sourcing system with proper error reporting and compatibility across multiple program target versions
@@ -23,6 +25,8 @@ Modular code modification framework for RTLD-based userspace Nintendo Switch pro
         * [HeapSourceDynamic](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceDynamic)
     * Logging:
         * [LogManager](https://github.com/fruityloops1/LibHakkun/tree/main/addons/LogManager)
+* SF client implementation [WIP]: 
+    * SM, PM, LM, Socket
 
 ## Setup
 #### Prerequisites
@@ -222,10 +226,11 @@ extern "C" void hkMain() {
 Please note trampoline hooks do not relocate instructions at the moment, which should not be a problem as long as you hook at instructions that do not need to be relocated (avoid branches, adrp, etc.)
 
 ## Credits:
-* tetraxile for some help and testing
 * shadowninja108
+* Sanae6 for sf implementation
 * marysaka for [oss-rtld](https://github.com/marysaka/oss-rtld)
-* GLOSHSEP for sail changes
+* tetraxile
+* GLOSHSEP
 
 ## License
 The LICENSE file applies to all parts of the project except the addons/ExpHeap subdirectory

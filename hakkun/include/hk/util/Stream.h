@@ -90,6 +90,7 @@ namespace hk::util {
             for (size i = 0; i < toZero; i++)
                 write(c);
         }
+
         bool tryRead(void* out, size dataSize) {
             if (hasSize() && mCursor + dataSize > mSize)
                 return false;

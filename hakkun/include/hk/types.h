@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 
 #define hk_alwaysinline __attribute__((always_inline))
 #define hk_noinline __attribute__((noinline))
@@ -70,6 +71,22 @@ constexpr size operator""_B(unsigned long long val) { return val; }
 constexpr size operator""_KB(unsigned long long val) { return val * 1024; }
 constexpr size operator""_MB(unsigned long long val) { return val * 1024 * 1024; }
 constexpr size operator""_GB(unsigned long long val) { return val * 1024 * 1024 * 1024; }
+
+template <typename T>
+inline hk_alwaysinline constexpr std::__libcpp_remove_reference_t<T>&& move([[clang::lifetimebound]] T&& v) noexcept {
+    return static_cast<std::__libcpp_remove_reference_t<T>&&>(v);
+}
+
+template <class T>
+inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::__libcpp_remove_reference_t<T>& __t) noexcept {
+    return static_cast<T&&>(__t);
+}
+
+template <class T>
+inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::__libcpp_remove_reference_t<T>&& __t) _NOEXCEPT {
+    static_assert(!std::is_lvalue_reference<T>::value, "cannot forward an rvalue as an lvalue");
+    return static_cast<T&&>(__t);
+}
 
 namespace hk {
 

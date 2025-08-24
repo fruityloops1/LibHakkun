@@ -17,8 +17,7 @@ namespace hk::sail {
         class SymbolEntry;
 
         struct Symbol {
-            enum Type
-            {
+            enum Type {
                 Type_Immediate,
                 Type_Dynamic,
                 Type_DataBlock,

@@ -1,0 +1,9 @@
+BasedOnStyle: WebKit
+QualifierAlignment: Left
+NamespaceIndentation: All
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterEnum: false
+  AfterFunction: false
+  AfterClass: false
+  SplitEmptyFunction: false

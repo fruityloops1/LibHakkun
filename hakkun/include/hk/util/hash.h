@@ -106,7 +106,7 @@ namespace hk::util {
                 }
             }
 
-            constexpr void calculateWithCallback() {
+            constexpr void calcWithCallback() {
                 for (fu32 i = 0; i < nblocks(); i++) {
                     u32 k1 = getBlock<T, Read>(mData, i, mUserData);
 
@@ -150,7 +150,7 @@ namespace hk::util {
         template <typename T, class Read>
         constexpr u32 hashMurmurImpl(const T* data, const fu32 len, const u32 seed = 0, void* userData = nullptr) {
             HashMurmurImpl<T, Read> hash(data, len, seed, userData);
-            hash.calculateWithCallback();
+            hash.calcWithCallback();
             return hash.finalize();
         }
 

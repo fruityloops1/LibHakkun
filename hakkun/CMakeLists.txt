@@ -19,8 +19,12 @@ set(SOURCES
     src/hk/sail/detail.cpp
     src/hk/sail/init.cpp
 
+    src/hk/services/socket.cpp
     src/hk/services/sm.cpp
     src/hk/services/pm.cpp
+    src/hk/services/lm.cpp
+
+    src/hk/sf/sf.cpp
 
     src/hk/util/Context.cpp
 
