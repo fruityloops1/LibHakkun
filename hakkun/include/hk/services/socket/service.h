@@ -29,22 +29,19 @@ namespace hk::socket {
 
         template <util::TemplateString Name = "bsd:u">
         static Socket* initialize(const ServiceConfig& config, const std::span<u8> socketBuffer) {
-            auto monitor = startMonitoring<Name>();
-            createInstance(
-                sm::ServiceManager::instance()->getServiceHandle<Name>(),
-                move(monitor));
+            sf::Service mainService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>()),
+                        monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
+            createInstance(move(mainService), move(monitorService));
             instance()->registerClient(config, socketBuffer);
+            instance()->startMonitoring();
             return instance();
         }
 
-        template <util::TemplateString Name>
-        static sf::Service startMonitoring() {
-            sf::Service monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
+        void startMonitoring() {
             auto input = u64(0);
-            auto request = sf::Request(&monitorService, 1, &input);
+            auto request = sf::Request(&mMonitorService, 1, &input);
             request.setSendPid();
-            HK_ABORT_UNLESS_R(monitorService.invokeRequest(move(request)));
-            return monitorService;
+            HK_ABORT_UNLESS_R(mMonitorService.invokeRequest(move(request)));
         }
 
         void registerClient(const ServiceConfig& config, const std::span<u8> socketBuffer) {
