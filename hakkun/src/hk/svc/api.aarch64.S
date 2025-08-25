@@ -98,7 +98,7 @@ SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvm
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc18hkBreakWithMessageENS0_11BreakReasonEPvmS2_S2_
+SVC_BEGIN _ZN2hk3svc16BreakWithMessageENS0_11BreakReasonEPvmS2_S2_
 	svc 0x26
 	ret
 SVC_END

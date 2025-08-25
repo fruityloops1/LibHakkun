@@ -47,6 +47,9 @@ namespace hk::svc {
     Result GetDebugEvent(DebugEventInfo* outInfo, Handle debugHandle);
     Result ContinueDebugEvent(Handle debugHandle, u32 flags, const u64* threadIds, s32 numThreadIds);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
+    Result QueryDebugProcessMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, Handle debugHandle, ptr address);
+    Result ReadDebugProcessMemory(void* buffer, Handle debugHandle, ptr address, size size);
+    Result WriteDebugProcessMemory(Handle debugHandle, const void* buffer, ptr address, size size);
     Result GetSystemInfo(u64* outInfo, SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType);
     Result MapProcessMemory(ptr dest, Handle process, u64 source, size size);
 

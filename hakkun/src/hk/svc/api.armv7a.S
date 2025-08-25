@@ -89,7 +89,7 @@ SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvj
 	bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc18hkBreakWithMessageENS0_11BreakReasonEPvjS2_S2_
+SVC_BEGIN _ZN2hk3svc16BreakWithMessageENS0_11BreakReasonEPvmS2_S2_
     ldr r4, [sp, #0x0]
     mov r5, #0x42 // Prevent showing message twice
 	svc 0x26
