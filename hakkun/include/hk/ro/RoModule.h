@@ -10,6 +10,10 @@ namespace hk::sail::detail {
 
 namespace hk::ro {
 
+    /**
+     * @brief Hakkun wrapper over nn::ro::detail::RoModule.
+     *
+     */
     class RoModule {
     public:
         class Range {

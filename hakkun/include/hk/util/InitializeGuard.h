@@ -34,7 +34,16 @@ namespace hk::util {
         }
     };
 
+/**
+ * @brief Executes following lambda block if the guard bound to the symbol is uninitialized.
+ *
+ */
 #define initialize_guard(SYM) ::hk::util::InitializeGuard<#SYM>() + [&]()
+
+/**
+ * @brief Executes following lambda block if the guard pointer is uninitialized.
+ *
+ */
 #define initialize_guard_ptr(PTR) ::hk::util::InitializeGuard(ptr(PTR)) + [&]()
 
 } // namespace hk::util

@@ -5,6 +5,11 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Packed array of bits.
+     *
+     * @tparam Size
+     */
     template <size Size>
     class BitArray {
         static constexpr size sSizeBytes = alignUp(Size, 8) / 8;

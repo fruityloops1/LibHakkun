@@ -2,6 +2,10 @@
 
 #include "hk/util/Storage.h"
 
+/**
+ * @brief Declaration of Singleton for a class.
+ *
+ */
 #define HK_SINGLETON(CLASS)                                                                               \
     static ::hk::util::Storage<CLASS> sSingletonStorage;                                                  \
                                                                                                           \
@@ -11,5 +15,9 @@ public:                                                                         
     static void createInstance(Args&&... args) { sSingletonStorage.create(std::forward<Args>(args)...); } \
     static void deleteInstance() { sSingletonStorage.destroy(); }
 
+/**
+ * @brief Definition (implementation) of Singleton for a class
+ *
+ */
 #define HK_SINGLETON_IMPL(CLASS) \
     ::hk::util::Storage<CLASS> CLASS::sSingletonStorage;

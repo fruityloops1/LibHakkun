@@ -12,6 +12,10 @@
 
 namespace nn::ro::detail {
 
+    /**
+     * @brief RTLD-managed class representing a NSO/NRO module loaded in memory
+     *
+     */
     class RoModule {
         const Elf_Sym* GetSymbolByNameElf(const char* name) const;
         const Elf_Sym* GetSymbolByHashesElf(uint64_t bucketHash, uint32_t murmurHash) const;

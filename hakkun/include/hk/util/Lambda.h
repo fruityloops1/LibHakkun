@@ -2,6 +2,14 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Traits of lambda function
+     *
+     * FunctionTraits::ReturnType: Return type of lambda
+     * FunctionTraits::FuncPtrType: Function pointer type of lambda
+     *
+     * @tparam L
+     */
     template <typename L>
     struct FunctionTraits : public FunctionTraits<decltype(&L::operator())> { };
 

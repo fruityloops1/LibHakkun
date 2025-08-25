@@ -135,6 +135,13 @@ namespace hk::ro {
 
     } // namespace detail
 
+    /**
+     * @brief Parses ELF DYNAMIC section
+     *
+     * @param moduleBase
+     * @param dynamic
+     * @return Object with parsed data and util functions
+     */
     hk_alwaysinline inline detail::DynamicData parseDynamic(ptr moduleBase, const Elf_Dyn* dynamic) {
         detail::DynamicData data;
 

@@ -5,6 +5,13 @@
 
 namespace hk::util {
 
+#ifdef __clang__
+
+    /**
+     * @brief Return name of type T as a string literal.
+     *
+     * @tparam T Type
+     */
     template <typename T>
     constexpr /* breaks when consteval is used? */ const char* getTypeName() {
         constexpr static const char* cPrettyFunctionData = __PRETTY_FUNCTION__;
@@ -29,6 +36,7 @@ namespace hk::util {
 
         return dataArr.data();
     }
+#endif
 
     static_assert(__builtin_strcmp("int", getTypeName<int>()) == 0);
     static_assert(__builtin_strcmp("const char *", getTypeName<const char*>()) == 0);

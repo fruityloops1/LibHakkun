@@ -20,6 +20,11 @@ namespace hk::hook {
 
     } // namespace detail
 
+    /**
+     * @brief Hook to replace function in a module, while preserving the ability to call the original function
+     *
+     * @tparam Func
+     */
     template <typename Func>
     class TrampolineHook : public ReplaceHook<Func> {
         using Rp = ReplaceHook<Func>;

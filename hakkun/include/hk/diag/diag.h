@@ -112,6 +112,10 @@ ResultAbort (%04d-%04d/0x%x) [from %s]
 
 #endif
 
+    /**
+     * @brief Weak sink function that will be logged to from hk::diag::debugLog
+     *
+     */
     extern "C" void hkLogSink(const char* msg, size len);
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)

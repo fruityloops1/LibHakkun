@@ -6,6 +6,11 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Object of which the lifetime is manually managed by the user of the class
+     *
+     * @tparam T Object
+     */
     template <typename T>
     class Storage {
         alignas(alignof(T)) u8 mStorage[sizeof(T)] { 0 };

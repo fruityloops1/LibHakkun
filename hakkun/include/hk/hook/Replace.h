@@ -10,6 +10,11 @@
 
 namespace hk::hook {
 
+    /**
+     * @brief Hook to replace function in a module
+     *
+     * @tparam Func
+     */
     template <typename Func>
     class ReplaceHook {
     protected:
