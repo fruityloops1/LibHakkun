@@ -132,7 +132,9 @@ namespace hk::sf {
 
         friend class Service;
         // dedicated constructor for cmif::QueryPointerSize
-        Request(std::nullptr_t, Service* service, u32 command) : mCommandId(command) {}
+        Request(std::nullptr_t, Service* service, u32 command)
+            : mCommandId(command) { }
+
     public:
         Request(Service* service, u32 command)
             : mCommandId(command)
