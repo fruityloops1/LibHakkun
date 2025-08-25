@@ -33,14 +33,14 @@ namespace hk::ro {
         static void initModuleList();
     };
 
-    template <typename Func>
-    hk_alwaysinline inline Result forEachAutoLoadModule(ptr autoLoadBase, const Func& func) {
+    template <typename Func, typename QueryFunc>
+    hk_alwaysinline inline Result forEachAutoLoadModuleImpl(ptr autoLoadBase, const Func& func, const QueryFunc& query) {
         ptr addr = autoLoadBase;
         while (true) {
             svc::MemoryInfo curRangeInfo;
             u32 page;
 
-            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, addr));
+            HK_TRY(query(&curRangeInfo, &page, addr));
 
             if (curRangeInfo.state == svc::MemoryState_Free)
                 break;
@@ -48,13 +48,13 @@ namespace hk::ro {
 
             ptr textBase = curRangeInfo.base_address;
 
-            HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+            HK_TRY(query(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
             HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_Read, ResultUnusualSectionLayout());
 
             ptr rodataBase = curRangeInfo.base_address;
 
             while (curRangeInfo.permission == svc::MemoryPermission_Read)
-                HK_TRY(svc::QueryMemory(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
+                HK_TRY(query(&curRangeInfo, &page, curRangeInfo.base_address + curRangeInfo.size));
 
             ptr bssBase = curRangeInfo.base_address;
             HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadWrite, ResultUnusualSectionLayout());
@@ -65,6 +65,16 @@ namespace hk::ro {
         }
 
         return ResultSuccess();
+    }
+
+    template <typename Func>
+    hk_alwaysinline inline Result forEachAutoLoadModule(ptr autoLoadBase, const Func& func) {
+        return forEachAutoLoadModuleImpl(autoLoadBase, func, [](svc::MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address) -> Result { return svc::QueryMemory(outMemoryInfo, outPageInfo, address); });
+    }
+
+    template <typename Func>
+    hk_alwaysinline inline Result forEachAutoLoadModule(ptr autoLoadBase, Handle debugHandle, const Func& func) {
+        return forEachAutoLoadModuleImpl(autoLoadBase, func, [&](svc::MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address) -> Result { return svc::QueryDebugProcessMemory(outMemoryInfo, outPageInfo, debugHandle, address); });
     }
 
 } // namespace hk::ro
