@@ -1093,6 +1093,14 @@ namespace hk::hook::a64 {
         bool isInstalled() const { return mOffset != 0; }
     };
 
+    /**
+     * @brief Assembles AArch64 instruction block
+     *
+     * @tparam E
+     * @tparam Uninstallable Whether or not installed blocks should be uninstallable
+     * @tparam N
+     * @return Object that can assemble to Instr or be installed in a module
+     */
     template <Expr E, bool Uninstallable = false, int N = E.calcNumInstrs()>
     consteval AsmBlock<Uninstallable, N> assemble() {
         Expr e(E.value);

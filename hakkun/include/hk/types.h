@@ -162,7 +162,14 @@ namespace hk {
         }
     };
 
+/**
+ * @brief Defer execution of a lambda until the end of the current scope.
+ */
 #define defer auto CONCAT(CONCAT(scope_exit_guard_, __LINE__), __COUNTER__) = ::hk::ScopeGuardOnExit(true) + [&]()
+
+/**
+ * @brief Defer execution of a lambda until the end of the current scope, if COND is true.
+ */
 #define defer_if(COND) auto CONCAT(CONCAT(scope_exit_guard_, __LINE__), __COUNTER__) = ::hk::ScopeGuardOnExit(COND) + [&]()
 
 } // namespace hk

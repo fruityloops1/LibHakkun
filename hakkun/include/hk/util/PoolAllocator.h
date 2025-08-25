@@ -7,6 +7,12 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Allocates/deallocates pointers from a sized buffer. Object construction/lifetime is up to the user.
+     *
+     * @tparam T
+     * @tparam Capacity
+     */
     template <typename T, size Capacity>
     class PoolAllocator {
         BitArray<Capacity> mAllocations;

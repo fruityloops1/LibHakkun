@@ -4,12 +4,18 @@
 #include "hk/diag/diag.h"
 #include "hk/diag/results.h"
 #include "hk/util/Lambda.h"
+#include "hk/util/TypeName.h"
 #include <memory>
 #include <type_traits>
 #include <utility>
 
 namespace hk {
 
+    /**
+     * @brief Holds a Result and a value of type T, when the Result is ResultSuccess().
+     *
+     * @tparam T
+     */
     template <typename T>
     class ValueOrResult {
         Result mResult = ResultSuccess();
@@ -17,10 +23,9 @@ namespace hk {
             T mValue;
         };
 
-        constexpr bool hasValue() const { return mResult.succeeded(); }
-
         constexpr T disown() {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::disown(): No value (%04d-%04d/0x%x)",
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::disown(): No value (%04d-%04d/0x%x)",
+                util::getTypeName<T>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
@@ -34,7 +39,7 @@ namespace hk {
 
         constexpr ValueOrResult(Result result)
             : mResult(result) {
-            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult(Result): Result must not be ResultSuccess()", 0);
+            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
         }
 
         constexpr ValueOrResult(T&& value) {
@@ -46,6 +51,15 @@ namespace hk {
                 mValue.~T();
         }
 
+        constexpr bool hasValue() const { return mResult.succeeded(); }
+
+        /**
+         * @brief If a value is contained, call func with the value and return its result.
+         *
+         * @tparam L
+         * @param func
+         * @return ValueOrResult<typename util::FunctionTraits<L>::ReturnType>
+         */
         template <typename L>
         constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
             using Return = typename util::FunctionTraits<L>::ReturnType;
@@ -60,8 +74,14 @@ namespace hk {
                 return mResult;
         }
 
+        /**
+         * @brief Retrieves the value, if valid. Aborts if not.
+         *
+         * @return const T&
+         */
         constexpr const T& value() const {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult::value(): No value (%04d-%04d/0x%x)",
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::value(): No value (%04d-%04d/0x%x)",
+                util::getTypeName<T>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
@@ -82,6 +102,10 @@ namespace hk {
         ValueOrResult() = default;
     };
 
+/**
+ * @brief Retrieve the value of a ValueOrResult<T>, abort if the Result is unsuccessful.
+ *
+ */
 #define HK_UNWRAP(VALUE)                                                                \
     ([&]() hk_alwaysinline {                                                            \
         auto&& _hk_unwrap_v = VALUE;                                                    \

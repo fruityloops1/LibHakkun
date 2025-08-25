@@ -7,6 +7,11 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Non-owning read/write buffer stream.
+     *
+     * @tparam BufferType Buffer type. If pointer to a const type, stream will be read-only
+     */
     template <typename BufferType>
     class Stream {
         ptr mBuffer = 0;

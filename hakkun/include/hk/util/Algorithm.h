@@ -4,6 +4,17 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Binary search algorithm.
+     *
+     * @tparam T
+     * @tparam GetFunc Function to get value from given array
+     * @param get
+     * @param low
+     * @param high
+     * @param searchValue
+     * @return s32
+     */
     template <typename T, typename GetFunc>
     s32 binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue) {
         while (low <= high) {

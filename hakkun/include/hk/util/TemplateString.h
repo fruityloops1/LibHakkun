@@ -5,6 +5,11 @@
 
 namespace hk::util {
 
+    /**
+     * @brief String to be used as a template argument
+     *
+     * @tparam N
+     */
     template <size N>
     struct TemplateString {
         char value[N];

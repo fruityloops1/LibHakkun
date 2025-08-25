@@ -4,6 +4,12 @@
 
 namespace hk {
 
+    /**
+     * @brief Value representing the result of an operation.
+     *
+     * When the value is ResultSuccess(), the operation was successful.
+     * Otherwise, a module and description code can be retrieved to determine the error.
+     */
     class Result {
         u32 mValue = 0;
 
@@ -51,6 +57,10 @@ namespace hk {
         }
     };
 
+    /**
+     * @brief Successful Result.
+     *
+     */
     using ResultSuccess = ResultV<0, 0>;
 
 #define HK_RESULT_MODULE(ID)            \
@@ -58,7 +68,16 @@ namespace hk {
         constexpr int module = ID;      \
     }
 
+/**
+ * @brief Define a range for result types to be used in current module.
+ *
+ */
 #define HK_DEFINE_RESULT_RANGE(NAME, MIN, MAX) using ResultRange##NAME = ::hk::ResultRange<::hk::ResultV<_hk_result_id_namespace::module, MIN>().getValue(), ::hk::ResultV<_hk_result_id_namespace::module, MAX>().getValue()>;
+
+/**
+ * @brief Define a result type for the current module.
+ *
+ */
 #define HK_DEFINE_RESULT(NAME, DESCRIPTION) \
     using Result##NAME = ::hk::ResultV<_hk_result_id_namespace::module, DESCRIPTION>;
 
@@ -67,6 +86,10 @@ namespace hk {
         return value == ResultType();
     }
 
+/**
+ * @brief Return if Result within expression is unsuccessful.
+ * Function must return Result.
+ */
 #define HK_TRY(RESULT)                            \
     {                                             \
         const ::hk::Result _result_temp = RESULT; \
@@ -74,6 +97,10 @@ namespace hk {
             return _result_temp;                  \
     }
 
+/**
+ * @brief Return a Result expression if CONDITION is false.
+ * Function must return Result.
+ */
 #define HK_UNLESS(CONDITION, RESULT)              \
     {                                             \
         const bool _condition_temp = (CONDITION); \

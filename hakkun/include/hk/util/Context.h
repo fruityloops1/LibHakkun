@@ -7,6 +7,12 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Looks up symbol from sail, or from RTLD modules if sail is disabled.
+     *
+     * @tparam Symbol Symbol to look up
+     * @return
+     */
     template <util::TemplateString Symbol>
     hk_alwaysinline ptr lookupSymbol() {
 #ifdef HK_DISABLE_SAIL
@@ -26,6 +32,12 @@ namespace hk::util {
 #endif
     }
 
+    /**
+     * @brief Get nth return address from stack frame.
+     *
+     * @param n
+     * @return ptr
+     */
     hk_noinline ptr getReturnAddress(int n);
 
 } // namespace hk::util

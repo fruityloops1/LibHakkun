@@ -3,9 +3,9 @@
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
 #include "hk/sf/sf.h"
+#include "hk/svc/api.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
-#include <__expected/unexpect.h>
 #include <cstring>
 
 namespace hk::sm {
@@ -17,8 +17,7 @@ namespace hk::sm {
         ServiceManager(Handle session)
             : sf::Service(session) { }
         static ServiceManager* initialize() {
-            Handle outHandle;
-            HK_ABORT_UNLESS_R(svc::ConnectToNamedPort(&outHandle, "sm:"));
+            Handle outHandle = HK_UNWRAP(svc::ConnectToNamedPort("sm:"));
 
             createInstance(outHandle);
             return instance();

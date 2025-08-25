@@ -2,6 +2,11 @@
 
 namespace hk {
 
+    /**
+     * @brief Object to hold multiple values of different types.
+     *
+     * @tparam Types
+     */
     template <typename... Types>
     struct Tuple;
 
@@ -214,6 +219,19 @@ namespace hk {
 
 } // namespace hk
 
+/**
+ * @brief Ties out variables to assignment for a Tuple
+ *
+ *  Example:
+ *  ```cpp
+ *  int a, b;
+ *  tie(a, b) = Tuple<int, int>(4, 8);
+ *  ```
+ *
+ * @tparam Args
+ * @param args Out variables
+ * @return hk::OutTuple<Args...>
+ */
 template <typename... Args>
 constexpr hk::OutTuple<Args...> tie(Args&&... args) {
     return { args... };

@@ -26,10 +26,9 @@ namespace hk::os {
                 mMutex.unlock();
             }
 
-            Lock(const Lock&) = delete;
-            Lock& operator=(const Lock&) = delete;
+            NON_COPYABLE(Lock);
 
-            Lock(Lock&& other) noexcept
+            Lock(Lock&& other)
                 : mMutex(other.mMutex) {
             }
 

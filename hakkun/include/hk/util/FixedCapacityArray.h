@@ -7,6 +7,12 @@
 
 namespace hk::util {
 
+    /**
+     * @brief Heapless vector.
+     *
+     * @tparam T
+     * @tparam Capacity
+     */
     template <typename T, size Capacity>
     class FixedCapacityArray {
         alignas(alignof(T)) u8 mStorage[sizeof(T) * Capacity] { 0 };

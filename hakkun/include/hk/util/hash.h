@@ -44,6 +44,12 @@ namespace hk::util {
             return h;
         }
 
+        /**
+         * @brief HashMurmur3 32-bit implementation. Allows partial and full feeding.
+         *
+         * @tparam T
+         * @tparam Read
+         */
         template <typename T, class Read>
         class HashMurmurImpl {
             static_assert(sizeof(T) == 1);
