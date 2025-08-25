@@ -108,8 +108,7 @@ namespace hk::socket {
 
         template <typename A, typename B>
             requires(std::is_convertible<A*, SocketAddr*>::value)
-        Ret connect(s32 fd, const A& address) {
-        }
+        Ret connect(s32 fd, const A& address);
 
         template <typename A, typename T>
             requires(std::is_convertible<A*, SocketAddr*>::value)
@@ -120,6 +119,10 @@ namespace hk::socket {
             request.addInAutoselect(&address, sizeof(SocketAddrIpv4));
             request.enableDebug(true, true);
             return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+        }
+
+        Ret close(s32 fd) {
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 26, &fd), sf::simpleDataHandler<Ret>()));
         }
     };
 
