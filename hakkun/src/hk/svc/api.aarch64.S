@@ -122,7 +122,7 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc13AcceptSessionEPjj
 	str x0, [sp, #-16]!
-	svc 0x20
+	svc 0x41
 	ldr x2, [sp], #16
 	str w1, [x2]
 	ret

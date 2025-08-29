@@ -123,7 +123,7 @@ SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
     ldrd r5, r6, [r8, #16]
     ldr r7, [r8, #24]
     str r8, [sp, #-4]!
-    svc 0x20
+    svc 0x42
     ldr r8, [sp], #4
     strd r1, r2, [r8, #0]
     strd r3, r4, [r8, #8]
