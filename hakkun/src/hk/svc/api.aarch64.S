@@ -120,6 +120,14 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc13AcceptSessionEPjj
+	str x0, [sp, #-16]!
+	svc 0x20
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
   mov x8, x1
   ldp w1, w2, [x8, #0]
@@ -127,13 +135,21 @@ SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
   ldp w5, w6, [x8, #16]
   ldr w7, [x8, #24]
   str x8, [sp, #-16]!
-  svc 0x20
+  svc 0x42
   ldr x8, [sp], #16
   stp w1, w2, [x8, #0]
   stp w3, w4, [x8, #8]
   stp w5, w6, [x8, #16]
   str w7, [x8, #24]
   ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc15ReplyAndReceiveEPjPKjjjm
+	str x0, [sp, #-16]!
+	svc 0x43
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
@@ -154,7 +170,7 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
 	str x0, [sp, #-16]!
-	svc 0x74
+	svc 0x71
 	ldr x2, [sp], #16
 	str w1, [x2]
 	ret

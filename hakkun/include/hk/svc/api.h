@@ -129,7 +129,9 @@ namespace hk::svc {
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
+    Result AcceptSession(Handle* outSessionHandle, Handle portHandle);
     Result ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
+    Result ReplyAndReceive(u32* outIndex, const Handle* handles, u32 handleCount, Handle replyHandle, u64 timeout);
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);

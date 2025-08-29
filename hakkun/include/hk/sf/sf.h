@@ -246,7 +246,6 @@ namespace hk::sf {
     private:
         friend class Service;
         void writeToTls(Service* service, cmif::MessageTag tag) {
-
             std::memset(svc::getTLS()->ipcMessageBuffer, 0, cTlsBufferSize);
             util::Stream writer(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
             bool hasSpecialHeader = mSendPid || !mHipcCopyHandles.empty() || !mHipcMoveHandles.empty();

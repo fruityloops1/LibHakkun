@@ -159,10 +159,11 @@ SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemory
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
-	str x0, [sp, #-16]!
-	svc 0x74
-	ldr x2, [sp], #16
-	str w1, [x2]
+	str r0, [sp, #-4]!
+	svc 0x71
+    ldr r2, [sp]
+    str r1, [r2]
+    add sp, sp, #4
 	ret
 SVC_END
 
