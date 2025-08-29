@@ -6,6 +6,7 @@
 #include <ios>
 #include <span>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace sail {
