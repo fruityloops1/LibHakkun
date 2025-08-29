@@ -5,29 +5,29 @@
 namespace hk::sf::hipc {
 
     struct Header {
-        u32 tag : 16;
-        u32 sendStaticCount : 4;
-        u32 sendBufferCount : 4;
-        u32 recvBufferCount : 4;
-        u32 exchBufferCount : 4;
-        u32 dataWords : 10;
+        u32 tag : 16 = 0;
+        u32 sendStaticCount : 4 = 0;
+        u32 sendBufferCount : 4 = 0;
+        u32 recvBufferCount : 4 = 0;
+        u32 exchBufferCount : 4 = 0;
+        u32 dataWords : 10 = 0;
         u32 : 21;
-        bool hasSpecialHeader : 1;
+        bool hasSpecialHeader : 1 = false;
     };
 
     struct SpecialHeader {
-        bool sendPid : 1;
-        u32 copyHandleCount : 4;
-        u32 moveHandleCount : 4;
-        u32 pad : 23;
+        bool sendPid : 1 = false;
+        u32 copyHandleCount : 4 = 0;
+        u32 moveHandleCount : 4 = 0;
+        u32 pad : 23 = 0;
     };
 
     struct Static {
-        u32 index : 6;
-        u32 addressHigh : 6;
-        u32 addressMid : 4;
-        u32 size : 16;
-        u32 addressLow;
+        u32 index : 6 = 0;
+        u32 addressHigh : 6 = 0;
+        u32 addressMid : 4 = 0;
+        u32 size : 16 = 0;
+        u32 addressLow = 0;
 
         Static(u8 index, u64 address, u16 size)
             : index(index)
@@ -49,12 +49,12 @@ namespace hk::sf::hipc {
     };
 
     struct Buffer {
-        u32 sizeLow;
-        u32 addressLow;
-        BufferMode mode : 2;
-        u32 addressHigh : 22;
-        u32 sizeHigh : 4;
-        u32 addressMid : 4;
+        u32 sizeLow = 0;
+        u32 addressLow = 0;
+        BufferMode mode : 2 = BufferMode::Normal;
+        u32 addressHigh : 22 = 0;
+        u32 sizeHigh : 4 = 0;
+        u32 addressMid : 4 = 0;
 
         Buffer(BufferMode mode, u64 address, u64 size)
             : mode(mode) {
@@ -75,9 +75,9 @@ namespace hk::sf::hipc {
     };
 
     struct ReceiveStatic {
-        u32 addressLow;
-        u32 addressHigh : 16;
-        u32 size : 16;
+        u32 addressLow = 0;
+        u32 addressHigh : 16 = 0;
+        u32 size : 16 = 0;
 
         ReceiveStatic()
             : ReceiveStatic(0, 0) { };
