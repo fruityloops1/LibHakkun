@@ -110,27 +110,31 @@ namespace hk::svc {
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
     hk_noreturn void ExitProcess();
+    Result CreateThread(Handle* outHandle, void (*func)(ptr arg), ptr arg, ptr stack_bottom, s32 priority, s32 coreId);
     hk_noreturn void ExitThread();
     // values 0, -1, and -2 will yield the thread.
     // see https://switchbrew.org/wiki/SVC#SleepThread
     void SleepThread(s64 nanoseconds);
     Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
     Result CloseHandle(Handle handle);
+    Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
+    Result CancelSynchronization(Handle handle);
     Result ResetSignal(Handle handle);
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
     Result ArbitrateUnlock(ptr addr);
     Result ConnectToNamedPort(Handle* outHandle, const char* name);
-    Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
-    Result CancelSynchronization(Handle handle);
+    Result SendSyncRequestLight(Handle* sessionHandle, u32 words[7]);
     Result SendSyncRequest(Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
+    Result ReplyAndReceiveLight(Handle sessionHandle, u32 words[7]);
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
     Result GetSystemInfo(u64* outInfo, svc::SystemInfoType infoType, svc::Handle handle, svc::PhysicalMemorySystemInfo infoSubType);
+    Result ManageNamedPort(Handle* outHandle, const char* name, s32 maxSessions);
     Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
 
     hk_noreturn Result hkBreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);

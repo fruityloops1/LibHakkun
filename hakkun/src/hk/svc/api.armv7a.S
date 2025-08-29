@@ -25,6 +25,15 @@ SVC_BEGIN _ZN2hk3svc11ExitProcessEv
 	svc #0x7
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc12CreateThreadEPjPFvmEmmii
+    str r0, [sp, #-4]!
+    svc #0x8
+    ldr r2, [sp]
+    str r1, [r2]
+    add sp, sp, #4
+    bx lr
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc10ExitThreadEv
 	svc #0xA
 SVC_END
@@ -35,7 +44,6 @@ SVC_BEGIN _ZN2hk3svc11SleepThreadEl
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjjjNS0_16MemoryPermissionE
-    # todo check if this works
     str r0, [sp, #-4]!
     svc #0x15
     ldr r2, [sp]
@@ -57,6 +65,23 @@ SVC_END
 SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEj
 	svc 0x1B
 	bx lr
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPj
+    mov r8, r1
+    ldrd r1, r2, [r8, #0]
+    ldrd r3, r4, [r8, #8]
+    ldrd r5, r6, [r8, #16]
+    ldr r7, [r8, #24]
+    str r8, [sp, #-4]!
+    svc 0x20
+    ldr r8, [sp], #4
+    add sp, sp, #4
+    strd r1, r2, [r8, #0]
+    strd r3, r4, [r8, #8]
+    strd r5, r6, [r8, #16]
+    str r7, [r8, #24]
+    bx lr
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvj
@@ -91,6 +116,22 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPyNS0_8InfoTypeEjy
     bx lr
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPj
+    mov r8, r1
+    ldrd r1, r2, [r8, #0]
+    ldrd r3, r4, [r8, #8]
+    ldrd r5, r6, [r8, #16]
+    ldr r7, [r8, #24]
+    str r8, [sp, #-4]!
+    svc 0x20
+    ldr r8, [sp], #4
+    strd r1, r2, [r8, #0]
+    strd r3, r4, [r8, #8]
+    strd r5, r6, [r8, #16]
+    str r7, [r8, #24]
+    bx lr
+SVC_END
+
 // the abi for the following svcs is completely Wrong
 SVC_BEGIN _ZN2hk3svc26InvalidateProcessDataCacheEjjj
     stmdb sp!, {r3, r4, lr}
@@ -115,6 +156,14 @@ SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemory
     str r1, [r2]
     add sp, sp, #4
     bx lr
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
+	str x0, [sp, #-16]!
+	svc 0x74
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEjjyj

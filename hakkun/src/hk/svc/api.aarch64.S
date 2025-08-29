@@ -24,6 +24,14 @@ SVC_BEGIN _ZN2hk3svc11ExitProcessEv
 	svc #0x7
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc12CreateThreadEPjPFvmEmmii
+	str x0, [sp, #-16]!
+	svc #0x8
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc10ExitThreadEv
 	svc #0xA
 SVC_END
@@ -42,8 +50,8 @@ SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjmmNS0_16MemoryPermissionE
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc11CloseHandleEj
-    svc #0x16
-    ret
+	svc #0x16
+	ret
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjmj
@@ -64,16 +72,31 @@ SVC_BEGIN _ZN2hk3svc18ConnectToNamedPortEPjPKc
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPj
+  mov x8, x1
+  ldp w1, w2, [x8, #0]
+  ldp w3, w4, [x8, #8]
+  ldp w5, w6, [x8, #16]
+  ldr w7, [x8, #24]
+  str x8, [sp, #-16]!
+  svc 0x20
+  ldr x8, [sp], #16
+  stp w1, w2, [x8, #0]
+  stp w3, w4, [x8, #8]
+  stp w5, w6, [x8, #16]
+  str w7, [x8, #24]
+  ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc15SendSyncRequestEj
-    svc 0x21
-    ret
+  svc 0x21
+  ret
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvm
 	svc 0x26
 	ret
 SVC_END
-
 
 SVC_BEGIN _ZN2hk3svc18hkBreakWithMessageENS0_11BreakReasonEPvmS2_S2_
 	svc 0x26
@@ -97,8 +120,24 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPj
+  mov x8, x1
+  ldp w1, w2, [x8, #0]
+  ldp w3, w4, [x8, #8]
+  ldp w5, w6, [x8, #16]
+  ldr w7, [x8, #24]
+  str x8, [sp, #-16]!
+  svc 0x20
+  ldr x8, [sp], #16
+  stp w1, w2, [x8, #0]
+  stp w3, w4, [x8, #8]
+  stp w5, w6, [x8, #16]
+  str w7, [x8, #24]
+  ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
-    str x0, [sp, #-16]!
+	str x0, [sp, #-16]!
 	svc 0x65
 	ldr x2, [sp], #16
 	str w1, [x2]
@@ -110,6 +149,14 @@ SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemory
 	svc 0x6F
 	ldr x2, [sp], #16
 	str x1, [x2]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
+	str x0, [sp, #-16]!
+	svc 0x74
+	ldr x2, [sp], #16
+	str w1, [x2]
 	ret
 SVC_END
 
