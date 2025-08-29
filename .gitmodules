@@ -1,3 +1,6 @@
 [submodule "tools/pfs0"]
 	path = tools/pfs0
 	url = https://github.com/SenobiNX/pfs0
+[submodule "tools/npdm"]
+	path = tools/npdm
+	url = https://github.com/SenobiNX/npdm

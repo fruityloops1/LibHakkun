@@ -59,12 +59,13 @@ def deploy_ftp():
                 print(f'-- Could not upload file: {str(e).split(None, 1)}')
                 sys.exit(1)
 
-    upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
-    upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
-    if has_rtld:
-        upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
     if is_standalone:
         upload(f"{build_dir}/exefs.nsp", f"{layeredfs_dir}/exefs.nsp")
+    else:
+        upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
+        upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
+        if has_rtld:
+            upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
 
 # build/exefs
 shutil.copyfile(f"{build_dir}/main.npdm", f"{build_dir}/exefs/main.npdm")

@@ -1,19 +1,9 @@
-file(TO_CMAKE_PATH "$ENV{SWITCHTOOLS}" SWITCHTOOLS)
-file(TO_CMAKE_PATH "$ENV{DEVKITPRO}" DEVKITPRO)
-
 include(config/config.cmake)
 include(sys/cmake/apply_config.cmake)
 include(sys/cmake/generate_exefs.cmake)
 include(sys/cmake/addons.cmake)
 include(sys/cmake/module_config.cmake)
 
-if(NOT IS_DIRECTORY ${SWITCHTOOLS})
-    if(NOT IS_DIRECTORY ${DEVKITPRO})
-        message(FATAL_ERROR "Please install devkitA64 or set SWITCHTOOLS in your environment.")
-    else()
-        set(SWITCHTOOLS ${DEVKITPRO}/tools/bin)
-    endif()
-endif()
 
 if (MODULE_BINARY STREQUAL "rtld")
     message(FATAL_ERROR "Hakkun cannot be used in place of rtld")

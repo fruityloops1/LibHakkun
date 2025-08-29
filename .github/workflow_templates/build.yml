@@ -16,7 +16,6 @@ jobs:
           sudo apt-get install -y python3 python3-pip git wget
           python sys/tools/setup_libcxx_prepackaged.py
           python sys/tools/setup_sail.py
-          git clone https://github.com/switchbrew/switch-tools && cd switch-tools && ./autogen.sh && ./configure && make -j $(nproc) && cd ..
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 20
@@ -24,7 +23,6 @@ jobs:
           python3 -m pip install pyelftools mmh lz4
       - name: Build
         run: |
-          export SWITCHTOOLS=$(pwd)/switch-tools
           cmake -B build -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DCMAKE_ASM_COMPILER=clang-20 -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-20" -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld-20" -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld-20"
           cmake --build build -j $(nproc)
       - name: Upload Artifacts

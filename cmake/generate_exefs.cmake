@@ -2,7 +2,7 @@ function(generate_exefs)
     configure_file(${PROJECT_SOURCE_DIR}/config/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/npdm.json)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "-- Generating main.npdm"
-        COMMAND ${SWITCHTOOLS}/npdmtool ${CMAKE_CURRENT_BINARY_DIR}/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/main.npdm 2>> ${CMAKE_CURRENT_BINARY_DIR}/npdmtool.log
+        COMMAND python ${CMAKE_SOURCE_DIR}/sys/tools/npdm/build_npdm.py ${CMAKE_CURRENT_BINARY_DIR}/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/main.npdm 2>> ${CMAKE_CURRENT_BINARY_DIR}/npdm.log
     )
 
     if (USE_SAIL AND BAKE_SYMBOLS)
