@@ -123,7 +123,7 @@ namespace hk::svc {
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
     Result ArbitrateUnlock(ptr addr);
     Result ConnectToNamedPort(Handle* outHandle, const char* name);
-    Result SendSyncRequestLight(Handle* sessionHandle, u32 words[7]);
+    Result SendSyncRequestLight(Handle sessionHandle, u32 words[7]);
     Result SendSyncRequest(Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
