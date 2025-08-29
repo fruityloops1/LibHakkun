@@ -7,10 +7,6 @@
 #include <cstdio>
 #include <cstring>
 
-#ifdef HK_ADDON_LogManager
-#include "hk/nn/diag.h"
-#endif
-
 namespace hk::diag {
 
     Result setCurrentThreadName(const char* name) {
@@ -77,43 +73,39 @@ File: %s:%d
             svc::Break(reason, &result, sizeof(result));
     }
 
-    extern "C" void __attribute__((weak)) hkLogSink(const char* msg, size len) { }
+    extern "C" void __attribute__((weak)) hkLogSink(const char* msg, size len) {
+        svc::OutputDebugString(msg, len);
+    }
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    void debugLog(const char* fmt, ...) {
-        constexpr size bufSizeAddend =
-#ifdef HK_ADDON_LogManager
-            2
-#else
-            1
-#endif
-            ;
-
+    void debugLogNoLineImpl(const char* buf, size length) {
+        hkLogSink(buf, length);
+    }
+    void debugLogNoLine(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
         size len = vsnprintf(nullptr, 0, fmt, args);
-        char buf[len + bufSizeAddend];
+        char buf[len + 1];
         vsnprintf(buf, len + 1, fmt, args);
         va_end(args);
 
-        svc::OutputDebugString(buf, len + 1);
+        hkLogSink(buf, len);
+    }
+    void debugLogImpl(const char* buf, size length) {
+        hkLogSink(buf, length);
+        const char cNewline = '\n';
+        hkLogSink(&cNewline, 1);
+    }
+    void debugLog(const char* fmt, ...) {
+        std::va_list args;
+        va_start(args, fmt);
+        size len = vsnprintf(nullptr, 0, fmt, args);
+        char buf[len + 2];
+        vsnprintf(buf, len + 2, fmt, args);
+        va_end(args);
+        buf[len] = '\n';
+
         hkLogSink(buf, len + 1);
-#ifdef HK_ADDON_LogManager
-        {
-            nn::diag::LogMetaData metaData;
-            metaData.file = __FILE__;
-            metaData.line = __LINE__;
-            metaData.function = __PRETTY_FUNCTION__;
-
-            buf[len] = '\n';
-            buf[len + 1] = '\0';
-
-            // In case the symbol is not yet applied
-            volatile auto put = nn::diag::detail::PutImpl;
-            if (put != nullptr)
-                put(metaData, buf, len + 1);
-        }
-#endif
     }
 #endif
 

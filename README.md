@@ -23,8 +23,6 @@ Modular C++ toolchain and set of libraries for userspace Nintendo Switch process
         * [ExpHeap](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ExpHeap)
         * [HeapSourceBss](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceBss)
         * [HeapSourceDynamic](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceDynamic)
-    * Logging:
-        * [LogManager](https://github.com/fruityloops1/LibHakkun/tree/main/addons/LogManager)
 * SF client implementation [WIP]: 
     * SM, PM, LM, Socket
 
