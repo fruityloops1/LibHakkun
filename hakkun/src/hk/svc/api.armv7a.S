@@ -116,7 +116,7 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPyNS0_8InfoTypeEjy
     bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPj
+SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
     mov r8, r1
     ldrd r1, r2, [r8, #0]
     ldrd r3, r4, [r8, #8]

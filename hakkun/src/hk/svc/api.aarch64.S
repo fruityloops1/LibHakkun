@@ -72,7 +72,7 @@ SVC_BEGIN _ZN2hk3svc18ConnectToNamedPortEPjPKc
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPj
+SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPh
   mov x8, x1
   ldp w1, w2, [x8, #0]
   ldp w3, w4, [x8, #8]
@@ -120,7 +120,7 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPj
+SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
   mov x8, x1
   ldp w1, w2, [x8, #0]
   ldp w3, w4, [x8, #8]

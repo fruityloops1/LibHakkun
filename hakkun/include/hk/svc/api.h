@@ -123,13 +123,13 @@ namespace hk::svc {
     Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
     Result ArbitrateUnlock(ptr addr);
     Result ConnectToNamedPort(Handle* outHandle, const char* name);
-    Result SendSyncRequestLight(Handle sessionHandle, u32 words[7]);
+    Result SendSyncRequestLight(Handle sessionHandle, u8 data[28]);
     Result SendSyncRequest(Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
     Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
-    Result ReplyAndReceiveLight(Handle sessionHandle, u32 words[7]);
+    Result ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
     Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
     Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
     Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
