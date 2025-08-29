@@ -24,6 +24,8 @@ void hk_atexit(void (*)()) {
     // ...
 }
 
+u32 hk_stack_chk_guard = 0xFEFEFEFE;
+
 /*void abort_message(const char* msg) {
     HK_ABORT("abort_message: %s", msg);
 }*/
