@@ -6,7 +6,7 @@
 
 namespace sail {
 
-    std::vector<Symbol> parseSymbolFile(const std::string& data, const std::string& filePath);
+    std::vector<Symbol> parseSymbolFile(std::string data, const std::string& filePath);
 
     constexpr static size cBuildIdSize = 0x10;
     struct BuildId {
@@ -21,6 +21,6 @@ namespace sail {
 
     using ModuleList = std::map<std::string, VersionListModule>;
 
-    ModuleList parseVersionList(const std::string& data, const std::string& filePath);
+    ModuleList parseVersionList(std::string data, const std::string& filePath);
 
 } // namespace sail

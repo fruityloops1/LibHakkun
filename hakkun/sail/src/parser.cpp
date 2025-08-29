@@ -90,7 +90,22 @@ namespace sail {
     if (addDestinationSymbolAndCheckDuplicate(NAME) == false) \
         SYNTAX_ERROR("duplicate symbol: %s", NAME.c_str());
 
-    std::vector<Symbol> parseSymbolFile(const std::string& data, const std::string& filePath) {
+    static std::string removeCrlf(const std::string& str) {
+        std::string::size_type idx = 0;
+
+        std::string out = str;
+
+        while ((idx = str.find("\r\n")) != std::string::npos) {
+            out.replace(idx, 2, "\n");
+            idx++;
+        }
+
+        return out;
+    }
+
+    std::vector<Symbol> parseSymbolFile(std::string data, const std::string& filePath) {
+        data = removeCrlf(data);
+
         std::stringstream ss(data);
 
         std::string line;
@@ -350,7 +365,9 @@ namespace sail {
         return symbols;
     }
 
-    ModuleList parseVersionList(const std::string& data, const std::string& filePath) {
+    ModuleList parseVersionList(std::string data, const std::string& filePath) {
+        data = removeCrlf(data);
+
         std::stringstream ss(data);
 
         std::string line;
