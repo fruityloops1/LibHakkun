@@ -110,10 +110,12 @@ namespace hk::sf {
     };
 
     class Request {
-        bool mPrintRequest = false;
-        bool mAbortAfterRequest = false;
-        bool mPrintResponse = false;
-        bool mSendPid = false;
+        struct {
+            bool mPrintRequest : 1 = false;
+            bool mAbortAfterRequest : 1 = false;
+            bool mPrintResponse : 1 = false;
+            bool mSendPid : 1 = false;
+        };
         u8 mHipcStaticIdx = 0;
         u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
@@ -329,6 +331,7 @@ namespace hk::sf {
             writer.seek(alignUp(writer.tell(), 16));
             writer.writeIterator<u16>(mHipcOutPointerSizes);
 
+#if !defined(HK_RELEASE)
             if (mPrintRequest) {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
@@ -344,6 +347,7 @@ namespace hk::sf {
 
             if (mAbortAfterRequest)
                 HK_ABORT("Aborted after response (debug)", 0);
+#endif
         }
     };
 
@@ -409,6 +413,7 @@ namespace hk::sf {
 
             // todo: recv statics
 
+#if !defined(HK_RELEASE)
             if (printResponse) {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
@@ -421,6 +426,7 @@ namespace hk::sf {
                         buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
                 memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
             }
+#endif
 
             return response;
         }
