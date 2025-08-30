@@ -1,5 +1,7 @@
 #include "hk/diag/ipclogger.h"
 namespace hk::diag::ipclogger {
+    static IpcLogger sInstance = IpcLogger();
+
     IpcLogger* IpcLogger::instance() {
         if (sInstance.mSession == 0) {
             auto result = svc::ConnectToNamedPort("hklog");

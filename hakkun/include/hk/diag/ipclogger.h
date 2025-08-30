@@ -8,7 +8,7 @@ namespace hk::diag::ipclogger {
     class IpcLogger {
         static constexpr Handle cInvalidSession = std::numeric_limits<Handle>::max();
         static IpcLogger sInstance;
-        Handle mSession;
+        Handle mSession = 0;
 
         bool isDisconnected() const {
             return !mSession || mSession == cInvalidSession;
@@ -25,14 +25,7 @@ namespace hk::diag::ipclogger {
             if (res.failed())
                 svc::Break(svc::BreakReason_User, nullptr, res.getValue());
         }
-
     public:
-        IpcLogger(Handle session)
-            : mSession(session) { }
-
-        IpcLogger()
-            : mSession(0) { }
-
         static IpcLogger* instance();
 
         void logWithLine(std::span<const u8> buffer) {
