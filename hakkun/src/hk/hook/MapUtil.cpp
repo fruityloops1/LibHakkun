@@ -1,6 +1,7 @@
 #include "hk/hook/MapUtil.h"
 #include "hk/diag/diag.h"
 #include "hk/svc/api.h"
+#include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Random.h"
 
@@ -10,30 +11,24 @@ namespace hk::hook {
         return a < b + bSize && b < a + aSize;
     }
 
-    ptr findAslr(size searchSize) {
+    static hk_alwaysinline ptr findMap(size searchSize, svc::InfoType searchRegionAddr, svc::InfoType searchRegionSize) {
         searchSize = alignUpPage(searchSize);
 
-        u64 aslrStart = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&aslrStart, svc::InfoType_AslrRegionAddress, svc::PseudoHandle::CurrentProcess, 0));
-        u64 aslrSize = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&aslrSize, svc::InfoType_AslrRegionSize, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 regionStart = HK_UNWRAP(svc::GetInfo(searchRegionAddr, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 regionSize = HK_UNWRAP(svc::GetInfo(searchRegionSize, svc::PseudoHandle::CurrentProcess, 0));
 
-        u64 aliasStart = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&aliasStart, svc::InfoType_AliasRegionAddress, svc::PseudoHandle::CurrentProcess, 0));
-        u64 aliasSize = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&aliasSize, svc::InfoType_AliasRegionSize, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 aliasStart = HK_UNWRAP(svc::GetInfo(svc::InfoType_AliasRegionAddress, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 aliasSize = HK_UNWRAP(svc::GetInfo(svc::InfoType_AliasRegionSize, svc::PseudoHandle::CurrentProcess, 0));
 
-        u64 heapStart = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&heapStart, svc::InfoType_HeapRegionAddress, svc::PseudoHandle::CurrentProcess, 0));
-        u64 heapSize = 0;
-        HK_ABORT_UNLESS_R(svc::GetInfo(&heapSize, svc::InfoType_HeapRegionSize, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 heapStart = HK_UNWRAP(svc::GetInfo(svc::InfoType_HeapRegionAddress, svc::PseudoHandle::CurrentProcess, 0));
+        const u64 heapSize = HK_UNWRAP(svc::GetInfo(svc::InfoType_HeapRegionSize, svc::PseudoHandle::CurrentProcess, 0));
 
-        size maxPage = (aslrSize - searchSize) / cPageSize;
+        size maxPage = (regionSize - searchSize) / cPageSize;
 
         while (true) {
             size randomPage = util::getRandomU64() % maxPage;
 
-            ptr attempt = aslrStart + randomPage * cPageSize;
+            ptr attempt = regionStart + randomPage * cPageSize;
             svc::MemoryInfo memInfo;
             u32 pageInfo;
 
@@ -44,6 +39,14 @@ namespace hk::hook {
                 && !regionsOverlap(attempt, searchSize, heapStart, heapSize))
                 return attempt;
         }
+    }
+
+    ptr findAslr(size searchSize) {
+        return findMap(searchSize, svc::InfoType_AslrRegionAddress, svc::InfoType_AslrRegionSize);
+    }
+
+    ptr findStack(size searchSize) {
+        return findMap(searchSize, svc::InfoType_StackRegionAddress, svc::InfoType_StackRegionSize);
     }
 
     Result mapRoToRw(ptr addr, size mapSize, ptr* outRw) {
