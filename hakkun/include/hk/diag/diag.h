@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hk/diag/results.h"
+#include "hk/diag/results.h" // IWYU pragma: keep
 #include "hk/svc/types.h"
 #include <cstdarg>
 
@@ -119,15 +119,19 @@ ResultAbort (%04d-%04d/0x%x) [from %s]
     extern "C" void hkLogSink(const char* msg, size len);
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
-    inline void debugLogNoLineImpl(const char* buf, size len) { }
-    inline void debugLogNoLine(const char* fmt, ...) { }
-    inline void debugLogImpl(const char* buf, size len) { }
-    inline void debugLog(const char* fmt, ...) { }
+    inline void logBuffer(const char* buf, size len) { }
+    inline void logImpl(const char* fmt, std::va_list list) { }
+    inline void log(const char* fmt, ...) { }
+    inline void logLineImpl(const char* fmt, std::va_list list) { }
+    inline void logLine(const char* fmt, ...) { }
+    [[deprecated("use hk::debug::logLine instead")]] void debugLog(const char* fmt, ...) { }
 #else
-    void debugLogNoLineImpl(const char* buf, size len);
-    void debugLogNoLine(const char* fmt, ...);
-    void debugLogImpl(const char* buf, size len);
-    void debugLog(const char* fmt, ...);
+    void logBuffer(const char* buf, size len);
+    void logImpl(const char* fmt, std::va_list list);
+    void log(const char* fmt, ...);
+    void logLineImpl(const char* fmt, std::va_list list);
+    void logLine(const char* fmt, ...);
+    [[deprecated("use hk::debug::logLine instead")]] void debugLog(const char* fmt, ...);
 #endif
 
 } // namespace hk::diag
