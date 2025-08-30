@@ -54,6 +54,8 @@ namespace nn::init {
         // if (notifyExceptionHandlerReady)
         //     notifyExceptionHandlerReady();
 
+        hk::diag::setCurrentThreadName("HkMain");
+
         if (callInitializers)
             callInitializers();
 
