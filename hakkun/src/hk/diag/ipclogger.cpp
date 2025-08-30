@@ -1,4 +1,5 @@
 #include "hk/diag/ipclogger.h"
+
 namespace hk::diag::ipclogger {
     static IpcLogger sInstance = IpcLogger();
 
@@ -13,4 +14,4 @@ namespace hk::diag::ipclogger {
 
         return &sInstance;
     }
-}
+} // namespace hk::diag::ipclogger

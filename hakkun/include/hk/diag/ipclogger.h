@@ -36,4 +36,4 @@ namespace hk::diag::ipclogger {
             logImpl(buffer, 1);
         }
     };
-}
+} // namespace hk::diag::ipclogger
