@@ -124,6 +124,26 @@ namespace hk::util {
             return *valueAt(index);
         }
 
+        T& first() {
+            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::first(): empty", getTypeName<T>());
+            return *valueAt(0);
+        }
+
+        const T& first() const {
+            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::first(): empty", getTypeName<T>());
+            return *valueAt(0);
+        }
+
+        T& last() {
+            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::last(): empty", getTypeName<T>());
+            return *valueAt(mSize - 1);
+        }
+
+        const T& last() const {
+            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::last(): empty", getTypeName<T>());
+            return *valueAt(mSize - 1);
+        }
+
         template <typename Callback>
         void forEach(Callback func) {
             for (::size i = 0; i < mSize; i++)
