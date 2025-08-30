@@ -307,35 +307,50 @@ namespace hk::svc {
         CurrentProcess = 0xFFFF8001,
     };
 
+    enum ArbitrationType : u32 {
+        WaitIfLessThan,
+        DecrementAndWaitIfLessThan,
+        WaitIfEqual,
+        WaitIfEqual64,
+    };
+
+    enum SignalType : u32 {
+        Signal,
+        SignalAndIncrementIfEqual,
+        SignalAndModifyByWaitingCountIfEqual,
+    };
+
     struct ThreadType {
-        u8 _0[0x180];
-        char threadName[0x20];
+        u8 _0[0x46] { 0 };
+        u16 version = 1;
+        u8 _48[0x138] { 0 };
+        char threadName[0x20] { '\0' };
         const char* threadNamePtr = threadName;
-        u8 _1A8[0x8];
-        Handle handle;
-        u8 _1B4[0xC];
+        u8 _1A8[0x8] { 0 };
+        Handle handle = 0;
+        u8 _1B4[0xC] { 0 };
     };
 
     struct ThreadLocalRegion {
-        u8 ipcMessageBuffer[0x100];
+        u8 ipcMessageBuffer[0x100] { 0 };
         u16 disableCounter;
-        u16 interruptFlag;
-        bool cacheMaintanenceFlag;
-        u8 _105[0x7B];
+        u16 interruptFlag = 0;
+        bool cacheMaintanenceFlag = 0;
+        u8 _105[0x7B] { 0 };
         union {
-            u8 tls[0x50];
+            u8 tls[0x50] { 0 };
             struct {
                 u8 _0[0x40];
                 ptr dyingMessageRegionAddr;
                 ptr dyingMessageRegionSize;
             };
         };
-        ptr localePtr;
-        u64 errnoValue;
-        u64 threadData;
-        u64 exceptionHeaderGlobals;
-        ptr threadPtr;
-        ThreadType* nnsdkThread;
+        ptr localePtr = 0;
+        u64 errnoValue = 0;
+        u64 threadData = 0;
+        u64 exceptionHeaderGlobals = 0;
+        ptr threadPtr = 0;
+        ThreadType* nnsdkThread = nullptr;
     };
 
     enum SystemInfoType {
@@ -350,5 +365,7 @@ namespace hk::svc {
         PhysicalMemorySystemInfo_System = 2,
         PhysicalMemorySystemInfo_SystemUnsafe = 3,
     };
+
+    using ThreadFunc = void (*)(ptr);
 
 } // namespace hk::svc
