@@ -119,8 +119,14 @@ ResultAbort (%04d-%04d/0x%x) [from %s]
     extern "C" void hkLogSink(const char* msg, size len);
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
+    inline void debugLogNoLineImpl(const char* buf, size len) { }
+    inline void debugLogNoLine(const char* fmt, ...) { }
+    inline void debugLogImpl(const char* buf, size len) { }
     inline void debugLog(const char* fmt, ...) { }
 #else
+    void debugLogNoLineImpl(const char* buf, size len);
+    void debugLogNoLine(const char* fmt, ...);
+    void debugLogImpl(const char* buf, size len);
     void debugLog(const char* fmt, ...);
 #endif
 
