@@ -175,9 +175,7 @@ namespace hk::ro {
                 data.rela = cast<const Elf_Rela*>(moduleBase + dynamic->d_un.d_ptr);
                 continue;
             case DT_JMPREL:
-                diag::debugLog("&PLT=%p", &data.plt);
                 data.plt = Elf_Addr(moduleBase) + dynamic->d_un.d_ptr;
-                diag::debugLog("PLT=%p", data.plt);
                 continue;
             case DT_RELSZ:
                 data.relSize = dynamic->d_un.d_val;

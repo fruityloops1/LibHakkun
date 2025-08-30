@@ -13,7 +13,7 @@ namespace hk::sail {
     namespace detail {
 
         void VersionLoader::loadVersions() {
-            diag::debugLog("hk::sail: loading module versions");
+            diag::logLine("hk::sail: loading module versions");
             for (int i = 0; i < gNumModules; i++) {
                 uintptr_t versionsStart = uintptr_t(gVersions);
 
@@ -24,9 +24,9 @@ namespace hk::sail {
 
                 if (versionsOffset == 0) {
                     if (mod0Name != nullptr)
-                        diag::debugLog("hk::sail: Module[%s] Version: Skipped", mod0Name);
+                        diag::logLine("hk::sail: Module[%s] Version: Skipped", mod0Name);
                     else
-                        diag::debugLog("hk::sail: Module[%d] Version: Skipped", i);
+                        diag::logLine("hk::sail: Module[%d] Version: Skipped", i);
                     continue;
                 }
                 const u32* versions = cast<const u32*>(versionsStart + versionsOffset);
@@ -76,14 +76,14 @@ namespace hk::sail {
 
                 if (mod0Name != nullptr) {
                     if (versionFound)
-                        diag::debugLog("hk::sail: Module[%s] Version: %s (idx: %d)", mod0Name, module->getVersionName(), module->getVersionIndex());
+                        diag::logLine("hk::sail: Module[%s] Version: %s (idx: %d)", mod0Name, module->getVersionName(), module->getVersionIndex());
                     else
-                        diag::debugLog("hk::sail: Module[%s] Version: NotFound", mod0Name);
+                        diag::logLine("hk::sail: Module[%s] Version: NotFound", mod0Name);
                 } else {
                     if (versionFound)
-                        diag::debugLog("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
+                        diag::logLine("hk::sail: Module[%d] Version: %s (idx: %d)", i, module->getVersionName(), module->getVersionIndex());
                     else
-                        diag::debugLog("hk::sail: Module[%d] Version: NotFound", i);
+                        diag::logLine("hk::sail: Module[%d] Version: NotFound", i);
                 }
             }
         }
@@ -145,9 +145,9 @@ namespace hk::sail {
                 }
             } else if (address == 0) {
                 if (IsPreCalc) {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
                 } else {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (DataBlock)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (DataBlock)", destSymbol);
                 }
             }
 
@@ -176,9 +176,9 @@ namespace hk::sail {
                 }
             } else if (address == 0) {
                 if (IsPreCalc) {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
                 } else {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (Dynamic)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Dynamic)", destSymbol);
                 }
             }
 
@@ -211,9 +211,9 @@ namespace hk::sail {
                 }
             } else {
                 if (IsPreCalc) {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
                 } else {
-                    diag::debugLog("hk::sail: UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
                 }
             }
         }
@@ -254,9 +254,9 @@ namespace hk::sail {
                 }
             } else if (hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).failed()) {
                 if (IsPreCalc) {
-                    diag::debugLog("hk::sail: ReadADRPGlobal symbol failed %x", *destSymbol);
+                    diag::logLine("hk::sail: ReadADRPGlobal symbol failed %x", *destSymbol);
                 } else {
-                    diag::debugLog("hk::sail: ReadADRPGlobal symbol failed %s", destSymbol);
+                    diag::logLine("hk::sail: ReadADRPGlobal symbol failed %s", destSymbol);
                 }
             }
 #else

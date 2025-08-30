@@ -78,7 +78,6 @@ namespace hk::sf {
         ~Service() {
             if (mOwnedHandle) {
                 svc::CloseHandle(mSession);
-                diag::debugLog("closed a handle :3");
             }
         }
 
@@ -333,9 +332,9 @@ namespace hk::sf {
             if (mPrintRequest) {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-                diag::debugLog("");
+                diag::logLine("");
                 for (int i = 0; i < writer.tell(); i += 16)
-                    diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                    diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                         buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
                         buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
@@ -413,9 +412,9 @@ namespace hk::sf {
             if (printResponse) {
                 u8 buf[256] = {};
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-                diag::debugLog("");
+                diag::logLine("");
                 for (int i = 0; i < (reader.tell() + dataWordsLeft * 4); i += 16)
-                    diag::debugLog("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                    diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                         buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
                         buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
                         buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
