@@ -26,7 +26,7 @@ namespace hk::ro {
             sModules[sNumModules++].mModule = rtldModule;
         }
 
-        diag::debugLog("hk::ro: %d modules collected from g_pAutoLoadList:", sNumModules);
+        diag::logLine("hk::ro: %d modules collected from g_pAutoLoadList:", sNumModules);
 
         std::sort(sModules, sModules + sNumModules, [](const RoModule& a, const RoModule& b) {
             if (a.getNnModule() == nullptr || a.getNnModule()->m_Base == 0 || b.getNnModule() == nullptr || b.getNnModule()->m_Base == 0)
@@ -56,25 +56,25 @@ namespace hk::ro {
                 const auto& rodata = module.rodata();
                 const auto& data = module.data();
 
-                diag::debugLog("Module[%d]:", i);
-                diag::debugLog("\tName: %s", module.getModuleName());
+                diag::logLine("Module[%d]:", i);
+                diag::logLine("\tName: %s", module.getModuleName());
                 if (module.getBuildId() != nullptr) {
                     const u8* d = module.getBuildId();
 
                     static_assert(cBuildIdSize == 0x10);
-                    diag::debugLog("\tBuildId: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (...)",
+                    diag::logLine("\tBuildId: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (...)",
                         d[0], d[1], d[2], d[3],
                         d[4], d[5], d[6], d[7],
                         d[8], d[9], d[10], d[11],
                         d[12], d[13], d[14], d[15]);
                 } else {
-                    diag::debugLog("\tBuildId: NotFound");
+                    diag::logLine("\tBuildId: NotFound");
                 }
-                diag::debugLog("\tRange: %p-%p", range.start(), range.end() - 1);
-                diag::debugLog("\tText: %p-%p", text.start(), text.end() - 1);
-                diag::debugLog("\tRodata: %p-%p", rodata.start(), rodata.end() - 1);
-                diag::debugLog("\tData/Bss: %p-%p", data.start(), data.end() - 1);
-                diag::debugLog("\tnn::ro::detail::RoModule*: %p", nnModule);
+                diag::logLine("\tRange: %p-%p", range.start(), range.end() - 1);
+                diag::logLine("\tText: %p-%p", text.start(), text.end() - 1);
+                diag::logLine("\tRodata: %p-%p", rodata.start(), rodata.end() - 1);
+                diag::logLine("\tData/Bss: %p-%p", data.start(), data.end() - 1);
+                diag::logLine("\tnn::ro::detail::RoModule*: %p", nnModule);
             }
         }
 

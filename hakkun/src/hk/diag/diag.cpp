@@ -61,8 +61,8 @@ File: %s:%d
         char headerMsgBuf[0x80];
         snprintf(headerMsgBuf, sizeof(headerMsgBuf), sAbortFormat, file, line);
 
-        debugLog(headerMsgBuf);
-        debugLog(userMsgBuf);
+        logLine(headerMsgBuf);
+        logLine(userMsgBuf);
 
         auto* module = ro::getSelfModule();
         if (module) {
