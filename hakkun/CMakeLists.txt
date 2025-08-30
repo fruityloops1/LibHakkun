@@ -12,6 +12,7 @@ set(SOURCES
     src/hk/init/moduleEntry.S
 
     src/hk/os/Libcxx.cpp
+    src/hk/os/Thread.cpp
 
     src/hk/ro/RoUtil.cpp
     src/hk/ro/RoModule.cpp
