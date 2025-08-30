@@ -79,38 +79,49 @@ File: %s:%d
     }
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    void debugLogNoLineImpl(const char* buf, size length) {
+    void logBuffer(const char* buf, size length) {
         ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), length});
         hkLogSink(buf, length);
     }
-    void debugLogNoLine(const char* fmt, ...) {
-        std::va_list args;
-        va_start(args, fmt);
-        size len = vsnprintf(nullptr, 0, fmt, args);
+
+    void logImpl(const char* fmt, std::va_list list) {
+        size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 1];
-        vsnprintf(buf, len + 1, fmt, args);
-        va_end(args);
+        vsnprintf(buf, len + 1, fmt, list);
 
         ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), len});
         hkLogSink(buf, len);
     }
-    void debugLogImpl(const char* buf, size length) {
-        ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), length});
-        hkLogSink(buf, length);
-        const char cNewline = '\n';
-        hkLogSink(&cNewline, 1);
-    }
-    void debugLog(const char* fmt, ...) {
+
+    void log(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
-        size len = vsnprintf(nullptr, 0, fmt, args);
-        char buf[len + 2];
-        vsnprintf(buf, len + 2, fmt, args);
+        logImpl(fmt, args);
         va_end(args);
+    }
+
+    void logLineImpl(const char* fmt, std::va_list list) {
+        size len = vsnprintf(nullptr, 0, fmt, list);
+        char buf[len + 2];
+        vsnprintf(buf, len + 2, fmt, list);
         ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), len});
 
         buf[len] = '\n';
         hkLogSink(buf, len + 1);
+    }
+
+    void logLine(const char* fmt, ...) {
+        std::va_list args;
+        va_start(args, fmt);
+        logLineImpl(fmt, args);
+        va_end(args);
+    }
+
+    void debugLog(const char *fmt, ...) {
+        std::va_list args;
+        va_start(args, fmt);
+        logLineImpl(fmt, args);
+        va_end(args);
     }
 #endif
 
