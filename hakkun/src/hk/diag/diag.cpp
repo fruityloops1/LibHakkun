@@ -1,5 +1,6 @@
 #include "hk/diag/diag.h"
 #include "hk/Result.h"
+#include "hk/diag/ipclogger.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
@@ -79,6 +80,7 @@ File: %s:%d
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void debugLogNoLineImpl(const char* buf, size length) {
+        ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), length});
         hkLogSink(buf, length);
     }
     void debugLogNoLine(const char* fmt, ...) {
@@ -89,9 +91,11 @@ File: %s:%d
         vsnprintf(buf, len + 1, fmt, args);
         va_end(args);
 
+        ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), len});
         hkLogSink(buf, len);
     }
     void debugLogImpl(const char* buf, size length) {
+        ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), length});
         hkLogSink(buf, length);
         const char cNewline = '\n';
         hkLogSink(&cNewline, 1);
@@ -103,8 +107,9 @@ File: %s:%d
         char buf[len + 2];
         vsnprintf(buf, len + 2, fmt, args);
         va_end(args);
-        buf[len] = '\n';
+        ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), len});
 
+        buf[len] = '\n';
         hkLogSink(buf, len + 1);
     }
 #endif
