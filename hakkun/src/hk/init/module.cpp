@@ -3,7 +3,8 @@
 #include "hk/ro/ModuleHeader.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/sail/init.h"
-#include "hk/svc/api.h"
+#include "hk/svc/cpu.h"
+#include "hk/svc/types.h"
 #include "rtld/RoModule.h"
 
 #ifdef HK_ADDON_HeapSourceBss
@@ -33,9 +34,9 @@ namespace hk::init {
 #ifdef HK_ADDON_HeapSourceBss
         mem::initializeMainHeap();
 #endif
-        callInitializers();
 
 #ifndef HK_STANDALONE
+        callInitializers();
         hkMain();
 #endif
     }
@@ -54,6 +55,9 @@ namespace nn::init {
         // if (notifyExceptionHandlerReady)
         //     notifyExceptionHandlerReady();
 
+        static hk::svc::ThreadType sMainThreadType;
+
+        hk::svc::getTLS()->nnsdkThread = &sMainThreadType;
         hk::diag::setCurrentThreadName("HkMain");
 
         if (callInitializers)

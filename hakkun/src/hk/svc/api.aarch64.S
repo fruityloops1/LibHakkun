@@ -12,6 +12,11 @@
 	.cfi_endproc
 .endm
 
+SVC_BEGIN _ZN2hk3svc9MapMemoryEmmm
+	svc 0x4
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjm
 	str x1, [sp, #-16]!
 	svc 0x6
@@ -32,12 +37,22 @@ SVC_BEGIN _ZN2hk3svc12CreateThreadEPjPFvmEmmii
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc11StartThreadEj
+	svc 0x9
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc10ExitThreadEv
 	svc #0xA
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc11SleepThreadEl
 	svc #0xB
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc11SignalEventEj
+	svc 0x11
 	ret
 SVC_END
 
@@ -51,6 +66,14 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc11CloseHandleEj
 	svc #0x16
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc19WaitSynchronizationEPiPKjil
+	str x0, [sp, #-16]!
+	svc 0x18
+	ldr x2, [sp], #16
+	str w1, [x2]
 	ret
 SVC_END
 
@@ -120,6 +143,16 @@ SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc14WaitForAddressEPKvNS0_15ArbitrationTypeEjm
+	svc 0x34
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc15SignalToAddressEPvNS0_10SignalTypeEjm
+	svc 0x35
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc13AcceptSessionEPjj
 	str x0, [sp, #-16]!
 	svc 0x41
@@ -149,6 +182,15 @@ SVC_BEGIN _ZN2hk3svc15ReplyAndReceiveEPjPKjjjm
 	svc 0x43
 	ldr x2, [sp], #16
 	str w1, [x2]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc11CreateEventEPjS1_
+	stp x0, x1, [sp, #-16]!
+	svc 0x45
+	ldp x3, x4, [sp], #16
+	str w1, [x3]
+	str w2, [x4]
 	ret
 SVC_END
 

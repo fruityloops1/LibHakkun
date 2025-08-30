@@ -9,14 +9,19 @@
 namespace hk::svc {
 
     Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
+    Result MapMemory(ptr dest, ptr source, size size);
+    Result UnmapMemory(ptr addr, ptr source, size size);
     hk_noreturn void ExitProcess();
-    Result CreateThread(Handle* outHandle, void (*func)(ptr arg), ptr arg, ptr stack_bottom, s32 priority, s32 coreId);
+    Result CreateThread(Handle* outHandle, ThreadFunc func, ptr arg, ptr stackTop, s32 priority, s32 coreId);
+    Result StartThread(Handle threadHandle);
     hk_noreturn void ExitThread();
     // values 0, -1, and -2 will yield the thread.
     // see https://switchbrew.org/wiki/SVC#SleepThread
     void SleepThread(s64 nanoseconds);
     Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
     Result CloseHandle(Handle handle);
+    Result SignalEvent(Handle handle);
+    Result ClearEvent(Handle handle);
     Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
     Result CancelSynchronization(Handle handle);
     Result ResetSignal(Handle handle);
@@ -28,17 +33,14 @@ namespace hk::svc {
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
-    Result GetInfo(u64* out, InfoType type, svc::Handle handle, u64 subType);
     Result AcceptSession(Handle* outSessionHandle, Handle portHandle);
     Result ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
     Result ReplyAndReceive(u32* outIndex, const Handle* handles, u32 handleCount, Handle replyHandle, u64 timeout);
-    Result InvalidateProcessDataCache(svc::Handle process, ptr addr, size size);
-    Result FlushProcessDataCache(svc::Handle process, ptr addr, size size);
-    Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
-    Result GetSystemInfo(u64* outInfo, svc::SystemInfoType infoType, svc::Handle handle, svc::PhysicalMemorySystemInfo infoSubType);
+    Result CreateEvent(Handle* outWriteHandle, Handle* outReadHandle);
     Result ManageNamedPort(Handle* outHandle, const char* name, s32 maxSessions);
-    Result MapProcessMemory(ptr dest, svc::Handle process, u64 source, size size);
     Result GetInfo(u64* out, InfoType type, Handle handle, u64 subType);
+    Result WaitForAddress(const void* address, ArbitrationType type, u32 value, u64 timeout);
+    Result SignalToAddress(void* address, SignalType type, u32 value, u64 timeout);
     Result InvalidateProcessDataCache(Handle process, ptr addr, size size);
     Result FlushProcessDataCache(Handle process, ptr addr, size size);
     Result DebugActiveProcess(Handle* outHandle, u64 processId);
@@ -64,6 +66,14 @@ namespace hk::svc {
         return Tuple<MemoryInfo, u32> { info, pageInfo };
     }
 
+    inline hk_alwaysinline ValueOrResult<Handle> CreateThread(void (*func)(ptr arg), ptr arg, ptr stackTop, s32 priority, s32 coreId) {
+        Handle outHandle;
+
+        HK_TRY(CreateThread(&outHandle, func, arg, stackTop, priority, coreId));
+
+        return outHandle;
+    }
+
     inline hk_alwaysinline ValueOrResult<Handle> CreateTransferMemory(ptr address, size size, MemoryPermission perm) {
         Handle outHandle;
 
@@ -86,6 +96,15 @@ namespace hk::svc {
         HK_TRY(WaitSynchronization(&outIdx, handles, numHandles, timeout));
 
         return outIdx;
+    }
+
+    inline hk_alwaysinline ValueOrResult<Tuple<Handle, Handle>> CreateEvent() {
+        Handle writeHandle;
+        Handle readHandle;
+
+        HK_TRY(CreateEvent(&writeHandle, &readHandle));
+
+        return Tuple<Handle, Handle>(writeHandle, readHandle);
     }
 
     inline hk_alwaysinline ValueOrResult<u64> GetInfo(InfoType type, Handle handle, u64 subType) {

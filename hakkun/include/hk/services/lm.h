@@ -6,7 +6,7 @@
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
-#include "hk/util/FixedCapacityArray.h"
+#include "hk/util/FixedVec.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/Stream.h"
 #include <alloca.h>
@@ -21,8 +21,8 @@ namespace hk::lm {
         Logger(sf::Service&& service)
             : sf::Service(std::forward<sf::Service>(service)) { };
 
-        util::FixedCapacityArray<u8, 4> encodeUleb128(u32 value) {
-            util::FixedCapacityArray<u8, 4> result;
+        util::FixedVec<u8, 4> encodeUleb128(u32 value) {
+            util::FixedVec<u8, 4> result;
 
             do {
                 u8 byte = value & 0x7F;

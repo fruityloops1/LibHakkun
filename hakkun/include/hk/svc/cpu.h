@@ -21,7 +21,7 @@ namespace hk::svc {
         return ptr;
     }
 
-    inline u32 loadExclusive(volatile u32* ptr) {
+    inline u32 loadExclusive(volatile const u32* ptr) {
         u32 value;
         asm volatile(
             "ldaxr %w[value], %[ptr]"
@@ -61,8 +61,8 @@ namespace hk::svc {
         return ptr;
     }
 
-    inline uint32_t loadExclusive(volatile uint32_t* ptr) {
-        uint32_t value;
+    inline uint32_t loadExclusive(volatile const u32* ptr) {
+        u32 value;
         asm volatile(
             "ldrex %0, [%1]"
             : "=r"(value)
@@ -71,8 +71,8 @@ namespace hk::svc {
         return value;
     }
 
-    inline bool storeExclusive(volatile uint32_t* ptr, uint32_t value) {
-        uint32_t result;
+    inline bool storeExclusive(volatile u32* ptr, u32 value) {
+        u32 result;
         asm volatile(
             "strex %0, %1, [%2]"
             : "=r"(result)

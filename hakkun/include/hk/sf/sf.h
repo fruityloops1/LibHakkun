@@ -8,7 +8,7 @@
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
-#include "hk/util/FixedCapacityArray.h"
+#include "hk/util/FixedVec.h"
 #include "hk/util/Lambda.h"
 #include "hk/util/Stream.h"
 #include <cstddef>
@@ -120,15 +120,15 @@ namespace hk::sf {
         u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
-        util::FixedCapacityArray<u32, 8> mObjects;
-        util::FixedCapacityArray<Handle, 8> mHipcCopyHandles;
-        util::FixedCapacityArray<Handle, 8> mHipcMoveHandles;
-        util::FixedCapacityArray<hipc::Static, 8> mHipcSendStatics;
-        util::FixedCapacityArray<hipc::Buffer, 8> mHipcSendBuffers;
-        util::FixedCapacityArray<hipc::Buffer, 8> mHipcReceiveBuffers;
-        util::FixedCapacityArray<hipc::Buffer, 8> mHipcExchangeBuffers;
-        util::FixedCapacityArray<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
-        util::FixedCapacityArray<u16, 8> mHipcOutPointerSizes;
+        util::FixedVec<u32, 8> mObjects;
+        util::FixedVec<Handle, 8> mHipcCopyHandles;
+        util::FixedVec<Handle, 8> mHipcMoveHandles;
+        util::FixedVec<hipc::Static, 8> mHipcSendStatics;
+        util::FixedVec<hipc::Buffer, 8> mHipcSendBuffers;
+        util::FixedVec<hipc::Buffer, 8> mHipcReceiveBuffers;
+        util::FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
+        util::FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
+        util::FixedVec<u16, 8> mHipcOutPointerSizes;
         std::span<const u8> mData = {};
 
         friend class Service;
@@ -353,10 +353,10 @@ namespace hk::sf {
 
     struct Response {
         Result result;
-        util::FixedCapacityArray<u32, 8> objects;
-        util::FixedCapacityArray<Handle, 8> hipcCopyHandles;
-        util::FixedCapacityArray<Handle, 8> hipcMoveHandles;
-        util::FixedCapacityArray<hipc::Static, 8> hipcSendStatics;
+        util::FixedVec<u32, 8> objects;
+        util::FixedVec<Handle, 8> hipcCopyHandles;
+        util::FixedVec<Handle, 8> hipcMoveHandles;
+        util::FixedVec<hipc::Static, 8> hipcSendStatics;
         std::optional<u64> pid;
         std::span<u8> data;
 

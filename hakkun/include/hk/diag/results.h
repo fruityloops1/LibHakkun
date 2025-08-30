@@ -12,4 +12,4 @@ namespace hk::diag {
     HK_DEFINE_RESULT(ValueDisowned, 12)
     HK_DEFINE_RESULT(NotAnNnsdkThread, 19)
 
-} // namespace hk::ro
+} // namespace hk::diag
