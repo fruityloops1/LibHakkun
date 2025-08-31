@@ -2,12 +2,12 @@
 
 #include <new>
 
-#include "gfx/ImGuiAllocator.h"
+#include "ImGuiBackendNvnImpl.cpp"
 #include "imgui.h"
 
 namespace hk::gfx {
 
-    //static_assert(sizeof(ImGuiBackendNvnImpl) == sizeof(ImGuiBackendNvn));
+    static_assert(sizeof(ImGuiBackendNvnImpl) == sizeof(ImGuiBackendNvn));
 
     ImGuiBackendNvn ImGuiBackendNvn::sInstance;
 

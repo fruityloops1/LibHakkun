@@ -15,7 +15,6 @@ set(SOURCES
     ${IMGUI_DIR}/imgui_demo.cpp
 
     src/hk/gfx/ImGuiBackendNvn.cpp
-    src/hk/gfx/ImGuiBackendNvnImpl.cpp
     )
 add_library(ImGui ${SOURCES})
 

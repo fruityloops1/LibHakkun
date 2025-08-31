@@ -2,10 +2,10 @@
 
 #include "hk/types.h"
 #include "hk/util/Math.h"
-#include "hk/gfx/ImGuiBackendNvnImpl.h"
 
 namespace hk::gfx {
-    constexpr static size cImGuiBackendNvnImplSize = sizeof(ImGuiBackendNvnImpl);
+    class ImGuiBackendNvnImpl;
+    constexpr static size cImGuiBackendNvnImplSize = 2232; // This needs to GO
 
     class ImGuiBackendNvn {
         u8 mStorage[cImGuiBackendNvnImplSize];
@@ -16,6 +16,14 @@ namespace hk::gfx {
         ImGuiBackendNvnImpl* get() { return reinterpret_cast<ImGuiBackendNvnImpl*>(mStorage); }
 
         ImGuiBackendNvn();
+
+        struct Allocator {
+            using Alloc = void* (*)(size, size);
+            using Free = void (*)(void*);
+
+            Alloc alloc = nullptr;
+            Free free = nullptr;
+        };
 
         void installHooks(bool initializeAutomatically = true);
 
