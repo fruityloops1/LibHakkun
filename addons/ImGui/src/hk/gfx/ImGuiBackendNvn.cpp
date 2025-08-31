@@ -1,18 +1,20 @@
 #include "hk/gfx/ImGuiBackendNvn.h"
-
 #include <new>
-
-#include "gfx/ImGuiAllocator.h"
+#include "gfx/ImGuiBackendNvnImpl.h"
 #include "imgui.h"
 
 namespace hk::gfx {
 
-    //static_assert(sizeof(ImGuiBackendNvnImpl) == sizeof(ImGuiBackendNvn));
+    static_assert(sizeof(ImGuiBackendNvnImpl) == sizeof(ImGuiBackendNvn));
 
     ImGuiBackendNvn ImGuiBackendNvn::sInstance;
 
     ImGuiBackendNvn::ImGuiBackendNvn() {
         new (get()) ImGuiBackendNvnImpl;
+    }
+
+    bool ImGuiBackendNvn::isInitialized() {
+        return get()->isInitialized();
     }
 
     bool ImGuiBackendNvn::tryInitialize() {
@@ -33,7 +35,6 @@ namespace hk::gfx {
     void ImGuiBackendNvn::setPrevTexturePool(void* pool) { get()->setPrevTexturePool(static_cast<nvn::TexturePool*>(pool)); }
     void ImGuiBackendNvn::setPrevSamplerPool(void* pool) { get()->setPrevSamplerPool(static_cast<nvn::SamplerPool*>(pool)); }
     void* ImGuiBackendNvn::getDevice() { return get()->getDevice(); }
-    bool ImGuiBackendNvn::isInitialized() { return get()->isInitialized(); }
 
     void ImGuiBackendNvn::setResolution(const util::Vector2f& res) {
         ImGui::GetIO().DisplaySize = ImVec2(res.x, res.y);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hk/gfx/ImGuiAllocator.h"
+#include "hk/gfx/ImGuiAlloc.h"
 #include "hk/gfx/Shader.h"
 #include "hk/gfx/Texture.h"
 #include "hk/types.h"
@@ -8,7 +8,6 @@
 #include "imgui.h"
 #include "hk/nvn/MemoryBuffer.h"
 #include "nvn/nvn_Cpp.h"
-#include "nvn/nvn_CppMethods.h"
 
 namespace hk::gfx {
     class ImGuiBackendNvnImpl {
@@ -34,19 +33,20 @@ namespace hk::gfx {
         bool mInitialized = false;
 
     public:
+        bool isInitialized();
         void setAllocator(const Allocator& allocator);
         void setDevice(nvn::Device* device);
         void setPrevTexturePool(nvn::TexturePool* pool);
         void setPrevSamplerPool(nvn::SamplerPool* pool);
         nvn::Device* getDevice();
-        bool isInitialized();
         bool tryInitialize();
         void initBuffers(size vertSize, size idxSize);
         void initTexture(bool useLinearFilter = true);
-        void initialize();
         void bindTexture(nvn::CommandBuffer* cmdBuffer, const TextureHandle& tex);
         void setDrawState(nvn::CommandBuffer* cmdBuffer);
+        void initialize();
         void update();
         void draw(const ImDrawData& drawData, nvn::CommandBuffer* cmdBuffer);
     };
-}
+
+} // namespace hk::gfx

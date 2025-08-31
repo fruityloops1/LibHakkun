@@ -1,9 +1,20 @@
 #include "hk/gfx/ImGuiBackendNvnImpl.h"
+#include "gfx/ImGuiAlloc.h"
+#include "gfx/Ubo.h"
+#include "hk/diag/diag.h"
+#include "hk/gfx/ImGuiBackendNvn.h"
+#include "hk/gfx/Shader.h"
+#include "hk/gfx/Texture.h"
+#include "hk/types.h"
+#include "hk/util/Math.h"
+#include "hk/util/Storage.h"
+#include "imgui.h"
+#include "nvn/MemoryBuffer.h"
+#include "nvn/nvn_Cpp.h"
+#include "nvn/nvn_CppMethods.h"
 #include "embed_shader.h"
 
 namespace hk::gfx {
-    size ImGuiBackendNvnImpl::mShaderBufferSize = alignUpPage(shader_bin_size);
-
     static nvn::VertexAttribState* getImGuiAttribStates() {
         static nvn::VertexAttribState states[3];
 
@@ -20,12 +31,14 @@ namespace hk::gfx {
         return &state;
     }
 
+    size ImGuiBackendNvnImpl::mShaderBufferSize =  alignUpPage(shader_bin_size);
+
+    bool ImGuiBackendNvnImpl::isInitialized() { return mInitialized; } 
     void ImGuiBackendNvnImpl::setAllocator(const Allocator& allocator) { mAllocator = allocator; }
     void ImGuiBackendNvnImpl::setDevice(nvn::Device* device) { mDevice = device; }
     void ImGuiBackendNvnImpl::setPrevTexturePool(nvn::TexturePool* pool) { mPrevTexturePool = pool; }
     void ImGuiBackendNvnImpl::setPrevSamplerPool(nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
     nvn::Device* ImGuiBackendNvnImpl::getDevice() { return mDevice; }
-    bool ImGuiBackendNvnImpl::isInitialized() { return mInitialized; }
 
     bool ImGuiBackendNvnImpl::tryInitialize() {
         if (mInitialized)
@@ -114,6 +127,9 @@ namespace hk::gfx {
         io.BackendPlatformName = "Horizon";
         io.BackendRendererName = "HkAddon ImGuiNvn";
         io.DisplaySize = { 1920, 1080 };
+        io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
 
         mShader.create((u8*)shader_bin, mShaderBufferSize, mDevice, getImGuiAttribStates(), 3, getImGuiStreamState(), "hk::gfx::ImGuiBackendNvnImpl");
 
@@ -163,7 +179,7 @@ namespace hk::gfx {
     }
 
     void ImGuiBackendNvnImpl::update() { }
-
+    
     void ImGuiBackendNvnImpl::draw(const ImDrawData& drawData, nvn::CommandBuffer* cmdBuffer) {
         if (drawData.TotalVtxCount == 0)
             return;
@@ -204,12 +220,13 @@ namespace hk::gfx {
                 const util::Vector2f size = max - min;
 
                 cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
-                
+
                 #if IMGUI_VERSION_NUM>=19200
                 TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
                 #else
                 TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
                 #endif
+
                 if (texHandle != nullptr) {
                     bindTexture(cmdBuffer, *texHandle);
                 } else {

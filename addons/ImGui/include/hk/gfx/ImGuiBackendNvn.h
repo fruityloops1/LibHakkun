@@ -1,8 +1,9 @@
 #pragma once
 
+#include "hk/gfx/ImGuiBackendNvnImpl.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
-#include "hk/gfx/ImGuiBackendNvnImpl.h"
+#include "hk/gfx/ImGuiAlloc.h"
 
 namespace hk::gfx {
     constexpr static size cImGuiBackendNvnImplSize = sizeof(ImGuiBackendNvnImpl);
@@ -16,6 +17,8 @@ namespace hk::gfx {
         ImGuiBackendNvnImpl* get() { return reinterpret_cast<ImGuiBackendNvnImpl*>(mStorage); }
 
         ImGuiBackendNvn();
+
+        bool isInitialized();
 
         void installHooks(bool initializeAutomatically = true);
 
@@ -31,7 +34,6 @@ namespace hk::gfx {
         void setPrevSamplerPool(void* pool /* nvn::SamplerPool* */);
         void setResolution(const util::Vector2f& res);
         void* /* nvn::Device* */ getDevice();
-        bool isInitialized();
 
         static ImGuiBackendNvn* instance() { return &sInstance; }
     };
