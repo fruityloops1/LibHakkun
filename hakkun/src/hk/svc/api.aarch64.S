@@ -17,6 +17,11 @@ SVC_BEGIN _ZN2hk3svc9MapMemoryEmmm
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc11UnmapMemoryEmmm
+	svc 0x5
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11QueryMemoryEPNS0_10MemoryInfoEPjm
 	str x1, [sp, #-16]!
 	svc 0x6
@@ -29,7 +34,7 @@ SVC_BEGIN _ZN2hk3svc11ExitProcessEv
 	svc #0x7
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc12CreateThreadEPjPFvmEmmii
+SVC_BEGIN _ZN2hk3svc12CreateThreadEPNS_6HandleEPFvmEmmii
 	str x0, [sp, #-16]!
 	svc #0x8
 	ldr x2, [sp], #16
@@ -37,7 +42,7 @@ SVC_BEGIN _ZN2hk3svc12CreateThreadEPjPFvmEmmii
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc11StartThreadEj
+SVC_BEGIN _ZN2hk3svc11StartThreadENS_6HandleE
 	svc 0x9
 	ret
 SVC_END
@@ -51,12 +56,17 @@ SVC_BEGIN _ZN2hk3svc11SleepThreadEl
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc17SetThreadCoreMaskENS_6HandleEij
+	svc 0xF
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc11SignalEventEj
 	svc 0x11
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjmmNS0_16MemoryPermissionE
+SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPNS_6HandleEmmNS0_16MemoryPermissionE
 	str x0, [sp, #-16]!
 	svc #0x15
 	ldr x2, [sp], #16
@@ -64,12 +74,12 @@ SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjmmNS0_16MemoryPermissionE
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc11CloseHandleEj
+SVC_BEGIN _ZN2hk3svc11CloseHandleENS_6HandleE
 	svc #0x16
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc19WaitSynchronizationEPiPKjil
+SVC_BEGIN _ZN2hk3svc19WaitSynchronizationEPiPKNS_6HandleEil
 	str x0, [sp, #-16]!
 	svc 0x18
 	ldr x2, [sp], #16
@@ -77,7 +87,7 @@ SVC_BEGIN _ZN2hk3svc19WaitSynchronizationEPiPKjil
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjmj
+SVC_BEGIN _ZN2hk3svc13ArbitrateLockENS_6HandleEmj
 	svc 0x1A
 	ret
 SVC_END
@@ -87,7 +97,7 @@ SVC_BEGIN _ZN2hk3svc15ArbitrateUnlockEm
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc18ConnectToNamedPortEPjPKc
+SVC_BEGIN _ZN2hk3svc18ConnectToNamedPortEPNS_6HandleEPKc
 	str x0, [sp, #-16]!
 	svc 0x1F
 	ldr x2, [sp], #16
@@ -111,7 +121,7 @@ SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPh
   ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc15SendSyncRequestEj
+SVC_BEGIN _ZN2hk3svc15SendSyncRequestENS_6HandleE
   svc 0x21
   ret
 SVC_END
@@ -135,7 +145,7 @@ SVC_BEGIN _ZN2hk3svc19ReturnFromExceptionENS_6ResultE
 	svc 0x28
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeEjm
+SVC_BEGIN _ZN2hk3svc7GetInfoEPmNS0_8InfoTypeENS_6HandleEm
 	str x0, [sp, #-16]!
 	svc 0x29
 	ldr x2, [sp], #16
@@ -194,9 +204,35 @@ SVC_BEGIN _ZN2hk3svc11CreateEventEPjS1_
 	ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc18DebugActiveProcessEPNS_6HandleEm
+	str x0, [sp, #-16]!
+	svc 0x60
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc13GetDebugEventEPNS0_14DebugEventInfoENS_6HandleE
+	svc 0x63
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc18ContinueDebugEventENS_6HandleEjPKmi
+	svc 0x64
+	ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc14GetProcessListEPiPmi
 	str x0, [sp, #-16]!
 	svc 0x65
+	ldr x2, [sp], #16
+	str w1, [x2]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc23QueryDebugProcessMemoryEPNS0_10MemoryInfoEPjNS_6HandleEm
+	str x1, [sp, #-16]!
+	svc 0x69
 	ldr x2, [sp], #16
 	str w1, [x2]
 	ret
@@ -218,7 +254,7 @@ SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEmjmm
+SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEmNS_6HandleEmm
 	svc 0x74
 	ret
 SVC_END

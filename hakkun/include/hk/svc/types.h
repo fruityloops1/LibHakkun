@@ -302,7 +302,7 @@ namespace hk::svc {
         };
     };
 
-    enum PseudoHandle : svc::Handle {
+    enum PseudoHandle : u32 {
         CurrentThread = 0xFFFF8000,
         CurrentProcess = 0xFFFF8001,
     };

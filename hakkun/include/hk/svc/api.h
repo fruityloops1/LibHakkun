@@ -18,6 +18,7 @@ namespace hk::svc {
     // values 0, -1, and -2 will yield the thread.
     // see https://switchbrew.org/wiki/SVC#SleepThread
     void SleepThread(s64 nanoseconds);
+    Result SetThreadCoreMask(Handle handle, s32 preferredCore, u32 mask);
     Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
     Result CloseHandle(Handle handle);
     Result SignalEvent(Handle handle);
@@ -121,6 +122,23 @@ namespace hk::svc {
         HK_TRY(DebugActiveProcess(&outHandle, processId));
 
         return outHandle;
+    }
+
+    inline hk_alwaysinline ValueOrResult<DebugEventInfo> GetDebugEvent(Handle debugHandle) {
+        DebugEventInfo info;
+
+        HK_TRY(GetDebugEvent(&info, debugHandle));
+
+        return info;
+    }
+
+    inline hk_alwaysinline ValueOrResult<Tuple<MemoryInfo, u32>> QueryDebugProcessMemory(Handle debugHandle, ptr address) {
+        MemoryInfo info;
+        u32 pageInfo;
+
+        HK_TRY(QueryDebugProcessMemory(&info, &pageInfo, debugHandle, address));
+
+        return Tuple<MemoryInfo, u32> { info, pageInfo };
     }
 
     inline hk_alwaysinline ValueOrResult<u64> GetSystemInfo(SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType) {

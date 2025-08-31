@@ -102,7 +102,15 @@ namespace hk {
 
     constexpr bool is64Bit() { return !is32Bit(); }
 
-    using Handle = u32;
+    struct Handle {
+        u32 value = 0;
+
+        constexpr Handle() = default;
+        constexpr Handle(u32 value)
+            : value(value) { }
+
+        constexpr operator u32() const { return value; }
+    };
 
     constexpr size cPageSize = 4_KB;
 
