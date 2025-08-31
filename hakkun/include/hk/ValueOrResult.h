@@ -114,16 +114,30 @@ namespace hk {
         if (_result_temp.succeeded())                                                   \
             return (_ValueOrResult_T)_hk_unwrap_v;                                      \
         else {                                                                          \
-            ::hk::diag::abortImpl(                                                      \
-                ::hk::svc::BreakReason_User,                                            \
-                _result_temp,                                                           \
-                __FILE__,                                                               \
-                __LINE__,                                                               \
-                ::hk::diag::cAbortUnlessResultFormat,                                   \
-                _result_temp.getModule() + 2000,                                        \
-                _result_temp.getDescription(),                                          \
-                _result_temp.getValue(),                                                \
-                "HK_UNWRAP(" #VALUE ")");                                               \
+            const char* _result_temp_name = ::hk::diag::getResultName(_result_temp);    \
+            if (_result_temp_name != nullptr) {                                         \
+                ::hk::diag::abortImpl(                                                  \
+                    ::hk::svc::BreakReason_User,                                        \
+                    _result_temp,                                                       \
+                    __FILE__,                                                           \
+                    __LINE__,                                                           \
+                    ::hk::diag::cAbortUnlessResultFormatWithName,                       \
+                    _result_temp.getModule() + 2000,                                    \
+                    _result_temp.getDescription(),                                      \
+                    _result_temp_name,                                                  \
+                    "HK_UNWRAP(" #VALUE ")");                                           \
+            } else {                                                                    \
+                ::hk::diag::abortImpl(                                                  \
+                    ::hk::svc::BreakReason_User,                                        \
+                    _result_temp,                                                       \
+                    __FILE__,                                                           \
+                    __LINE__,                                                           \
+                    ::hk::diag::cAbortUnlessResultFormat,                               \
+                    _result_temp.getModule() + 2000,                                    \
+                    _result_temp.getDescription(),                                      \
+                    _result_temp.getValue(),                                            \
+                    "HK_UNWRAP(" #VALUE ")");                                           \
+            }                                                                           \
         }                                                                               \
     })()
 

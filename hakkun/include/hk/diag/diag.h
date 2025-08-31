@@ -8,6 +8,12 @@ namespace hk::diag {
 
     Result setCurrentThreadName(const char* name);
 
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+    const char* getResultName(hk::Result result);
+#else
+    hk_alwaysinline inline const char* getResultName(hk::Result result) { return nullptr; }
+#endif
+
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 
@@ -18,6 +24,11 @@ AssertionFailed: %s
     constexpr char cAbortUnlessResultFormat[] =
         R"(
 ResultAbort (%04d-%04d/0x%x) [from %s]
+)";
+
+    constexpr char cAbortUnlessResultFormatWithName[] =
+        R"(
+ResultAbort (%04d-%04d/%s) [from %s]
 )";
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
@@ -93,21 +104,35 @@ ResultAbort (%04d-%04d/0x%x) [from %s]
         }                                         \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT)                     \
-    do {                                              \
-        const ::hk::Result _result_temp = RESULT;     \
-        if (_result_temp.failed()) {                  \
-            ::hk::diag::abortImpl(                    \
-                ::hk::svc::BreakReason_User,          \
-                _result_temp,                         \
-                __FILE__,                             \
-                __LINE__,                             \
-                ::hk::diag::cAbortUnlessResultFormat, \
-                _result_temp.getModule() + 2000,      \
-                _result_temp.getDescription(),        \
-                _result_temp.getValue(),              \
-                #RESULT);                             \
-        }                                             \
+#define HK_ABORT_UNLESS_R(RESULT)                                                    \
+    do {                                                                             \
+        const ::hk::Result _result_temp = RESULT;                                    \
+        if (_result_temp.failed()) {                                                 \
+            const char* _result_temp_name = ::hk::diag::getResultName(_result_temp); \
+            if (_result_temp_name != nullptr) {                                      \
+                ::hk::diag::abortImpl(                                               \
+                    ::hk::svc::BreakReason_User,                                     \
+                    _result_temp,                                                    \
+                    __FILE__,                                                        \
+                    __LINE__,                                                        \
+                    ::hk::diag::cAbortUnlessResultFormatWithName,                    \
+                    _result_temp.getModule() + 2000,                                 \
+                    _result_temp.getDescription(),                                   \
+                    _result_temp_name,                                               \
+                    #RESULT);                                                        \
+            } else {                                                                 \
+                ::hk::diag::abortImpl(                                               \
+                    ::hk::svc::BreakReason_User,                                     \
+                    _result_temp,                                                    \
+                    __FILE__,                                                        \
+                    __LINE__,                                                        \
+                    ::hk::diag::cAbortUnlessResultFormat,                            \
+                    _result_temp.getModule() + 2000,                                 \
+                    _result_temp.getDescription(),                                   \
+                    _result_temp.getValue(),                                         \
+                    #RESULT);                                                        \
+            }                                                                        \
+        }                                                                            \
     } while (0)
 
 #endif

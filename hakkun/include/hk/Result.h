@@ -74,12 +74,14 @@ namespace hk {
  */
 #define HK_DEFINE_RESULT_RANGE(NAME, MIN, MAX) using ResultRange##NAME = ::hk::ResultRange<::hk::ResultV<_hk_result_id_namespace::module, MIN>().getValue(), ::hk::ResultV<_hk_result_id_namespace::module, MAX>().getValue()>;
 
+#ifndef HK_DEFINE_RESULT
 /**
  * @brief Define a result type for the current module.
  *
  */
 #define HK_DEFINE_RESULT(NAME, DESCRIPTION) \
     using Result##NAME = ::hk::ResultV<_hk_result_id_namespace::module, DESCRIPTION>;
+#endif
 
     template <typename ResultType>
     hk_alwaysinline bool isResult(Result value) {

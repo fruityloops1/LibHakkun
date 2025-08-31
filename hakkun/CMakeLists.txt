@@ -46,6 +46,7 @@ add_library(LibHakkun ${SOURCES})
 add_library(LibHakkunForModule OBJECT
     src/hk/diag/diag.cpp
     src/hk/diag/ipclogger.cpp
+    src/hk/diag/ResultName.cpp
     
     src/hk/init/module.cpp
 )
