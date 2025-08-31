@@ -38,4 +38,10 @@ namespace hk::sf {
         };
     }
 
+    template <typename T, typename... Args>
+    ValueOrResult<T> invokeSimple(sf::Service& service, s32 id, const Args&... args) {
+        auto input = packInput(args...);
+        return service.invokeRequest(sf::Request(&service, id, &input), simpleDataHandler<T>());
+    }
+
 } // namespace hk::sf
