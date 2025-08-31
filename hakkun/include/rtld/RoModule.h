@@ -51,7 +51,7 @@ namespace nn::ro::detail {
 #ifdef __RTLD_PAST_19XX__
         bool m_IsPltRela;
         uintptr_t m_Base;
-        Elf_Dyn* m_pDynamicSection;
+        const Elf_Dyn* m_pDynamicSection;
 #else
         uintptr_t m_Base;
         const Elf_Dyn* m_pDynamicSection;
