@@ -2,10 +2,8 @@
 
 #include "hk/svc/api.h"
 #include "hk/svc/cpu.h"
-#include "hk/svc/results.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
-#include <limits>
 
 namespace hk::os {
 
@@ -25,17 +23,17 @@ namespace hk::os {
 
         Result clear() {
             if (not svc::storeExclusive(&mValue, cEmpty))
-                return svc::SignalToAddress(&mValue, svc::SignalType::Signal, cEmpty, std::numeric_limits<s64>::max());
+                return svc::SignalToAddress(&mValue, svc::SignalType::Signal, cEmpty, -1);
             return ResultSuccess();
         }
 
         Result signal() {
             if (not svc::storeExclusive(&mValue, cSignaled))
-                return svc::SignalToAddress(&mValue, svc::SignalType::Signal, cSignaled, std::numeric_limits<s64>::max());
+                return svc::SignalToAddress(&mValue, svc::SignalType::Signal, cSignaled, -1);
             return ResultSuccess();
         }
 
-        Result wait(s64 timeout = std::numeric_limits<s64>::max()) {
+        Result wait(s64 timeout = -1) {
             if (svc::loadExclusive(&mValue) == cSignaled) {
                 if constexpr (AutoClear)
                     return clear();

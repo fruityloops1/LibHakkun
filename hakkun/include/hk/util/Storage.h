@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/diag/diag.h"
 #include "hk/types.h"
 #include <new>
 #include <utility>
@@ -40,7 +41,7 @@ namespace hk::util {
         }
 
         void destroy() {
-            // assert(mAlive)
+            HK_ASSERT(mAlive);
             destroyImpl();
         }
 
@@ -54,12 +55,12 @@ namespace hk::util {
 
         template <typename... Args>
         void create(Args&&... args) {
-            // assert(!mAlive);
+            HK_ASSERT(!mAlive);
             createImpl(std::forward<Args>(args)...);
         }
 
         T* get() {
-            // assert(mAlive);
+            HK_ASSERT(mAlive);
             return getUnsafe();
         }
 

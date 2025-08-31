@@ -3,7 +3,6 @@
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
-#include <limits>
 
 namespace hk::os {
 
@@ -24,7 +23,7 @@ namespace hk::os {
             return svc::SignalEvent(mWriteHandle);
         }
 
-        Result wait(s64 timeout = std::numeric_limits<s64>::max()) const {
+        Result wait(s64 timeout = -1) const {
             return svc::WaitSynchronization(&mReadHandle, 1, timeout);
         }
 

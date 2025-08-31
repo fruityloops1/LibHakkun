@@ -46,10 +46,10 @@ namespace hk::os {
             const Handle currentThread = getCurrentThreadHandle();
 
             while (true) {
-                u32 value = svc::loadExclusive(&mValue);
+                u32 value = svc::loadExclusive(cast<volatile const u32*>(&mValue));
 
                 if (value == cInvalidHandle) {
-                    if (svc::storeExclusive(&mValue, currentThread))
+                    if (svc::storeExclusive(cast<volatile u32*>(&mValue), currentThread))
                         return;
                     continue;
                 }
@@ -60,7 +60,7 @@ namespace hk::os {
                 }
 
                 if ((value & cWaitMask) == 0) {
-                    if (!svc::storeExclusive(&mValue, value | cWaitMask))
+                    if (!svc::storeExclusive(cast<volatile u32*>(&mValue), value | cWaitMask))
                         continue;
                 } else
                     svc::clearExclusive();
@@ -71,17 +71,17 @@ namespace hk::os {
 
         bool tryLock() {
             const Handle currentThread = getCurrentThreadHandle();
-            u32 value = svc::loadExclusive(&mValue);
+            u32 value = svc::loadExclusive(cast<volatile const u32*>(&mValue));
 
             while (true) {
-                u32 value = svc::loadExclusive(&mValue);
+                u32 value = svc::loadExclusive(cast<volatile const u32*>(&mValue));
 
                 if (value != cInvalidHandle) {
                     svc::clearExclusive();
                     return false;
                 }
 
-                if (svc::storeExclusive(&mValue, currentThread))
+                if (svc::storeExclusive(cast<volatile u32*>(&mValue), currentThread))
                     return true;
             }
         }
@@ -90,14 +90,14 @@ namespace hk::os {
             const Handle currentThread = getCurrentThreadHandle();
 
             while (true) {
-                u32 value = svc::loadExclusive(&mValue);
+                u32 value = svc::loadExclusive(cast<volatile const u32*>(&mValue));
 
                 if ((value & ~cWaitMask) != currentThread) {
                     svc::clearExclusive();
                     break;
                 }
 
-                if (svc::storeExclusive(&mValue, cInvalidHandle)) {
+                if (svc::storeExclusive(cast<volatile u32*>(&mValue), cInvalidHandle)) {
                     if (value & cWaitMask)
                         hk::svc::ArbitrateUnlock(uintptr_t(&mValue));
                     return;

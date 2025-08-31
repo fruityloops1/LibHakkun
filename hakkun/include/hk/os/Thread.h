@@ -45,6 +45,15 @@ namespace hk::os {
             this->handle = HK_UNWRAP(svc::CreateThread(threadEntry, ptr(this), mStackMap + mStackSize, priority, coreId));
         }
 
+        ~Thread() {
+            if (mOwnedStack != 0)
+                free(cast<void*>(mOwnedStack));
+            if (this->handle != 0)
+                svc::CloseHandle(this->handle);
+            if (mStackMap != 0)
+                svc::UnmapMemory(mStackMap, mStack, mStackSize);
+        }
+
         Result start() {
             return svc::StartThread(this->handle);
         }
@@ -53,13 +62,8 @@ namespace hk::os {
             strncpy(this->threadName, name, sizeof(this->threadName));
         }
 
-        ~Thread() {
-            if (mOwnedStack != 0)
-                free(cast<void*>(mOwnedStack));
-            if (this->handle != 0)
-                svc::CloseHandle(this->handle);
-            if (mStackMap != 0)
-                svc::UnmapMemory(mStackMap, mStack, mStackSize);
+        Result join(s64 timeout = -1) const {
+            return svc::WaitSynchronization(&this->handle, 1, timeout);
         }
     };
 
