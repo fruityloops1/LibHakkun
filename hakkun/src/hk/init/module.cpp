@@ -34,9 +34,9 @@ namespace hk::init {
 #ifdef HK_ADDON_HeapSourceBss
         mem::initializeMainHeap();
 #endif
+        callInitializers();
 
 #ifndef HK_STANDALONE
-        callInitializers();
         hkMain();
 #endif
     }
