@@ -61,6 +61,7 @@ namespace hk::gfx {
         void setPrevTexturePool(nvn::TexturePool* pool) { mPrevTexturePool = pool; }
         void setPrevSamplerPool(nvn::SamplerPool* pool) { mPrevSamplerPool = pool; }
         nvn::Device* getDevice() { return mDevice; }
+        bool isInitialized() { return mInitialized; }
 
         bool tryInitialize() {
             if (mInitialized)
