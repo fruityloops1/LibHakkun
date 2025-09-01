@@ -25,34 +25,34 @@ namespace hk::pm {
             return debugProcesses.size();
         }
 
-        void startProcess(u64 pid) {
-            HK_ABORT_UNLESS_R(invokeRequest(sf::Request(this, 1, &pid)));
+        Result startProcess(u64 pid) {
+            return sf::invokeSimpleVoid(*this, 1, &pid);
         }
 
-        u64 getProcessId(u64 titleId) {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 2, titleId));
+        ValueOrResult<u64> getProcessId(u64 titleId) {
+            return sf::invokeSimple<u64>(*this, 2, titleId);
         }
 
-        Handle hookToCreateProcess(u64 titleId) {
+        ValueOrResult<Handle> hookToCreateProcess(u64 titleId) {
             auto request = sf::Request(this, 3, &titleId);
-            return HK_UNWRAP(invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); }));
+            return invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); });
         }
 
-        u64 getApplicationProcessId() {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 4));
+        ValueOrResult<u64> getApplicationProcessId() {
+            return sf::invokeSimple<u64>(*this, 4);
         }
     
-        Handle hookToCreateApplicationProcess() {
+        ValueOrResult<Handle> hookToCreateApplicationProcess() {
             auto request = sf::Request(this, 5);
-            return HK_UNWRAP(invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); }));
+            return invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); });
         }
 
         void clearHook(u32 bitflags) {
-            HK_ABORT_UNLESS_R(invokeRequest(sf::Request(this, 6, &bitflags)));
+            HK_ABORT_UNLESS_R(sf::invokeSimpleVoid(*this, 6, &bitflags));
         }
 
-        u64 getProgramId(u64 pid) {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 7, pid));
+        ValueOrResult<u64> getProgramId(u64 pid) {
+            return sf::invokeSimple<u64>(*this, 7, pid);
         }
     };
 
