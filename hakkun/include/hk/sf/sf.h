@@ -434,11 +434,17 @@ namespace hk::sf {
 
     template <typename ResponseHandler>
     inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> Service::invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler) {
+        using Return = typename util::FunctionTraits<ResponseHandler>::ReturnType;
+
         request.writeToTls(this, tag);
         HK_TRY(svc::SendSyncRequest(mSession));
         auto response = Response::readFromTls(this, request.mPrintResponse);
         HK_TRY(response.result);
-        return handler(response);
+
+        if constexpr (std::is_same_v<Return, void>)
+            return ResultSuccess();
+        else
+            return handler(response);
     }
 
     inline Result Service::invoke(cmif::MessageTag tag, Request&& request) {

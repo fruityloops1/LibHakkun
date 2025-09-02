@@ -5,6 +5,7 @@
 #include "hk/types.h"
 #include "hk/util/TypeName.h"
 #include <array>
+#include <type_traits>
 
 namespace hk::sf {
 
@@ -31,23 +32,20 @@ namespace hk::sf {
     }
 
     template <typename T>
-    auto simpleDataHandler() {
-        return [](sf::Response& response) -> T {
-            HK_ABORT_UNLESS(response.data.size_bytes() >= sizeof(T), "hk::sf::simpleDataHandler: response too small (%zu < sizeof(%s)==%zu)", response.data.size_bytes(), util::getTypeName<T>(), sizeof(T));
-            return *cast<T*>(response.data.data());
-        };
+    constexpr auto simpleDataHandler() {
+        if constexpr (std::is_same_v<T, void>)
+            return [](sf::Response& response) -> void { };
+        else
+            return [](sf::Response& response) -> T {
+                HK_ABORT_UNLESS(response.data.size_bytes() >= sizeof(T), "hk::sf::simpleDataHandler: response too small (%zu < sizeof(%s)==%zu)", response.data.size_bytes(), util::getTypeName<T>(), sizeof(T));
+                return *cast<T*>(response.data.data());
+            };
     }
 
-    template <typename T, typename... Args>
+    template <typename T = void, typename... Args>
     ValueOrResult<T> invokeSimple(sf::Service& service, s32 id, const Args&... args) {
         auto input = packInput(args...);
         return service.invokeRequest(sf::Request(&service, id, &input), simpleDataHandler<T>());
-    }
-
-    template <typename... Args>
-    Result invokeSimpleVoid(sf::Service& service, s32 id, const Args&... args) {
-        auto input = packInput(args...);
-        return service.invokeRequest(sf::Request(&service, id, &input));
     }
 
 } // namespace hk::sf

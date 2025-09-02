@@ -26,7 +26,7 @@ namespace hk::pm {
         }
 
         Result startProcess(u64 pid) {
-            return sf::invokeSimpleVoid(*this, 1, &pid);
+            return sf::invokeSimple(*this, 1, &pid);
         }
 
         ValueOrResult<u64> getProcessId(u64 titleId) {
@@ -35,20 +35,20 @@ namespace hk::pm {
 
         ValueOrResult<Handle> hookToCreateProcess(u64 titleId) {
             auto request = sf::Request(this, 3, &titleId);
-            return invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); });
+            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
         }
 
         ValueOrResult<u64> getApplicationProcessId() {
             return sf::invokeSimple<u64>(*this, 4);
         }
-    
+
         ValueOrResult<Handle> hookToCreateApplicationProcess() {
             auto request = sf::Request(this, 5);
-            return invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); });
+            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
         }
 
         void clearHook(u32 bitflags) {
-            HK_ABORT_UNLESS_R(sf::invokeSimpleVoid(*this, 6, &bitflags));
+            HK_ABORT_UNLESS_R(sf::invokeSimple(*this, 6, &bitflags));
         }
 
         ValueOrResult<u64> getProgramId(u64 pid) {
