@@ -59,6 +59,13 @@ namespace hk::util {
             createImpl(std::forward<Args>(args)...);
         }
 
+        T take() {
+            HK_ASSERT(mAlive);
+            T value = move(*getUnsafe());
+            destroyImpl();
+            return move(value);
+        }
+
         T* get() {
             HK_ASSERT(mAlive);
             return getUnsafe();
