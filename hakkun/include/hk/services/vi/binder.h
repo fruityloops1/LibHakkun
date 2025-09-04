@@ -11,7 +11,7 @@ namespace hk::vi::binder {
         u32 mId;
 
         Result adjustRefCount(s32 adjustBy, s32 type) {
-            return sf::invokeSimpleVoid(*this, 1, mId, adjustBy, type);
+            return sf::invokeSimple(*this, 1, mId, adjustBy, type);
         }
 
     public:

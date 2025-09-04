@@ -57,11 +57,11 @@ namespace hk::vi {
         }
 
         Result closeDisplay(Display& display) {
-            return sf::invokeSimpleVoid(*this, 1020, &display.id);
+            return sf::invokeSimple(*this, 1020, &display.id);
         }
 
         Result setDisplayEnabled(Display& display, bool isEnabled) {
-            return sf::invokeSimpleVoid(*this, 1101, u32(isEnabled), &display.id);
+            return sf::invokeSimple(*this, 1101, u32(isEnabled), &display.id);
         }
 
         ValueOrResult<Tuple<u64, u64>> getDisplayResolution(Display& display) {
