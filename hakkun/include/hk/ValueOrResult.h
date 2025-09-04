@@ -75,6 +75,21 @@ namespace hk {
         }
 
         /**
+         * @brief If a value is contained, call func to convert it to a result.
+         *
+         * @tparam L
+         * @param func
+         * @return Result
+         */
+        template <typename L>
+        constexpr Result mapToResult(L func) {
+            if (hasValue())
+                return func(disown());
+
+            return mResult;
+        }
+
+        /**
          * @brief Retrieves the value, if valid. Aborts if not.
          *
          * @return const T&

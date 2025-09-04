@@ -13,6 +13,12 @@ namespace hk::util {
     template <typename L>
     struct FunctionTraits : public FunctionTraits<decltype(&L::operator())> { };
 
+    template <typename Return, typename... Args>
+    struct FunctionTraits<Return (*)(Args...)> {
+        using ReturnType = Return;
+        using FuncPtrType = ReturnType (*)(Args...);
+    };
+
     template <typename Class, typename Return, typename... Args>
     struct FunctionTraits<Return (Class::*)(Args...) const> {
         using ReturnType = Return;
