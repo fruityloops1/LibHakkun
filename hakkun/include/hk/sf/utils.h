@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
+#include "hk/util/Math.h"
 #include "hk/util/TypeName.h"
 #include <array>
 #include <type_traits>
@@ -12,18 +13,26 @@ namespace hk::sf {
     template <typename... Args>
     constexpr size calcParamsSize() {
         u32 totalSize = 0;
+        u32 maxAlign = 1;
         ([&] {
+            maxAlign = util::max(maxAlign, alignof(Args));
+            totalSize = alignUp(totalSize, alignof(Args));
             totalSize += sizeof(Args);
         }(),
             ...);
-        return totalSize;
+        return alignUp(totalSize, maxAlign);
     }
+
+    static_assert(calcParamsSize<u32, u64>() == 0x10);
+    static_assert(calcParamsSize<u8, u32, u8>() == 0xc);
+    static_assert(calcParamsSize<u8, u64, u8>() == 0x18);
 
     template <typename... Args>
     std::array<u8, calcParamsSize<Args...>()> packInput(const Args&... args) {
         std::array<u8, calcParamsSize<Args...>()> array = {};
         ptr offset = 0;
         ([&] {
+            offset = alignUp(offset, alignof(Args));
             *cast<Args*>(&array[offset]) = args;
             offset += sizeof(Args);
         }(),
