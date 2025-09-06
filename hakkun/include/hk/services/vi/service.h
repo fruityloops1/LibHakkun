@@ -5,33 +5,96 @@
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
-#include "hk/svc/api.h"
-#include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
-#include "hk/util/TemplateString.h"
 #include "hk/util/Tuple.h"
-#include <type_traits>
 #include <utility>
 
 namespace hk::vi {
 
-    struct DisplayName {
-        char data[0x40];
+    enum class DisplayType {
+        Null,
+        Default,
+        External,
+        Edid,
+        Internal
     };
+
+    using DisplayName = std::array<char, 0x40>;
+
+    using NativeWindow = std::array<u8, 0x100>;
 
     struct Display {
         bool isInitialized = false;
         u64 id = 0;
-        DisplayName displayName;
+        DisplayName name;
+
+        Display()
+            : name("Default") { }
+        Display(DisplayType type) {
+            switch (type) {
+            case DisplayType::Null:
+                std::strncpy(name.data(), "Null", name.size());
+                break;
+            case DisplayType::External:
+                std::strncpy(name.data(), "External", name.size());
+                break;
+            case DisplayType::Edid:
+                std::strncpy(name.data(), "Edid", name.size());
+                break;
+            case DisplayType::Internal:
+                std::strncpy(name.data(), "Internal", name.size());
+                break;
+            case DisplayType::Default:
+                std::strncpy(name.data(), "Default", name.size());
+                break;
+            }
+        }
+        ~Display() = default;
+
+        Result open();
+        Result close();
+        Result setEnabled(bool enabled);
+        ValueOrResult<Tuple<u64, u64>> getResolution();
+        ValueOrResult<Handle> getVsyncEvent();
+        ValueOrResult<Handle> getVsyncEventForDebug();
     };
 
     struct DisplayInfo {
-        DisplayName displayName;
+        DisplayName name;
         bool hasLayerLimit;
         u64 layerCountMax;
         u64 layerWidthPixelCountMax;
         u64 layerHeightPixelCountMax;
+    };
+
+    struct Layer {
+        bool isInitialized = false;
+        u64 id = 0;
+    };
+
+    class SystemDisplayService : sf::Service {
+        HK_SINGLETON(SystemDisplayService);
+
+    public:
+        SystemDisplayService(sf::Service&& service)
+            : sf::Service(std::forward<sf::Service>(service)) { }
+    };
+
+    class ManagerDisplayService : sf::Service {
+        HK_SINGLETON(ManagerDisplayService);
+
+    public:
+        ManagerDisplayService(sf::Service&& service)
+            : sf::Service(std::forward<sf::Service>(service)) { }
+
+        ValueOrResult<u64> allocateProcessHeapBlock(u64 unk) {
+            return sf::invokeSimple<u64>(*this, 200, &unk);
+        }
+
+        Result freeProcessHeapBlock(u64 unk) {
+            return sf::invokeSimple(*this, 201, &unk);
+        }
     };
 
     class ApplicationDisplayService : sf::Service {
@@ -41,6 +104,22 @@ namespace hk::vi {
         ApplicationDisplayService(sf::Service&& service)
             : sf::Service(std::forward<sf::Service>(service)) { }
 
+        sf::Service getRelayService() {
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 100), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        }
+
+        sf::Service getSystemDisplayService() {
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 101), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        }
+
+        sf::Service getManagerDisplayService() {
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 102), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        }
+
+        sf::Service getIndirectDisplayTransactionService() {
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 103), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        }
+
         size listDisplays(std::span<DisplayInfo> displays) {
             auto request = sf::Request(this, 1000);
             request.addOutMapAlias(displays.data(), displays.size_bytes());
@@ -48,12 +127,12 @@ namespace hk::vi {
             return displays.size();
         }
 
-        u64 openDisplay(Display& display) {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 1010, &display.displayName));
+        ValueOrResult<u64> openDisplay(Display& display) {
+            return sf::invokeSimple<u64>(*this, 1010, &display.name);
         }
 
-        u64 openDefaultDisplay() {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 1011));
+        ValueOrResult<u64> openDefaultDisplay() {
+            return sf::invokeSimple<u64>(*this, 1011);
         }
 
         Result closeDisplay(Display& display) {
@@ -61,21 +140,57 @@ namespace hk::vi {
         }
 
         Result setDisplayEnabled(Display& display, bool isEnabled) {
-            return sf::invokeSimple(*this, 1101, u32(isEnabled), &display.id);
+            u32 enabled = isEnabled;
+            return sf::invokeSimple(*this, 1101, &enabled, &display.id);
         }
 
         ValueOrResult<Tuple<u64, u64>> getDisplayResolution(Display& display) {
             return sf::invokeSimple<Tuple<u64, u64>>(*this, 1102, &display.id);
         }
 
-        ValueOrResult<Handle> getDisplayVsyncEvent(Display& display) {
-            auto request = sf::Request(this, 5202, &display.id);
-            return invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); });
+        ValueOrResult<Tuple<u64, NativeWindow>> openLayer(Display& display, u64 layerId, u64 appletResourceUserId) {
+            NativeWindow nativeWindow;
+            
+            auto input = sf::packInput(display.name, layerId, appletResourceUserId);
+            auto request = sf::Request(this, 2020, &input);
+            request.setSendPid();
+            request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
+            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, NativeWindow>>());
         }
 
-        Handle getDisplayVsyncEventForDebug(Display& display) {
+        ValueOrResult<Tuple<u64, u64, NativeWindow>> createStrayLayer(Display& display, u32 flags) {
+            NativeWindow nativeWindow;
+            
+            auto input = sf::packInput(flags, display.id);
+            auto request = sf::Request(this, 2030, &input);
+            request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
+            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64, NativeWindow>>());
+        }
+
+        Result destroyStrayLayer(Layer& layer) {
+            return sf::invokeSimple(*this, 2031, &layer.id);
+        }
+
+        Result setLayerScalingMode(Layer& layer, u32 scalingMode) {
+            return sf::invokeSimple(*this, 2101, &scalingMode, &layer.id);
+        }
+
+        // convertScalingMode
+
+        // getIndirectLayerImageMap
+
+        // getIndirectLayerImageCropMap
+
+        // getIndirectLayerImageRequiredMemoryInfo
+
+        ValueOrResult<Handle> getDisplayVsyncEvent(Display& display) {
+            auto request = sf::Request(this, 5202, &display.id);
+            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
+        }
+
+        ValueOrResult<Handle> getDisplayVsyncEventForDebug(Display& display) {
             auto request = sf::Request(this, 5203, &display.id);
-            return HK_UNWRAP(invokeRequest(move(request), [](sf::Response& response){ return response.nextCopyHandle(); }));
+            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
         }
     };
 
@@ -83,23 +198,62 @@ namespace hk::vi {
         HK_SINGLETON(VideoInterface);
 
     public:
+        enum class ServiceType {
+            Application,
+            System,
+            Manager,
+        };
+
+    private:
+        ServiceType mType;
+
+    public:
         VideoInterface(sf::Service&& service)
             : sf::Service(std::forward<sf::Service>(service)) { }
 
-        template <util::TemplateString Name = "vi:u">
-        static ApplicationDisplayService* initialize() {
-            sf::Service mainService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
-            createInstance(move(mainService));
+        template <ServiceType Type = ServiceType::Application>
+        static VideoInterface* initialize() {
+            util::Storage<sf::Service> service;
+            switch (Type) {
+            case ServiceType::Application:
+                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:u">());
+                break;
+            case ServiceType::System:
+                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:s">());
+                break;
+            case ServiceType::Manager:
+                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:m">());
+                break;
+            }
+            createInstance(service.take());
+            instance()->mType = Type;
 
             ApplicationDisplayService::createInstance(instance()->getDisplayService());
+            SystemDisplayService::createInstance(ApplicationDisplayService::instance()->getSystemDisplayService());
+            ManagerDisplayService::createInstance(ApplicationDisplayService::instance()->getManagerDisplayService());
 
-            return ApplicationDisplayService::instance();
+            return instance();
         }
 
         sf::Service getDisplayService() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 0), [this](sf::Response& response){ return response.nextSubservice(this); }));
+            u32 commandId;
+            switch (mType) {
+            case ServiceType::Application:
+                commandId = 0;
+                break;
+            case ServiceType::System:
+                commandId = 1;
+                break;
+            case ServiceType::Manager:
+                commandId = 2;
+                break;
+            }
+            return HK_UNWRAP(invokeRequest(sf::Request(this, commandId), [this](sf::Response& response) { return response.nextSubservice(this); }));
         }
-
     };
+
+    void initialize();
+    Result openDefaultDisplay();
+    size listDisplays(std::span<DisplayInfo> displays);
 
 } // namespace hk::vi
