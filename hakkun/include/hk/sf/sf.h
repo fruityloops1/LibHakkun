@@ -40,8 +40,8 @@ namespace hk::sf {
         // Whether the session handle is owned by the current service.
         // Domain subservices don't own their own handles.
         bool mOwnedHandle;
-        // uninitialized when -1
-        u16 mPointerBufferSize = -1;
+        // uninitialized when u16 max
+        u16 mPointerBufferSize = std::numeric_limits<u16>::max();
 
         template <typename ResponseHandler>
         inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler);
