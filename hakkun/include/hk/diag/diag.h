@@ -78,30 +78,28 @@ ResultAbort (%04d-%04d/%s) [from %s]
         }                                             \
     } while (0)
 
-#define HK_ABORT(FMT, ...)               \
-    do {                                 \
-        ::hk::diag::abortImpl(           \
-            ::hk::svc::BreakReason_User, \
-            ::hk::diag::ResultAbort(),   \
-            __FILE__,                    \
-            __LINE__,                    \
-            "\n" FMT "\n",               \
-            __VA_ARGS__);                \
+#define HK_ABORT(FMT, ...)                             \
+    do {                                               \
+        ::hk::diag::abortImpl(                         \
+            ::hk::svc::BreakReason_User,               \
+            ::hk::diag::ResultAbort(),                 \
+            __FILE__,                                  \
+            __LINE__,                                  \
+            "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__); \
     } while (0)
 
-#define HK_ABORT_UNLESS(CONDITION, FMT, ...)      \
-    do {                                          \
-        const bool _condition_temp = (CONDITION); \
-        const char* _fmt = FMT;                   \
-        if (_condition_temp == false) {           \
-            ::hk::diag::abortImpl(                \
-                ::hk::svc::BreakReason_User,      \
-                ::hk::diag::ResultAbort(),        \
-                __FILE__,                         \
-                __LINE__,                         \
-                "\n" FMT "\n",                    \
-                __VA_ARGS__);                     \
-        }                                         \
+#define HK_ABORT_UNLESS(CONDITION, FMT, ...)               \
+    do {                                                   \
+        const bool _condition_temp = (CONDITION);          \
+        const char* _fmt = FMT;                            \
+        if (_condition_temp == false) {                    \
+            ::hk::diag::abortImpl(                         \
+                ::hk::svc::BreakReason_User,               \
+                ::hk::diag::ResultAbort(),                 \
+                __FILE__,                                  \
+                __LINE__,                                  \
+                "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__); \
+        }                                                  \
     } while (0)
 
 #define HK_ABORT_UNLESS_R(RESULT)                                                    \
