@@ -133,6 +133,9 @@ ResultAbort (%04d-%04d/%s) [from %s]
         }                                                                            \
     } while (0)
 
+#define HK_TODO(...) \
+    HK_ABORT("todo" __VA_OPT__(": ",) __VA_ARGS__)
+
 #endif
 
     /**
