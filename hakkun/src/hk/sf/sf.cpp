@@ -1,5 +1,6 @@
 #include "hk/sf/sf.h"
 #include "hk/Result.h"
+#include "hk/diag/diag.h"
 #include "hk/sf/utils.h"
 #include <limits>
 
@@ -14,5 +15,12 @@ namespace hk::sf {
             mObject = response.objects.remove(0);
             return nullptr;
         });
+    }
+
+    void Service::release() {
+        HK_ASSERT(mObject.has_value());
+        auto request = sf::Request(this, 0);
+        request.setDomainClose();
+        HK_ABORT_UNLESS_R(invokeControl(move(request), simpleDataHandler<void>()));
     }
 }
