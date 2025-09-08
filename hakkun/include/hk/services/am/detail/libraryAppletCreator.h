@@ -23,7 +23,7 @@ namespace hk::am::detail {
 
         ValueOrResult<LibraryAppletAccessor> createLibraryApplet(u32 appletId, LibraryAppletMode mode) {
             auto input = sf::packInput(appletId, mode);
-            return invokeRequest(sf::Request(this, 0, &input), sf::simpleSubserviceHandler(this))
+            return invokeRequest(sf::Request(this, 0, &input), sf::subserviceExtractor(this))
                 .map([](sf::Service&& service) {
                     return LibraryAppletAccessor(forward<sf::Service>(service));
                 });
