@@ -38,6 +38,7 @@ constexpr size cResultCountStart = __COUNTER__;
 #include "hk/diag/results.h" // IWYU pragma: keep
 #include "hk/hook/results.h" // IWYU pragma: keep
 #include "hk/ro/results.h" // IWYU pragma: keep
+#include "hk/services/nv/result.h" // IWYU pragma: keep
 #include "hk/services/socket/result.h" // IWYU pragma: keep
 #include "hk/svc/results.h" // IWYU pragma: keep
 

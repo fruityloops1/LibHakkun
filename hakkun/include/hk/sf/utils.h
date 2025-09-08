@@ -42,10 +42,22 @@ namespace hk::sf {
             };
     }
 
+    constexpr auto simpleSubserviceHandler(Service* currentService) {
+        return [currentService](sf::Response& response) -> sf::Service { return response.nextSubservice(currentService); };
+    }
+
+    constexpr auto simpleHandleHandler() {
+        return [](sf::Response& response) -> Handle { return response.nextCopyHandle(); };
+    }
+
     template <typename T = void, typename... Args>
     ValueOrResult<T> invokeSimple(sf::Service& service, s32 id, const Args&... args) {
         auto input = packInput(args...);
-        return service.invokeRequest(sf::Request(&service, id, &input), simpleDataHandler<T>());
+        if constexpr (std::is_same_v<T, sf::Service>) {
+            return service.invokeRequest(sf::Request(&service, id, &input), simpleSubserviceHandler(&service));
+        } else {
+            return service.invokeRequest(sf::Request(&service, id, &input), simpleDataHandler<T>());
+        };
     }
 
 } // namespace hk::sf

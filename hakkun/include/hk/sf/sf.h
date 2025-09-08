@@ -40,8 +40,8 @@ namespace hk::sf {
         // Whether the session handle is owned by the current service.
         // Domain subservices don't own their own handles.
         bool mOwnedHandle;
-        // uninitialized when -1
-        u16 mPointerBufferSize = -1;
+        // uninitialized when u16 max
+        u16 mPointerBufferSize = std::numeric_limits<u16>::max();
 
         template <typename ResponseHandler>
         inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler);
@@ -54,6 +54,8 @@ namespace hk::sf {
         static Service domainSubservice(Service* parent, u32 object) {
             return Service(parent->mSession, object, false);
         }
+
+        void release();
 
         Service(Handle session, std::optional<u32> object, bool isRoot)
             : mSession(session)
@@ -69,8 +71,9 @@ namespace hk::sf {
         }
         Service(Handle handle)
             : mSession(handle)
-            , mObject()
+            , mObject(std::nullopt)
             , mOwnedHandle(true) { }
+
         static Service fromHandle(Handle session) {
             return Service(session, std::nullopt, false);
         }
@@ -78,6 +81,8 @@ namespace hk::sf {
         ~Service() {
             if (mOwnedHandle) {
                 svc::CloseHandle(mSession);
+            } else if (mSession != 0) {
+                release();
             }
         }
 
@@ -95,8 +100,7 @@ namespace hk::sf {
 
         u16 pointerBufferSize();
 
-        // A service might have many interfaces, and the kernel only has so many session handles,
-        // so the client may choose to convert its active object handle to a domain object.
+        // A service might have many interfaces, and the kernel has a limit on active session handles for a process.
         // Domain objects allow a session to multiplex accesses to interfaces, saving on session handles.
         Result convertToDomain();
 
@@ -120,6 +124,7 @@ namespace hk::sf {
         u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
+        cmif::DomainTag mDomainTag = cmif::DomainTag::Request;
         util::FixedVec<u32, 8> mObjects;
         util::FixedVec<Handle, 8> mHipcCopyHandles;
         util::FixedVec<Handle, 8> mHipcMoveHandles;
@@ -151,6 +156,10 @@ namespace hk::sf {
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
 
+        constexpr void setDomainClose() {
+            mDomainTag = cmif::DomainTag::Close;
+        }
+            
         constexpr void enableDebug(bool before = true, bool after = true) {
             mPrintRequest = before;
             mPrintResponse = after;
@@ -308,10 +317,10 @@ namespace hk::sf {
 
             if (service->isDomain())
                 writer.write(cmif::DomainInHeader {
-                    .tag = cmif::DomainTag::Request,
+                    .tag = mDomainTag,
                     .objectCount = u8(mObjects.size()),
                     .dataSize = sizes.cmifDataSize,
-                    .objectId = service->mObject.value(),
+                    .objectId = *service->mObject,
                     .token = mToken,
                 });
 

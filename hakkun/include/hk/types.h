@@ -72,6 +72,10 @@ constexpr size operator""_KB(unsigned long long val) { return val * 1024; }
 constexpr size operator""_MB(unsigned long long val) { return val * 1024 * 1024; }
 constexpr size operator""_GB(unsigned long long val) { return val * 1024 * 1024 * 1024; }
 
+constexpr u64 operator""_ns(unsigned long long val) { return val; }
+constexpr u64 operator""_ms(unsigned long long val) { return val * 1e6; }
+constexpr u64 operator""_sec(unsigned long long val) { return val * 1e9; }
+
 template <typename T>
 inline hk_alwaysinline constexpr std::__libcpp_remove_reference_t<T>&& move([[clang::lifetimebound]] T&& v) noexcept {
     return static_cast<std::__libcpp_remove_reference_t<T>&&>(v);
