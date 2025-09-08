@@ -175,13 +175,29 @@ namespace hk::vi {
             return sf::invokeSimple(*this, 2101, &scalingMode, &layer.id);
         }
 
-        // convertScalingMode
+        ValueOrResult<u64> convertScalingMode(u32 scalingMode) {
+            return sf::invokeSimple(*this, 2102, &scalingMode);
+        }
 
-        // getIndirectLayerImageMap
+        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageMap(std::span<u8> map, s64 width, s64 height, u64 handle, u64 aruid) {
+            auto input = sf::packInput(width, height, handle, aruid);
+            auto request = sf::Request(this, 2450, &input);
+            request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
+            request.setSendPid();
+            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64>>());
+        }
 
-        // getIndirectLayerImageCropMap
+        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageCropMap(std::span<u8> map, f32 f1, f32 f2, f32 f3, f32 f4, u64 u1, u64 u2, u64 u3, u64 aruid) {
+            auto input = sf::packInput(f1, f2, f3, f4, u1, u2, u3, aruid);
+            auto request = sf::Request(this, 2451, &input);
+            request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
+            request.setSendPid();
+            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64>>());
+        }
 
-        // getIndirectLayerImageRequiredMemoryInfo
+        ValueOrResult<Tuple<s64, s64>> getIndirectLayerImageRequiredMemoryInfo(s64 width, s64 height) {
+            return sf::invokeSimple<Tuple<s64, s64>>(*this, 2460, &width, &height);
+        }
 
         ValueOrResult<Handle> getDisplayVsyncEvent(Display& display) {
             auto request = sf::Request(this, 5202, &display.id);
