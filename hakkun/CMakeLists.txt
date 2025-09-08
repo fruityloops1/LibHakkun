@@ -24,6 +24,7 @@ set(SOURCES
     src/hk/services/sm.cpp
     src/hk/services/pm.cpp
     src/hk/services/nv.cpp
+    src/hk/services/vi.cpp
     src/hk/services/lm.cpp
 
     src/hk/sf/sf.cpp
