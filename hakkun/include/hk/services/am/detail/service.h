@@ -32,7 +32,7 @@ namespace hk::am::detail {
             request.addCopyHandle(svc::CurrentProcess);
 
             do {
-                ValueOrResult<sf::Service> result = service.invokeRequest(move(request), sf::simpleSubserviceHandler(&service));
+                ValueOrResult<sf::Service> result = service.invokeRequest(move(request), sf::simpleSubserviceExtractor(&service));
                 if (result.hasValue()) {
                     ApplicationProxy::createInstance(result);
                     return ResultSuccess();

@@ -35,7 +35,7 @@ namespace hk::pm {
 
         ValueOrResult<Handle> hookToCreateProcess(u64 titleId) {
             auto request = sf::Request(this, 3, &titleId);
-            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
+            return invokeRequest(move(request), sf::handleExtractor());
         }
 
         ValueOrResult<u64> getApplicationProcessId() {
@@ -44,7 +44,7 @@ namespace hk::pm {
 
         ValueOrResult<Handle> hookToCreateApplicationProcess() {
             auto request = sf::Request(this, 5);
-            return invokeRequest(move(request), [](sf::Response& response) { return response.nextCopyHandle(); });
+            return invokeRequest(move(request), sf::handleExtractor());
         }
 
         void clearHook(u32 bitflags) {

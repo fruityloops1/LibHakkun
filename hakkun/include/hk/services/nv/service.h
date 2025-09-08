@@ -54,7 +54,7 @@ namespace hk::nvdrv {
             auto request = sf::Request(instance(), 3, &transferMemorySize);
             request.addCopyHandle(svc::CurrentProcess);
             request.addCopyHandle(transferMemoryHandle);
-            HK_TRY(instance()->invokeRequest(move(request), sf::simpleDataHandler<u32>()).mapToResult(convertErrorToResult));
+            HK_TRY(instance()->invokeRequest(move(request), sf::inlineDataExtractor<u32>()).mapToResult(convertErrorToResult));
 
             if (appletResourceUserId.has_value())
                 HK_TRY(instance()->setAppletResourceUserId(*appletResourceUserId));
@@ -65,14 +65,14 @@ namespace hk::nvdrv {
         Result setAppletResourceUserId(u64 appletResourceUserId) {
             auto input = sf::packInput(u64(0), appletResourceUserId);
             auto request = sf::Request(this, 8, &input);
-            return invokeRequest(move(request), sf::simpleDataHandler<u32>())
+            return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
                 .mapToResult(convertErrorToResult);
         }
 
         ValueOrResult<u32> open(std::string_view view) {
             auto request = sf::Request(this, 0);
             request.addInAutoselect(view.data(), view.size());
-            return invokeRequest(move(request), sf::simpleDataHandler<u32>())
+            return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
                 .mapToResult(convertErrorToResult);
         }
 
@@ -102,14 +102,14 @@ namespace hk::nvdrv {
             else
                 request.addOutAutoselect(0, 0);
 
-            return invokeRequest(move(request), sf::simpleDataHandler<u32>())
+            return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
                 .mapToResult(convertErrorToResult);
         }
 
         ValueOrResult<Handle> queryEvent(u32 fd, u32 eventId) {
             auto input = sf::packInput(fd, eventId);
             return invokeRequest(sf::Request(this, 4, &input), [](sf::Response& response) -> ValueOrResult<Handle> {
-                HK_TRY(convertErrorToResult(sf::simpleDataHandler<u32>()(response)));
+                HK_TRY(convertErrorToResult(sf::inlineDataExtractor<u32>()(response)));
                 return response.nextCopyHandle();
             });
         }

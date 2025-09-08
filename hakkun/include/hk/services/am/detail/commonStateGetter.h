@@ -14,12 +14,13 @@ namespace hk::am::detail {
             : sf::Service(forward<sf::Service>(service)) { }
 
         Handle getMessageEventHandle() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 0), sf::simpleHandleHandler()));
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 0), sf::simpleHandleExtractor()));
         }
 
         std::optional<u32> receiveMessage() {
             auto result = sf::invokeSimple<u32>(*this, 1);
-            if (Result(result).getValue() == 0x680) return std::nullopt;
+            if (Result(result).getValue() == 0x680)
+                return std::nullopt;
             return HK_UNWRAP(result);
         }
     };

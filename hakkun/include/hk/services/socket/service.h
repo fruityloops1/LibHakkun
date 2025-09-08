@@ -63,7 +63,7 @@ namespace hk::socket {
             auto request = sf::Request(this, Id, &fd);
 
             request.addInAutoselect(&address, sizeof(A));
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         template <s32 Id, typename A>
@@ -73,13 +73,13 @@ namespace hk::socket {
             auto request = sf::Request(this, Id, &input);
 
             request.addOutAutoselect(address, sizeof(A));
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
     public:
         Ret socket(AddressFamily domain, Type type, Protocol protocol) {
             std::array<u8, 12> input = sf::packInput(u32(domain), u32(type), u32(protocol));
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 2, &input), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 2, &input), sf::inlineDataExtractor<Ret>()));
         }
 
         Ret recv(s32 fd, std::span<u8> buffer, s32 flags) {
@@ -87,7 +87,7 @@ namespace hk::socket {
             auto request = sf::Request(this, 8, &input);
 
             request.addOutAutoselect(buffer.data(), buffer.size_bytes());
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         template <typename A, typename T>
@@ -98,7 +98,7 @@ namespace hk::socket {
 
             request.addOutAutoselect(buffer.data(), buffer.size_bytes());
             request.addOutAutoselect(&address, sizeof(A));
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         template <typename T>
@@ -108,7 +108,7 @@ namespace hk::socket {
 
             request.addInAutoselect(data.data(), data.size_bytes());
 
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         template <typename A, typename T>
@@ -119,7 +119,7 @@ namespace hk::socket {
             request.addInAutoselect(data.data(), data.size_bytes());
             request.addInAutoselect(&address, sizeof(SocketAddrIpv4));
             request.enableDebug(true, true);
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         Tuple<s32, s32, SocketAddrIpv4> accept(s32 fd) {
@@ -129,7 +129,7 @@ namespace hk::socket {
 
             request.addOutAutoselect(&outAddr, sizeof(outAddr));
 
-            auto response = HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Tuple<s32, s32, u32>>()));
+            auto response = HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Tuple<s32, s32, u32>>()));
             return { response.a, response.b, outAddr };
         }
 
@@ -162,13 +162,13 @@ namespace hk::socket {
             auto request = sf::Request(this, 17, &input);
 
             request.addOutAutoselect(opt.data(), opt.size_bytes());
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         Ret listen(s32 fd, s32 backlog) {
             auto input = sf::packInput(fd, backlog);
 
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 18, &input), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(sf::Request(this, 18, &input), sf::inlineDataExtractor<Ret>()));
         }
 
         Ret fcntl(s32 fd, s32 cmd, s32 flags) {
@@ -183,7 +183,7 @@ namespace hk::socket {
 
             request.addInAutoselect(opt.data(), opt.size_bytes());
 
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         template <typename T>
@@ -204,7 +204,7 @@ namespace hk::socket {
 
             request.addInAutoselect(data.data(), data.size_bytes());
 
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         Ret read(s32 fd, std::span<u8> buffer) {
@@ -212,7 +212,7 @@ namespace hk::socket {
 
             request.addOutAutoselect(buffer.data(), buffer.size_bytes());
 
-            return HK_UNWRAP(invokeRequest(move(request), sf::simpleDataHandler<Ret>()));
+            return HK_UNWRAP(invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
         }
 
         Ret close(s32 fd) {

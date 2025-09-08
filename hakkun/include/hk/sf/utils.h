@@ -32,21 +32,21 @@ namespace hk::sf {
     }
 
     template <typename T>
-    constexpr auto simpleDataHandler() {
+    constexpr auto inlineDataExtractor() {
         if constexpr (std::is_same_v<T, void>)
             return [](sf::Response& response) -> void { };
         else
             return [](sf::Response& response) -> T {
-                HK_ABORT_UNLESS(response.data.size_bytes() >= sizeof(T), "hk::sf::simpleDataHandler: response too small (%zu < sizeof(%s)==%zu)", response.data.size_bytes(), util::getTypeName<T>(), sizeof(T));
+                HK_ABORT_UNLESS(response.data.size_bytes() >= sizeof(T), "hk::sf::inlineDataExtractor: response too small (%zu < sizeof(%s)==%zu)", response.data.size_bytes(), util::getTypeName<T>(), sizeof(T));
                 return *cast<T*>(response.data.data());
             };
     }
 
-    constexpr auto simpleSubserviceHandler(Service* currentService) {
+    constexpr auto subserviceExtractor(Service* currentService) {
         return [currentService](sf::Response& response) -> sf::Service { return response.nextSubservice(currentService); };
     }
 
-    constexpr auto simpleHandleHandler() {
+    constexpr auto handleExtractor() {
         return [](sf::Response& response) -> Handle { return response.nextCopyHandle(); };
     }
 
@@ -54,9 +54,9 @@ namespace hk::sf {
     ValueOrResult<T> invokeSimple(sf::Service& service, s32 id, const Args&... args) {
         auto input = packInput(args...);
         if constexpr (std::is_same_v<T, sf::Service>) {
-            return service.invokeRequest(sf::Request(&service, id, &input), simpleSubserviceHandler(&service));
+            return service.invokeRequest(sf::Request(&service, id, &input), subserviceExtractor(&service));
         } else {
-            return service.invokeRequest(sf::Request(&service, id, &input), simpleDataHandler<T>());
+            return service.invokeRequest(sf::Request(&service, id, &input), inlineDataExtractor<T>());
         };
     }
 

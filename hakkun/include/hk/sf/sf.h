@@ -43,12 +43,12 @@ namespace hk::sf {
         // uninitialized when u16 max
         u16 mPointerBufferSize = std::numeric_limits<u16>::max();
 
-        template <typename ResponseHandler>
-        inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler);
+        template <typename ResponseExtractor>
+        inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> invoke(cmif::MessageTag tag, Request&& request, ResponseExtractor extractor);
         inline Result invoke(cmif::MessageTag tag, Request&& request);
-        template <typename ResponseHandler>
-        inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invokeControl(Request&& request, ResponseHandler handler) {
-            return invoke(cmif::MessageTag::Control, std::forward<Request>(request), handler);
+        template <typename ResponseExtractor>
+        inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> invokeControl(Request&& request, ResponseExtractor extractor) {
+            return invoke(cmif::MessageTag::Control, std::forward<Request>(request), extractor);
         }
 
         static Service domainSubservice(Service* parent, u32 object) {
@@ -104,9 +104,9 @@ namespace hk::sf {
         // Domain objects allow a session to multiplex accesses to interfaces, saving on session handles.
         Result convertToDomain();
 
-        template <typename ResponseHandler>
-        inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> invokeRequest(Request&& request, ResponseHandler handler) {
-            return invoke(cmif::MessageTag::Request, std::forward<Request>(request), handler);
+        template <typename ResponseExtractor>
+        inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> invokeRequest(Request&& request, ResponseExtractor extractor) {
+            return invoke(cmif::MessageTag::Request, std::forward<Request>(request), extractor);
         }
         inline Result invokeRequest(Request&& request) {
             return invoke(cmif::MessageTag::Request, std::forward<Request>(request));
@@ -441,9 +441,9 @@ namespace hk::sf {
         }
     };
 
-    template <typename ResponseHandler>
-    inline ValueOrResult<typename util::FunctionTraits<ResponseHandler>::ReturnType> Service::invoke(cmif::MessageTag tag, Request&& request, ResponseHandler handler) {
-        using Return = typename util::FunctionTraits<ResponseHandler>::ReturnType;
+    template <typename ResponseExtractor>
+    inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> Service::invoke(cmif::MessageTag tag, Request&& request, ResponseExtractor extractor) {
+        using Return = typename util::FunctionTraits<ResponseExtractor>::ReturnType;
 
         request.writeToTls(this, tag);
         HK_TRY(svc::SendSyncRequest(mSession));
@@ -453,7 +453,7 @@ namespace hk::sf {
         if constexpr (std::is_same_v<Return, void>)
             return ResultSuccess();
         else
-            return handler(response);
+            return extractor(response);
     }
 
     inline Result Service::invoke(cmif::MessageTag tag, Request&& request) {
