@@ -155,7 +155,7 @@ namespace hk::vi {
             auto request = sf::Request(this, 2020, &input);
             request.setSendPid();
             request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
-            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, NativeWindow>>());
+            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, NativeWindow>>());
         }
 
         ValueOrResult<Tuple<u64, u64, NativeWindow>> createStrayLayer(Display& display, u32 flags) {
@@ -164,7 +164,7 @@ namespace hk::vi {
             auto input = sf::packInput(flags, display.id);
             auto request = sf::Request(this, 2030, &input);
             request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
-            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64, NativeWindow>>());
+            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64, NativeWindow>>());
         }
 
         Result destroyStrayLayer(Layer& layer) {
@@ -184,7 +184,7 @@ namespace hk::vi {
             auto request = sf::Request(this, 2450, &input);
             request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
             request.setSendPid();
-            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64>>());
+            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64>>());
         }
 
         ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageCropMap(std::span<u8> map, f32 f1, f32 f2, f32 f3, f32 f4, u64 u1, u64 u2, u64 u3, u64 aruid) {
@@ -192,7 +192,7 @@ namespace hk::vi {
             auto request = sf::Request(this, 2451, &input);
             request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
             request.setSendPid();
-            return invokeRequest(move(request), sf::simpleDataHandler<Tuple<u64, u64>>());
+            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64>>());
         }
 
         ValueOrResult<Tuple<s64, s64>> getIndirectLayerImageRequiredMemoryInfo(s64 width, s64 height) {
