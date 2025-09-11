@@ -13,6 +13,7 @@
 #include "hk/util/TemplateString.h"
 
 namespace hk::am::detail {
+
     enum class AppType {
         System = 0,
         Application = 1,
@@ -26,22 +27,28 @@ namespace hk::am::detail {
             : sf::Service(forward<sf::Service>(service)) { }
 
         template <AppType Type>
-        static Result initialize() {
+        static ValueOrResult<AppletManager*> initialize() {
             constexpr util::TemplateString<9> name = Type == AppType::Application ? "appletOE" : "appletAE";
             sf::Service service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<name>());
             HK_TRY(service.convertToDomain());
 
+            createInstance(move(service));
+            return instance();
+        }
+
+        ValueOrResult<ApplicationProxy*> initializeApplicationProxy() {
             // OpenApplicationProxy
             auto input = sf::packInput(u64(0), u64(0));
-            auto request = sf::Request(&service, 0, &input);
+            auto request = sf::Request(this, 0, &input);
             request.setSendPid();
             request.addCopyHandle(svc::CurrentProcess);
 
             do {
-                ValueOrResult<sf::Service> result = service.invokeRequest(move(request), sf::subserviceExtractor(&service));
+                ValueOrResult<sf::Service> result = invokeRequest(move(request), sf::subserviceExtractor(this));
+
                 if (result.hasValue()) {
                     ApplicationProxy::createInstance(result);
-                    return ResultSuccess();
+                    return ApplicationProxy::instance();
                 }
 
                 // am switchbrew docs say that apps wait until OpenApplicationProxy stops returning 0x19280
@@ -52,4 +59,5 @@ namespace hk::am::detail {
             } while (true);
         }
     };
-}
+
+} // namespace hk::am::detail

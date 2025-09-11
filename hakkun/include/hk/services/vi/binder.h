@@ -7,11 +7,12 @@
 #include "hk/types.h"
 
 namespace hk::vi::binder {
+
     class Binder : public sf::Service {
         u32 mId;
 
         Result adjustRefCount(s32 adjustBy, s32 type) {
-            return sf::invokeSimple(*this, 1, mId, adjustBy, type);
+            return sf::invokeSimple(this, 1, mId, adjustBy, type);
         }
 
     public:
@@ -52,7 +53,8 @@ namespace hk::vi::binder {
         Result decrementWeakRef() { return adjustRefCount(1, 0); }
 
         ValueOrResult<Handle> getEventHandle(u32 unknown) {
-            return sf::invokeSimple<Handle>(*this, 2, mId, unknown);
+            return sf::invokeSimple<Handle>(this, 2, mId, unknown);
         }
     };
-}
+
+} // namespace hk::vi::binder

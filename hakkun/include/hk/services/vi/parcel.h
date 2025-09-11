@@ -7,6 +7,7 @@
 #include <string_view>
 
 namespace hk::vi::parcel {
+
     struct ParcelHeader {
         u32 payloadOffset = sizeof(ParcelHeader);
         u32 payloadSize = 0;
@@ -70,4 +71,5 @@ namespace hk::vi::parcel {
             write(payloadWriter, [](auto&) { });
         }
     };
-} // namespace hk::vi
+
+} // namespace hk::vi::parcel

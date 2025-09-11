@@ -177,7 +177,7 @@ namespace hk::socket {
         ValueOrResult<Ret> fcntl(s32 fd, s32 cmd, s32 flags) {
             auto input = sf::packInput(fd, cmd, flags);
 
-            return sf::invokeSimple<Ret>(*this, 20, fd, cmd, flags);
+            return sf::invokeSimple<Ret>(this, 20, fd, cmd, flags);
         }
 
         ValueOrResult<Ret> setSockOpt(s32 fd, s32 level, s32 optName, std::span<const u8> opt) {
@@ -195,11 +195,11 @@ namespace hk::socket {
         }
 
         ValueOrResult<Ret> shutdown(s32 fd, s32 how) {
-            return sf::invokeSimple<Ret>(*this, 22, fd, how);
+            return sf::invokeSimple<Ret>(this, 22, fd, how);
         }
 
         ValueOrResult<Ret> shutdownAllSockets(s32 how) {
-            return sf::invokeSimple<Ret>(*this, 23, how);
+            return sf::invokeSimple<Ret>(this, 23, how);
         }
 
         ValueOrResult<Ret> write(s32 fd, std::span<const u8> data) {
@@ -219,11 +219,11 @@ namespace hk::socket {
         }
 
         ValueOrResult<Ret> close(s32 fd) {
-            return sf::invokeSimple<Ret>(*this, 26, fd);
+            return sf::invokeSimple<Ret>(this, 26, fd);
         }
 
         ValueOrResult<Ret> duplicateSocket(s32 fd) {
-            return sf::invokeSimple<Ret>(*this, 27, fd);
+            return sf::invokeSimple<Ret>(this, 27, fd);
         }
 
         // Ret recvMMsg(s32 fd, std::span<u8> buffer, u32 n, s32 flags, /* timespec */);

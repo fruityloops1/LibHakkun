@@ -7,17 +7,20 @@
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/util/Singleton.h"
+
 namespace hk::am::detail {
+
     class ApplicationProxy : public sf::Service {
         HK_SINGLETON(ApplicationProxy);
 
-        template<typename T>
+        template <typename T>
         ValueOrResult<T*> initializeSubservice() {
-            return sf::invokeSimple<sf::Service>(*this, 0).map([](sf::Service service) {
+            return sf::invokeSimple<sf::Service>(this, 0).map([](sf::Service service) {
                 T::createInstance(move(service));
                 return T::instance();
             });
         }
+
     public:
         ApplicationProxy(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
@@ -34,4 +37,5 @@ namespace hk::am::detail {
             return initializeSubservice<WindowController>();
         }
     };
-}
+
+} // namespace hk::am::detail

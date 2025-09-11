@@ -27,31 +27,31 @@ namespace hk::pm {
         }
 
         Result startProcess(u64 pid) {
-            return sf::invokeSimple(*this, 1, &pid);
+            return sf::invokeSimple(this, 1, &pid);
         }
 
         ValueOrResult<u64> getProcessId(u64 titleId) {
-            return sf::invokeSimple<u64>(*this, 2, titleId);
+            return sf::invokeSimple<u64>(this, 2, titleId);
         }
 
         ValueOrResult<Handle> hookToCreateProcess(u64 titleId) {
-            return invokeSimple<Handle>(*this, 3, &titleId);
+            return invokeSimple<Handle>(this, 3, &titleId);
         }
 
         ValueOrResult<u64> getApplicationProcessId() {
-            return sf::invokeSimple<u64>(*this, 4);
+            return sf::invokeSimple<u64>(this, 4);
         }
 
         ValueOrResult<Handle> hookToCreateApplicationProcess() {
-            return invokeSimple<Handle>(*this, 5);
+            return invokeSimple<Handle>(this, 5);
         }
 
         Result clearHook(u32 bitflags) {
-            return sf::invokeSimple(*this, 6, &bitflags);
+            return sf::invokeSimple(this, 6, &bitflags);
         }
 
         ValueOrResult<u64> getProgramId(u64 pid) {
-            return sf::invokeSimple<u64>(*this, 7, pid);
+            return sf::invokeSimple<u64>(this, 7, pid);
         }
     };
 

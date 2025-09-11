@@ -28,5 +28,6 @@ namespace hk::nvdrv {
     HK_DEFINE_RESULT(IoctlFailed, 67)
     HK_DEFINE_RESULT(UnhandledError, 68)
 
-    Result convertErrorToResult(u32 error); 
+    Result convertErrorToResult(u32 error);
+
 } // namespace hk::nvdrv

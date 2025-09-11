@@ -15,6 +15,7 @@
 #include <string_view>
 
 namespace hk::nvdrv {
+
     enum class ServiceType {
         Application,
         Applet,
@@ -76,7 +77,7 @@ namespace hk::nvdrv {
         }
 
         Result close(u32 fd) {
-            return sf::invokeSimple<u32>(*this, 2, &fd)
+            return sf::invokeSimple<u32>(this, 2, &fd)
                 .mapToResult(convertErrorToResult);
         }
 
@@ -113,4 +114,5 @@ namespace hk::nvdrv {
             });
         }
     };
+
 }

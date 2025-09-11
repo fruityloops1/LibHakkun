@@ -3,6 +3,7 @@
 #include "hk/types.h"
 
 namespace hk::nvdrv {
+
     struct IoctlEncoding {
         u32 function : 8;
         u32 driverId : 8;
@@ -17,4 +18,5 @@ namespace hk::nvdrv {
         IoctlEncoding encoding;
         u32 value;
     };
-}
+
+} // namespace hk::nvdrv

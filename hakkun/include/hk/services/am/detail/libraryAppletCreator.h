@@ -7,6 +7,7 @@
 #include "hk/util/Singleton.h"
 
 namespace hk::am::detail {
+
     enum class LibraryAppletMode : u32 {
         AllForeground,
         PartialForeground,
@@ -14,6 +15,7 @@ namespace hk::am::detail {
         PartialForegroundWithIndirectLayer,
         AllForegroundInitiallyHidden,
     };
+
     class LibraryAppletCreator : public sf::Service {
         HK_SINGLETON(LibraryAppletCreator);
 
@@ -22,8 +24,7 @@ namespace hk::am::detail {
             : sf::Service(forward<sf::Service>(service)) { }
 
         ValueOrResult<LibraryAppletAccessor> createLibraryApplet(u32 appletId, LibraryAppletMode mode) {
-            auto input = sf::packInput(appletId, mode);
-            return invokeRequest(sf::Request(this, 0, &input), sf::subserviceExtractor(this))
+            return sf::invokeSimple<sf::Service>(this, 0, appletId, mode)
                 .map([](sf::Service&& service) {
                     return LibraryAppletAccessor(forward<sf::Service>(service));
                 });
@@ -33,4 +34,5 @@ namespace hk::am::detail {
             HK_TODO();
         }
     };
-}
+
+} // namespace hk::am::detail

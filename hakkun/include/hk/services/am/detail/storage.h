@@ -6,13 +6,14 @@
 #include <span>
 
 namespace hk::am::detail {
+
     class Storage : public sf::Service {
     public:
         Storage(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
 
         ValueOrResult<u64> getSize() {
-            return sf::invokeSimple<u64>(*this, 0);
+            return sf::invokeSimple<u64>(this, 0);
         }
 
         template <typename T>
@@ -29,4 +30,5 @@ namespace hk::am::detail {
             return invokeRequest(move(request));
         }
     };
-}
+
+} // namespace hk::am::detail

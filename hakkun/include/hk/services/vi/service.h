@@ -88,11 +88,11 @@ namespace hk::vi {
             : sf::Service(std::forward<sf::Service>(service)) { }
 
         ValueOrResult<u64> allocateProcessHeapBlock(u64 unk) {
-            return sf::invokeSimple<u64>(*this, 200, &unk);
+            return sf::invokeSimple<u64>(this, 200, &unk);
         }
 
         Result freeProcessHeapBlock(u64 unk) {
-            return sf::invokeSimple(*this, 201, &unk);
+            return sf::invokeSimple(this, 201, &unk);
         }
     };
 
@@ -104,19 +104,19 @@ namespace hk::vi {
             : sf::Service(std::forward<sf::Service>(service)) { }
 
         ValueOrResult<sf::Service> getRelayService() {
-            return sf::invokeSimple<sf::Service>(*this, 100);
+            return sf::invokeSimple<sf::Service>(this, 100);
         }
 
         ValueOrResult<sf::Service> getSystemDisplayService() {
-            return sf::invokeSimple<sf::Service>(*this, 101);
+            return sf::invokeSimple<sf::Service>(this, 101);
         }
 
         ValueOrResult<sf::Service> getManagerDisplayService() {
-            return sf::invokeSimple<sf::Service>(*this, 102);
+            return sf::invokeSimple<sf::Service>(this, 102);
         }
 
         ValueOrResult<sf::Service> getIndirectDisplayTransactionService() {
-            return sf::invokeSimple<sf::Service>(*this, 103);
+            return sf::invokeSimple<sf::Service>(this, 103);
         }
 
         ValueOrResult<size> listDisplays(std::span<DisplayInfo> displays) {
@@ -127,24 +127,24 @@ namespace hk::vi {
         }
 
         ValueOrResult<u64> openDisplay(Display& display) {
-            return sf::invokeSimple<u64>(*this, 1010, &display.name);
+            return sf::invokeSimple<u64>(this, 1010, &display.name);
         }
 
         ValueOrResult<u64> openDefaultDisplay() {
-            return sf::invokeSimple<u64>(*this, 1011);
+            return sf::invokeSimple<u64>(this, 1011);
         }
 
         Result closeDisplay(Display& display) {
-            return sf::invokeSimple(*this, 1020, &display.id);
+            return sf::invokeSimple(this, 1020, &display.id);
         }
 
         Result setDisplayEnabled(Display& display, bool isEnabled) {
             u32 enabled = isEnabled;
-            return sf::invokeSimple(*this, 1101, &enabled, &display.id);
+            return sf::invokeSimple(this, 1101, &enabled, &display.id);
         }
 
         ValueOrResult<Tuple<u64, u64>> getDisplayResolution(Display& display) {
-            return sf::invokeSimple<Tuple<u64, u64>>(*this, 1102, &display.id);
+            return sf::invokeSimple<Tuple<u64, u64>>(this, 1102, &display.id);
         }
 
         ValueOrResult<Tuple<u64, NativeWindow>> openLayer(Display& display, u64 layerId, u64 appletResourceUserId) {
@@ -167,15 +167,15 @@ namespace hk::vi {
         }
 
         Result destroyStrayLayer(Layer& layer) {
-            return sf::invokeSimple(*this, 2031, &layer.id);
+            return sf::invokeSimple(this, 2031, &layer.id);
         }
 
         Result setLayerScalingMode(Layer& layer, u32 scalingMode) {
-            return sf::invokeSimple(*this, 2101, &scalingMode, &layer.id);
+            return sf::invokeSimple(this, 2101, &scalingMode, &layer.id);
         }
 
         ValueOrResult<u64> convertScalingMode(u32 scalingMode) {
-            return sf::invokeSimple(*this, 2102, &scalingMode);
+            return sf::invokeSimple(this, 2102, &scalingMode);
         }
 
         ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageMap(std::span<u8> map, s64 width, s64 height, u64 handle, u64 aruid) {
@@ -195,7 +195,7 @@ namespace hk::vi {
         }
 
         ValueOrResult<Tuple<s64, s64>> getIndirectLayerImageRequiredMemoryInfo(s64 width, s64 height) {
-            return sf::invokeSimple<Tuple<s64, s64>>(*this, 2460, &width, &height);
+            return sf::invokeSimple<Tuple<s64, s64>>(this, 2460, &width, &height);
         }
 
         ValueOrResult<Handle> getDisplayVsyncEvent(Display& display) {
@@ -228,20 +228,18 @@ namespace hk::vi {
 
         template <ServiceType Type = ServiceType::Application>
         static ValueOrResult<VideoInterface*> initialize() {
-            util::Storage<sf::Service> service;
             switch (Type) {
             case ServiceType::Application:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:u">());
+                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:u">());
                 break;
             case ServiceType::System:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:s">());
+                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:s">());
                 break;
             case ServiceType::Manager:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:m">());
+                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:m">());
                 break;
             }
 
-            createInstance(service.take());
             instance()->mType = Type;
 
             ApplicationDisplayService::createInstance(HK_TRY(instance()->getDisplayService()));
@@ -264,7 +262,7 @@ namespace hk::vi {
                 commandId = 2;
                 break;
             }
-            return sf::invokeSimple<sf::Service>(*this, commandId);
+            return sf::invokeSimple<sf::Service>(this, commandId);
         }
     };
 

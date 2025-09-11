@@ -60,14 +60,14 @@ namespace hk::sf {
     }
 
     template <typename T = void, typename... Args>
-    ValueOrResult<T> invokeSimple(sf::Service& service, s32 id, const Args&... args) {
+    ValueOrResult<T> invokeSimple(sf::Service* service, s32 id, const Args&... args) {
         auto input = packInput(args...);
         if constexpr (std::is_same_v<T, sf::Service>) {
-            return service.invokeRequest(sf::Request(&service, id, &input), subserviceExtractor(&service));
+            return service->invokeRequest(sf::Request(service, id, &input), subserviceExtractor(service));
         } else if constexpr (std::is_same_v<T, Handle>) {
-            return service.invokeRequest(sf::Request(&service, id, &input), handleExtractor());
+            return service->invokeRequest(sf::Request(service, id, &input), handleExtractor());
         } else {
-            return service.invokeRequest(sf::Request(&service, id, &input), inlineDataExtractor<T>());
+            return service->invokeRequest(sf::Request(service, id, &input), inlineDataExtractor<T>());
         };
     }
 
