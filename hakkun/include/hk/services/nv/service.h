@@ -11,46 +11,45 @@
 #include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
-#include "hk/util/Storage.h"
 #include <optional>
 #include <string_view>
 
 namespace hk::nvdrv {
+    enum class ServiceType {
+        Application,
+        Applet,
+        Sysmodule,
+        Factory
+    };
+
     class NvidiaDriver : public sf::Service {
         HK_SINGLETON(NvidiaDriver)
     public:
-        enum class ServiceType {
-            Application,
-            Applet,
-            Sysmodule,
-            Factory
-        };
-
         NvidiaDriver(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
 
         template <ServiceType Type, size TransferMemSize = 128_KB>
-        static ValueOrResult<NvidiaDriver*> initialize(std::optional<u64> appletResourceUserId) {
-            util::Storage<sf::Service> service;
+        static ValueOrResult<NvidiaDriver*> initialize(std::optional<u64> appletResourceUserId, std::array<u8, TransferMemSize>* transferMemory) {
+            static_assert(TransferMemSize == alignUp(TransferMemSize, cPageSize), "transfer memory must be page aligned");
+
             switch (Type) {
             case ServiceType::Application:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"nvdrv">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"nvdrv">()));
                 break;
             case ServiceType::Applet:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:a">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:a">()));
                 break;
             case ServiceType::Sysmodule:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:s">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:s">()));
                 break;
             case ServiceType::Factory:
-                service.create(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:t">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"nvdrv:t">()));
                 break;
             }
-            createInstance(service.take());
-            alignas(cPageSize) static std::array<u8, alignUpPage(TransferMemSize)> transferMemory;
-            Handle transferMemoryHandle = HK_UNWRAP(svc::CreateTransferMemory(transferMemory, sizeof(transferMemory), svc::MemoryPermission_None));
 
-            size transferMemorySize = sizeof(transferMemory);
+            Handle transferMemoryHandle = HK_TRY(svc::CreateTransferMemory(ptr(transferMemory), TransferMemSize, svc::MemoryPermission_None));
+
+            size transferMemorySize = TransferMemSize;
             auto request = sf::Request(instance(), 3, &transferMemorySize);
             request.addCopyHandle(svc::CurrentProcess);
             request.addCopyHandle(transferMemoryHandle);

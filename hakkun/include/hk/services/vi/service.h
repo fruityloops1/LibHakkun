@@ -1,7 +1,6 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
-#include "hk/diag/diag.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
@@ -104,26 +103,26 @@ namespace hk::vi {
         ApplicationDisplayService(sf::Service&& service)
             : sf::Service(std::forward<sf::Service>(service)) { }
 
-        sf::Service getRelayService() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 100), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        ValueOrResult<sf::Service> getRelayService() {
+            return sf::invokeSimple<sf::Service>(*this, 100);
         }
 
-        sf::Service getSystemDisplayService() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 101), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        ValueOrResult<sf::Service> getSystemDisplayService() {
+            return sf::invokeSimple<sf::Service>(*this, 101);
         }
 
-        sf::Service getManagerDisplayService() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 102), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        ValueOrResult<sf::Service> getManagerDisplayService() {
+            return sf::invokeSimple<sf::Service>(*this, 102);
         }
 
-        sf::Service getIndirectDisplayTransactionService() {
-            return HK_UNWRAP(invokeRequest(sf::Request(this, 103), [this](sf::Response& response) { return response.nextSubservice(this); }));
+        ValueOrResult<sf::Service> getIndirectDisplayTransactionService() {
+            return sf::invokeSimple<sf::Service>(*this, 103);
         }
 
-        size listDisplays(std::span<DisplayInfo> displays) {
+        ValueOrResult<size> listDisplays(std::span<DisplayInfo> displays) {
             auto request = sf::Request(this, 1000);
             request.addOutMapAlias(displays.data(), displays.size_bytes());
-            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
+            HK_TRY(invokeRequest(move(request)));
             return displays.size();
         }
 
@@ -150,7 +149,7 @@ namespace hk::vi {
 
         ValueOrResult<Tuple<u64, NativeWindow>> openLayer(Display& display, u64 layerId, u64 appletResourceUserId) {
             NativeWindow nativeWindow;
-            
+
             auto input = sf::packInput(display.name, layerId, appletResourceUserId);
             auto request = sf::Request(this, 2020, &input);
             request.setSendPid();
@@ -160,7 +159,7 @@ namespace hk::vi {
 
         ValueOrResult<Tuple<u64, u64, NativeWindow>> createStrayLayer(Display& display, u32 flags) {
             NativeWindow nativeWindow;
-            
+
             auto input = sf::packInput(flags, display.id);
             auto request = sf::Request(this, 2030, &input);
             request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
@@ -228,7 +227,7 @@ namespace hk::vi {
             : sf::Service(std::forward<sf::Service>(service)) { }
 
         template <ServiceType Type = ServiceType::Application>
-        static VideoInterface* initialize() {
+        static ValueOrResult<VideoInterface*> initialize() {
             util::Storage<sf::Service> service;
             switch (Type) {
             case ServiceType::Application:
@@ -241,17 +240,18 @@ namespace hk::vi {
                 service.create(sm::ServiceManager::instance()->getServiceHandle<"vi:m">());
                 break;
             }
+
             createInstance(service.take());
             instance()->mType = Type;
 
-            ApplicationDisplayService::createInstance(instance()->getDisplayService());
-            SystemDisplayService::createInstance(ApplicationDisplayService::instance()->getSystemDisplayService());
-            ManagerDisplayService::createInstance(ApplicationDisplayService::instance()->getManagerDisplayService());
+            ApplicationDisplayService::createInstance(HK_TRY(instance()->getDisplayService()));
+            SystemDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getSystemDisplayService()));
+            ManagerDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getManagerDisplayService()));
 
             return instance();
         }
 
-        sf::Service getDisplayService() {
+        ValueOrResult<sf::Service> getDisplayService() {
             u32 commandId;
             switch (mType) {
             case ServiceType::Application:
@@ -264,11 +264,11 @@ namespace hk::vi {
                 commandId = 2;
                 break;
             }
-            return HK_UNWRAP(invokeRequest(sf::Request(this, commandId), [this](sf::Response& response) { return response.nextSubservice(this); }));
+            return sf::invokeSimple<sf::Service>(*this, commandId);
         }
     };
 
-    void initialize();
+    Result initialize();
     Result openDefaultDisplay();
     size listDisplays(std::span<DisplayInfo> displays);
 

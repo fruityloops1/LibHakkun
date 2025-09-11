@@ -16,8 +16,8 @@ namespace hk::sm {
     public:
         ServiceManager(Handle session)
             : sf::Service(session) { }
-        static ServiceManager* initialize() {
-            Handle outHandle = HK_UNWRAP(svc::ConnectToNamedPort("sm:"));
+        static ValueOrResult<ServiceManager*> initialize() {
+            Handle outHandle = HK_TRY(svc::ConnectToNamedPort("sm:"));
 
             createInstance(outHandle);
             return instance();

@@ -52,10 +52,7 @@ namespace hk::vi::binder {
         Result decrementWeakRef() { return adjustRefCount(1, 0); }
 
         ValueOrResult<Handle> getEventHandle(u32 unknown) {
-            auto input = sf::packInput(mId, unknown);
-            return invokeRequest(sf::Request(this, 2, &input), [](sf::Response& response) {
-                return response.nextCopyHandle();
-            });
+            return sf::invokeSimple<Handle>(*this, 2, mId, unknown);
         }
     };
 }

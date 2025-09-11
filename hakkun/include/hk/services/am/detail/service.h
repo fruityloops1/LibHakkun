@@ -2,7 +2,6 @@
 
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
-#include "hk/diag/diag.h"
 #include "hk/services/am/detail/applicationProxy.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
@@ -14,33 +13,40 @@
 #include "hk/util/TemplateString.h"
 
 namespace hk::am::detail {
+    enum class AppType {
+        System = 0,
+        Application = 1,
+    };
+
     class AppletManager : public sf::Service {
         HK_SINGLETON(AppletManager);
 
     public:
         AppletManager(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
-        template <bool Application>
-        static Result initialize() {
-            constexpr util::TemplateString<9> name = Application ? "appletOE" : "appletAE";
-            sf::Service service = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<name>());
-            HK_ABORT_UNLESS_R(service.convertToDomain());
 
+        template <AppType Type>
+        static Result initialize() {
+            constexpr util::TemplateString<9> name = Type == AppType::Application ? "appletOE" : "appletAE";
+            sf::Service service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<name>());
+            HK_TRY(service.convertToDomain());
+
+            // OpenApplicationProxy
             auto input = sf::packInput(u64(0), u64(0));
             auto request = sf::Request(&service, 0, &input);
             request.setSendPid();
             request.addCopyHandle(svc::CurrentProcess);
 
             do {
-                ValueOrResult<sf::Service> result = service.invokeRequest(move(request), sf::simpleSubserviceExtractor(&service));
+                ValueOrResult<sf::Service> result = service.invokeRequest(move(request), sf::subserviceExtractor(&service));
                 if (result.hasValue()) {
                     ApplicationProxy::createInstance(result);
                     return ResultSuccess();
                 }
 
-                // am switchbrew docs say that apps wait until GetApplicationFunctions stops returning 0x19280
+                // am switchbrew docs say that apps wait until OpenApplicationProxy stops returning 0x19280
                 if (Result(result).getValue() != 0x19280)
-                    HK_ABORT_UNLESS_R(result);
+                    HK_TRY(result);
 
                 svc::SleepThread(10_ms);
             } while (true);

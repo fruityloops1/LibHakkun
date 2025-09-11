@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/ValueOrResult.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
@@ -12,16 +13,16 @@ namespace hk::pm {
         HK_SINGLETON(ProcessManagerForDebugMonitor);
 
     public:
-        static ProcessManagerForDebugMonitor* initialize() {
-            auto service = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<"pm:dmnt">());
+        static ValueOrResult<ProcessManagerForDebugMonitor*> initialize() {
+            auto service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"pm:dmnt">());
             createInstance(move(service));
             return instance();
         }
 
-        size getJitDebugProcessIdList(std::span<u64> debugProcesses) {
+        ValueOrResult<size> getJitDebugProcessIdList(std::span<u64> debugProcesses) {
             auto request = sf::Request(this, 1);
             request.addOutMapAlias(debugProcesses.data(), debugProcesses.size_bytes());
-            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
+            HK_TRY(invokeRequest(move(request)));
             return debugProcesses.size();
         }
 
@@ -34,8 +35,7 @@ namespace hk::pm {
         }
 
         ValueOrResult<Handle> hookToCreateProcess(u64 titleId) {
-            auto request = sf::Request(this, 3, &titleId);
-            return invokeRequest(move(request), sf::handleExtractor());
+            return invokeSimple<Handle>(*this, 3, &titleId);
         }
 
         ValueOrResult<u64> getApplicationProcessId() {
@@ -43,12 +43,11 @@ namespace hk::pm {
         }
 
         ValueOrResult<Handle> hookToCreateApplicationProcess() {
-            auto request = sf::Request(this, 5);
-            return invokeRequest(move(request), sf::handleExtractor());
+            return invokeSimple<Handle>(*this, 5);
         }
 
-        void clearHook(u32 bitflags) {
-            HK_ABORT_UNLESS_R(sf::invokeSimple(*this, 6, &bitflags));
+        Result clearHook(u32 bitflags) {
+            return sf::invokeSimple(*this, 6, &bitflags);
         }
 
         ValueOrResult<u64> getProgramId(u64 pid) {

@@ -1,7 +1,8 @@
 #include "hk/services/am/detail/service.h"
 namespace hk::am {
-    template<bool Application>
+    using detail::AppType;
+    template<AppType Type>
     Result initialize() {
-        am::detail::AppletManager::initialize<Application>();
+        return am::detail::AppletManager::initialize<Type>();
     }
 }

@@ -18,10 +18,10 @@ namespace hk::sf {
         });
     }
 
-    void Service::release() {
+    Result Service::release() {
         HK_ASSERT(mObject.has_value());
         auto request = sf::Request(this, 0);
         request.setDomainClose();
-        HK_ABORT_UNLESS_R(invokeControl(move(request), inlineDataExtractor<void>()));
+        return invokeControl(move(request), inlineDataExtractor<void>());
     }
 }

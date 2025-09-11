@@ -2,7 +2,6 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
-#include <new>
 #include <utility>
 
 namespace hk::util {

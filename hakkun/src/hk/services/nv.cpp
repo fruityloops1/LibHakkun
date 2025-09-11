@@ -1,7 +1,10 @@
 #include "hk/services/nv/result.h"
 #include "hk/diag/diag.h"
+#include "hk/services/nv/service.h"
+#include "hk/util/Singleton.h"
 
 namespace hk::nvdrv {
+    HK_SINGLETON_IMPL(NvidiaDriver);
     Result convertErrorToResult(u32 error) {
         switch (error) {
         case 0:

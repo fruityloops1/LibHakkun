@@ -6,8 +6,8 @@ namespace hk::vi {
     HK_SINGLETON_IMPL(SystemDisplayService);
     HK_SINGLETON_IMPL(ManagerDisplayService);
 
-    void initialize() {
-        VideoInterface::initialize();
+    Result initialize() {
+        return VideoInterface::initialize();
     }
 
     Result openDefaultDisplay() {

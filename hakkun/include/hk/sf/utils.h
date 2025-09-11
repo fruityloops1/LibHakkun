@@ -64,6 +64,8 @@ namespace hk::sf {
         auto input = packInput(args...);
         if constexpr (std::is_same_v<T, sf::Service>) {
             return service.invokeRequest(sf::Request(&service, id, &input), subserviceExtractor(&service));
+        } else if constexpr (std::is_same_v<T, Handle>) {
+            return service.invokeRequest(sf::Request(&service, id, &input), handleExtractor());
         } else {
             return service.invokeRequest(sf::Request(&service, id, &input), inlineDataExtractor<T>());
         };

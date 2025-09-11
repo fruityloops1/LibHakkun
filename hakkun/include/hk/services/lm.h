@@ -2,7 +2,6 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
-#include "hk/diag/diag.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
@@ -38,7 +37,7 @@ namespace hk::lm {
         }
 
     public:
-        void log(const char* text) {
+        Result log(const char* text) {
             struct LogPacketHeader {
                 u64 processId;
                 u64 threadId;
@@ -69,7 +68,7 @@ namespace hk::lm {
 
             auto request = sf::Request(this, 0);
             request.addInAutoselect(logData, stream.tell());
-            HK_ABORT_UNLESS_R(invokeRequest(move(request)));
+            return invokeRequest(move(request));
         }
     };
 
@@ -80,8 +79,8 @@ namespace hk::lm {
         LogManager(sf::Service&& service)
             : sf::Service(move(service)) { }
 
-        static LogManager* initialize() {
-            createInstance(HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<"lm">()));
+        static ValueOrResult<LogManager*> initialize() {
+            createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"lm">()));
             return instance();
         }
 

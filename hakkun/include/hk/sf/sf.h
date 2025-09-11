@@ -55,7 +55,7 @@ namespace hk::sf {
             return Service(parent->mSession, object, false);
         }
 
-        void release();
+        Result release();
 
         Service(Handle session, std::optional<u32> object, bool isRoot)
             : mSession(session)
@@ -82,7 +82,7 @@ namespace hk::sf {
             if (mOwnedHandle) {
                 svc::CloseHandle(mSession);
             } else if (mSession != 0) {
-                release();
+                HK_ABORT_UNLESS_R(release());
             }
         }
 

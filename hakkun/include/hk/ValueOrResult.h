@@ -174,13 +174,13 @@ namespace hk {
 #undef HK_TRY
 #define HK_TRY(VALUE)                                       \
     ({                                                      \
-        auto&& value = VALUE;                               \
+        auto&& _value_temp = VALUE;                               \
                                                             \
-        ::hk::Result result = value;                        \
-        if (result.failed())                                \
-            return result;                                  \
+        ::hk::Result _result_temp = _value_temp;                        \
+        if (_result_temp.failed())                                \
+            return _result_temp;                                  \
                                                             \
-        ::hk::detail::getTryExpressionValue(::move(value)); \
+        ::hk::detail::getTryExpressionValue(::move(_value_temp)); \
     })
 
 } // namespace hk

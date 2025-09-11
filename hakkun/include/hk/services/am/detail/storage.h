@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/ValueOrResult.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include <span>
@@ -10,8 +11,8 @@ namespace hk::am::detail {
         Storage(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
 
-        u64 getSize() {
-            return HK_UNWRAP(sf::invokeSimple<u64>(*this, 0));
+        ValueOrResult<u64> getSize() {
+            return sf::invokeSimple<u64>(*this, 0);
         }
 
         template <typename T>
