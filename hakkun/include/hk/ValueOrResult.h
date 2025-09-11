@@ -122,13 +122,11 @@ namespace hk {
  *
  */
 #define HK_UNWRAP(VALUE)                                                                \
-    ([&]() hk_alwaysinline {                                                            \
+    ({                                                                                  \
         auto&& _hk_unwrap_v = VALUE;                                                    \
         using _ValueOrResult_T = std::remove_reference_t<decltype(_hk_unwrap_v)>::Type; \
         ::hk::Result _result_temp = _hk_unwrap_v;                                       \
-        if (_result_temp.succeeded())                                                   \
-            return (_ValueOrResult_T)_hk_unwrap_v;                                      \
-        else {                                                                          \
+        if (_result_temp.failed()) {                                                    \
             const char* _result_temp_name = ::hk::diag::getResultName(_result_temp);    \
             if (_result_temp_name != nullptr) {                                         \
                 ::hk::diag::abortImpl(                                                  \
@@ -154,6 +152,35 @@ namespace hk {
                     "HK_UNWRAP(" #VALUE ")");                                           \
             }                                                                           \
         }                                                                               \
-    })()
+        (_ValueOrResult_T) _hk_unwrap_v;                                                \
+    })
+
+    namespace detail {
+
+        template <int Module, int Description>
+        inline hk_alwaysinline constexpr void getTryExpressionValue(const hk::ResultV<Module, Description>&&) { }
+        inline hk_alwaysinline constexpr void getTryExpressionValue(const hk::Result&&) { }
+        template <typename T>
+        inline hk_alwaysinline constexpr T getTryExpressionValue(ValueOrResult<T>&& value) {
+            return move((T)value);
+        }
+
+    } // namespace detail
+
+/**
+ * @brief Return if Result within expression is unsuccessful. Returns value of ValueOrResult when applicable.
+ * Function must return Result.
+ */
+#undef HK_TRY
+#define HK_TRY(VALUE)                                       \
+    ({                                                      \
+        auto&& value = VALUE;                               \
+                                                            \
+        ::hk::Result result = value;                        \
+        if (result.failed())                                \
+            return result;                                  \
+                                                            \
+        ::hk::detail::getTryExpressionValue(::move(value)); \
+    })
 
 } // namespace hk
