@@ -1,3 +1,5 @@
+#pragma once
+
 #include "hk/sf/sf.h"
 #include "hk/svc/api.h"
 #include "hk/util/Stream.h"
