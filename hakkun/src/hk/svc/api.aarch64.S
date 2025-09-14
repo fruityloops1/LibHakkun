@@ -163,7 +163,16 @@ SVC_BEGIN _ZN2hk3svc15SignalToAddressEPvNS0_10SignalTypeEjm
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc13AcceptSessionEPjj
+SVC_BEGIN _ZN2hk3svc13CreateSessionEPNS_6HandleES2_bm
+	stp x0, x1, [sp, #-16]!
+	svc 0x41
+	ldp x3, x4, [sp], #16
+	str w1, [x3]
+	str w2, [x4]
+	ret
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc13AcceptSessionEPNS_6HandleES1_
 	str x0, [sp, #-16]!
 	svc 0x41
 	ldr x2, [sp], #16
@@ -171,7 +180,7 @@ SVC_BEGIN _ZN2hk3svc13AcceptSessionEPjj
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
+SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightENS_6HandleEPh
   mov x8, x1
   ldp w1, w2, [x8, #0]
   ldp w3, w4, [x8, #8]
@@ -187,7 +196,7 @@ SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
   ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc15ReplyAndReceiveEPjPKjjjm
+SVC_BEGIN _ZN2hk3svc15ReplyAndReceiveEPjPKNS_6HandleEjS2_m
 	str x0, [sp, #-16]!
 	svc 0x43
 	ldr x2, [sp], #16
@@ -246,7 +255,7 @@ SVC_BEGIN _ZN2hk3svc13GetSystemInfoEPvNS0_14SystemInfoTypeEjNS0_24PhysicalMemory
 	ret
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
+SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPNS_6HandleEPKci
 	str x0, [sp, #-16]!
 	svc 0x71
 	ldr x2, [sp], #16

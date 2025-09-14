@@ -34,6 +34,7 @@ namespace hk::svc {
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
+    Result CreateSession(Handle* outServerHandle, Handle* outClientHandle, bool isLight, ptr name);
     Result AcceptSession(Handle* outSessionHandle, Handle portHandle);
     Result ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
     Result ReplyAndReceive(u32* outIndex, const Handle* handles, u32 handleCount, Handle replyHandle, u64 timeout);
@@ -114,6 +115,30 @@ namespace hk::svc {
         HK_TRY(GetInfo(&value, type, handle, subType));
 
         return value;
+    }
+
+    struct CreatedSession {
+        Handle server;
+        Handle client;
+    };
+
+    inline hk_alwaysinline ValueOrResult<CreatedSession> CreateSession(bool isLight, ptr name) {
+        Handle outServerHandle, outClientHandle;
+
+        HK_TRY(CreateSession(&outServerHandle, &outClientHandle, isLight, name));
+
+        return CreatedSession {
+            .server = outServerHandle,
+            .client = outClientHandle,
+        };
+    }
+
+    inline hk_alwaysinline ValueOrResult<Handle> AcceptSession(Handle portHandle) {
+        Handle outHandle;
+
+        HK_TRY(AcceptSession(&outHandle, portHandle));
+
+        return outHandle;
     }
 
     inline hk_alwaysinline ValueOrResult<Handle> DebugActiveProcess(u64 processId) {

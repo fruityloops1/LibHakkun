@@ -84,9 +84,7 @@ namespace hk::socket {
             u32 value2 = 0;
             u8 octets[4] = {};
             for (u8 i = 0; i < 4; i++) {
-                auto result = parseOctet(text, i == 3);
-                HK_TRY(result);
-                octets[i] = result.value();
+                octets[i] = HK_TRY(parseOctet(text, i == 3));
                 value2 <<= 8;
                 value2 |= octets[i];
             }
