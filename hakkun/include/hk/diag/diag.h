@@ -150,7 +150,7 @@ ResultAbort (%04d-%04d/%s) [from %s]
     inline void log(const char* fmt, ...) { }
     inline void logLineImpl(const char* fmt, std::va_list list) { }
     inline void logLine(const char* fmt, ...) { }
-    [[deprecated("use hk::debug::logLine instead")]] void debugLog(const char* fmt, ...) { }
+    [[deprecated("use hk::debug::logLine instead")]] inline void debugLog(const char* fmt, ...) { }
 #else
     void logBuffer(const char* buf, size len);
     void logImpl(const char* fmt, std::va_list list);
