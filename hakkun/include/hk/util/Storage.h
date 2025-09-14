@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include <utility>
+#include <new> // IWYU pragma: keep
 
 namespace hk::util {
 
