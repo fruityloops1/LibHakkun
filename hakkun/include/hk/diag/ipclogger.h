@@ -8,7 +8,7 @@
 
 namespace hk::diag::ipclogger {
     class IpcLogger {
-        static constexpr Handle cInvalidSession = std::numeric_limits<Handle>::max();
+        static constexpr Handle cInvalidSession = std::numeric_limits<u32>::max();
         static IpcLogger sInstance;
         Handle mSession = 0;
 
