@@ -267,3 +267,19 @@ SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEmNS_6HandleEmm
 	svc 0x74
 	ret
 SVC_END
+
+SVC_BEGIN _ZN2hk3svc17CallSecureMonitorENS0_10SecmonArgsE
+	str x0, [sp, #-16]!
+	mov x8, x0
+	ldp x0, x1, [x8]
+	ldp x2, x3, [x8, #0x10]
+	ldp x4, x5, [x8, #0x20]
+	ldp x6, x7, [x8, #0x30]
+	svc 0x7F
+	ldr x8, [sp], #16
+	stp x0, x1, [x8]
+	stp x2, x3, [x8, #0x10]
+	stp x4, x5, [x8, #0x20]
+	stp x6, x7, [x8, #0x30]
+	ret
+SVC_END

@@ -56,6 +56,7 @@ namespace hk::svc {
     Result WriteDebugProcessMemory(Handle debugHandle, const void* buffer, u64 address, size size);
     Result GetSystemInfo(u64* outInfo, SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType);
     Result MapProcessMemory(ptr dest, Handle process, u64 source, size size);
+    Result CallSecureMonitor(SecmonArgs args);
 
     // ValueOrResult wrappers
 
