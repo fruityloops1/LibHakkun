@@ -368,4 +368,8 @@ namespace hk::svc {
 
     using ThreadFunc = void (*)(ptr);
 
+    struct SecmonArgs {
+        uint64_t X[8];
+    };
+
 } // namespace hk::svc
