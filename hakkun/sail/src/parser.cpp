@@ -86,10 +86,6 @@ namespace sail {
         fail<3>("sail: syntax error at %s:%d: %s\n", filePath.c_str(), lineNumber, buf); \
     }
 
-#define CHECK_DUPLICATE(NAME)                                 \
-    if (addDestinationSymbolAndCheckDuplicate(NAME) == false) \
-        SYNTAX_ERROR("duplicate symbol: %s", NAME.c_str());
-
     static std::string removeCrlf(const std::string& str) {
         std::string::size_type idx = 0;
 
@@ -115,6 +111,14 @@ namespace sail {
         std::string currentModule;
         std::deque<std::string> currentVersions;
         std::vector<u32> currentVersionIndices;
+
+        auto calcVersionsHash = [&]() -> u32 {
+            u32 hash = 0;
+            for (const std::string& ver : currentVersions)
+                hash += hashMurmur(ver.c_str());
+
+            return hash;
+        };
 
         std::vector<Symbol> symbols;
 
@@ -170,7 +174,6 @@ namespace sail {
                 newSymbol.dataDynamic.name = dynamicSymbol;
                 newSymbol.versionIndices = {};
                 symbols.push_back(newSymbol);
-                CHECK_DUPLICATE(name);
 
                 // printf("Dynamic Symbol: %s = %s\n", name.c_str(), dynamicSymbol.c_str());
             };
