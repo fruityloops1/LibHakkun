@@ -4,7 +4,6 @@ include(sys/cmake/generate_exefs.cmake)
 include(sys/cmake/addons.cmake)
 include(sys/cmake/module_config.cmake)
 
-
 if (MODULE_BINARY STREQUAL "rtld")
     message(FATAL_ERROR "Hakkun cannot be used in place of rtld")
 endif()
@@ -17,6 +16,7 @@ target_link_options(${PROJECT_NAME} PRIVATE -T${MISC_LINKER_SCRIPT})
 apply_config(${PROJECT_NAME})
 
 add_subdirectory(sys/hakkun)
+add_to_visibility(${PROJECT_SOURCE_DIR}/exported.txt)
 add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_module.txt)
 if (HAKKUN_STANDALONE)
     if (IS_32_BIT)

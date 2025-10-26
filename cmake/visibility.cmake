@@ -3,6 +3,11 @@ include(sys/cmake/watch.cmake)
 set_property(GLOBAL PROPERTY VISIBILITY_SYMBOLS_LIST "")
 
 function(add_to_visibility file)
+    if(NOT EXISTS ${file})
+        message(WARNING "export list ${file} does not exist")
+        return()
+    endif()
+
     file(READ "${file}" file_content)
     
     string(REPLACE "\r\n" "\n" file_content "${file_content}") 
