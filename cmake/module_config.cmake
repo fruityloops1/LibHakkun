@@ -18,7 +18,7 @@ function(apply_module_config module useLinkerScript init)
     set(VERSION_SCRIPT_FILE "${CMAKE_BINARY_DIR}/${module}_visibility.txt")
 
     if (useLinkerScript)
-        target_link_options(${module} PRIVATE -T${LINKER_SCRIPT})
+        target_link_options(${module} PRIVATE -T${LINKER_SCRIPT} -Wl,--Bdynamic)
     endif()
     write_visibility_script(${VERSION_SCRIPT_FILE} ${module})
     target_link_options(${module} PRIVATE -Wl,-init=${init} -Wl,--pie)

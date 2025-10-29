@@ -70,7 +70,7 @@ namespace sail {
             asmFile.append(":\n\t.quad 0x0\n");
         }
 
-        compile(outPath, clangBinary, "assembler", asmFile, "-Wl,--shared -s", "fakesymbols.so");
+        compile(outPath, clangBinary, "assembler", asmFile, "-Wl,--shared -s -fuse-ld=lld", "fakesymbols.so");
     }
 
     template <typename T>
