@@ -57,7 +57,7 @@ namespace hk::gfx {
         util::Vector2f mGlyphSize { 16, 24 };
         util::Vector2f mCursor { 0, 0 };
         u32 mPrintColor = rgba(255, 255, 255, 255);
-        Font* mCurrentFont = mFont.get();
+        Font* mCurrentFont = mFont.getUnsafe();
         bool mInitialized = false;
 
     public:

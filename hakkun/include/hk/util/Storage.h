@@ -2,8 +2,8 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
-#include <utility>
 #include <new> // IWYU pragma: keep
+#include <utility>
 
 namespace hk::util {
 
@@ -17,8 +17,6 @@ namespace hk::util {
         alignas(alignof(T)) u8 mStorage[sizeof(T)] { 0 };
         bool mAlive = false;
 
-        T* getUnsafe() { return cast<T*>(mStorage); }
-
         void destroyImpl() {
             getUnsafe()->~T();
             mAlive = false;
@@ -31,6 +29,8 @@ namespace hk::util {
         }
 
     public:
+        T* getUnsafe() { return cast<T*>(mStorage); }
+
         bool isAlive() const { return mAlive; }
 
         bool tryDestroy() {
