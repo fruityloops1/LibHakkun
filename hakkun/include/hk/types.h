@@ -184,6 +184,9 @@ namespace hk {
  */
 #define defer_if(COND) auto CONCAT(CONCAT(scope_exit_guard_, __LINE__), __COUNTER__) = ::hk::ScopeGuardOnExit(COND) + [&]()
 
+    template <typename T, typename Base>
+    concept Derived = std::is_base_of_v<Base, T>;
+
 } // namespace hk
 
 #include "hk/Result.h"

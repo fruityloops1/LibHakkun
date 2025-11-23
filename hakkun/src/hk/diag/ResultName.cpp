@@ -7,9 +7,6 @@ namespace hk::diag {
     hk_noreturn void abortImpl(hk::svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
 } // namespace hk::diag
 
-template <class T>
-concept ResultType = std::is_base_of_v<hk::Result, T>;
-
 struct ResultNameEntry {
     u32 value;
     const char* name;
@@ -19,7 +16,7 @@ extern ResultNameEntry cResultNames[];
 extern const size cMaxNames;
 static size cNumResultNames = 0;
 
-template <ResultType Result>
+template <hk::Derived<hk::Result> Result>
 struct AddResultName {
     AddResultName() {
         if (cNumResultNames >= cMaxNames)

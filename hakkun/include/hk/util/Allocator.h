@@ -50,9 +50,6 @@ namespace hk::util {
         }
     };
 
-    template <class T>
-    concept AllocatorType = std::is_base_of_v<Allocator<T>, T>;
-
     struct MallocAllocator : Allocator<MallocAllocator> {
         hk_alwaysinline inline static void* allocate(::size size, ::size alignment) {
             return aligned_alloc(alignment, size);
