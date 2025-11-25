@@ -31,7 +31,7 @@ namespace hk::gfx {
         }
 
         float getCharHeightUv() const {
-            return 1.0f / (mNumChars / float(cCharsPerRow));
+            return 1.0f / std::ceilf(mNumChars / float(cCharsPerRow));
         }
 
         Font(void* fontData, void* device, void* memory);
