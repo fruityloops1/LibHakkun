@@ -85,9 +85,11 @@ File: %s:%d
     }
 
     void logImpl(const char* fmt, std::va_list list) {
+        std::va_list listCopy;
+        va_copy(listCopy, list);
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 1];
-        vsnprintf(buf, len + 1, fmt, list);
+        vsnprintf(buf, len + 1, fmt, listCopy);
 
         ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), len});
         hkLogSink(buf, len);
@@ -101,9 +103,11 @@ File: %s:%d
     }
 
     void logLineImpl(const char* fmt, std::va_list list) {
+        std::va_list listCopy;
+        va_copy(listCopy, list);
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 2];
-        vsnprintf(buf, len + 2, fmt, list);
+        vsnprintf(buf, len + 2, fmt, listCopy);
         ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), len});
 
         buf[len] = '\n';
