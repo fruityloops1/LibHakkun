@@ -27,7 +27,35 @@ namespace hk::util {
             const u32 c = read(p, 2 + i * 4, userData);
             const u32 d = read(p, 3 + i * 4, userData);
 
-            const u32 block = a << 0 | b << 8 | c << 16 | d << 24;
+            const u32 block = a << 0
+                | b << 8
+                | c << 16
+                | d << 24;
+            return block;
+        }
+
+        template <typename T, class Read>
+        constexpr u64 getBlock64(const T* p, fu64 i, void* userData) {
+            static_assert(sizeof(T) == 1);
+            constexpr auto read = Read::read;
+
+            const u64 a = read(p, 0 + i * 8, userData);
+            const u64 b = read(p, 1 + i * 8, userData);
+            const u64 c = read(p, 2 + i * 8, userData);
+            const u64 d = read(p, 3 + i * 8, userData);
+            const u64 e = read(p, 4 + i * 8, userData);
+            const u64 f = read(p, 5 + i * 8, userData);
+            const u64 g = read(p, 6 + i * 8, userData);
+            const u64 h = read(p, 7 + i * 8, userData);
+
+            const u64 block = a << 0
+                | b << 8
+                | c << 16
+                | d << 24
+                | e << 32
+                | f << 40
+                | g << 48
+                | h << 56;
             return block;
         }
 
@@ -51,7 +79,7 @@ namespace hk::util {
          * @tparam Read
          */
         template <typename T, class Read>
-        class HashMurmurImpl {
+        class HashMurmur32Impl {
             static_assert(sizeof(T) == 1);
 
             const T* const mData;
@@ -69,7 +97,7 @@ namespace hk::util {
             constexpr static u32 c3 = 0xe6546b64;
 
         public:
-            constexpr HashMurmurImpl(const T* data, const fu32 len, const u32 seed = 0, void* userData = nullptr)
+            constexpr HashMurmur32Impl(const T* data, const fu32 len, const u32 seed = 0, void* userData = nullptr)
                 : mData(data)
                 , mLen(len)
                 , mSeed(seed)
@@ -154,8 +182,117 @@ namespace hk::util {
         };
 
         template <typename T, class Read>
+        using HashMurmurImpl = HashMurmur32Impl<T, Read>;
+
+        /**
+         * @brief HashMurmur3 64-bit implementation. Allows partial and full feeding.
+         *
+         * @tparam T
+         * @tparam Read
+         */
+        template <typename T, class Read>
+        class HashMurmur64Impl {
+            static_assert(sizeof(T) == 1);
+
+            const T* const mData;
+            const fu64 mLen;
+            void* const mUserData;
+            u64 mHashValue = 0;
+
+            constexpr static fu64 nblocks(fu64 len) { return len / 8; }
+            constexpr fu64 nblocks() const { return nblocks(mLen); }
+
+            constexpr static u64 cMurmur64Constant = 0xc6a4a7935bd1e995;
+            constexpr static u64 cMurmur64Seed = 0xa9f63e6017234875;
+            constexpr static u64 cShift = 47;
+
+            constexpr static u64 finalMix64(u64 h) {
+                h = (h ^ (h >> cShift)) * cMurmur64Constant;
+                return (h ^ (h >> cShift));
+            }
+
+        public:
+            constexpr HashMurmur64Impl(const T* data, const fu64 len, void* userData = nullptr)
+                : mData(data)
+                , mLen(len)
+                , mUserData(userData) {
+                mHashValue = (len * cMurmur64Constant) ^ cMurmur64Seed;
+            }
+
+            constexpr __attribute__((noinline)) void feed(const T* fedData, const fu64 fedLen) {
+                for (fu64 i = 0; i < nblocks(fedLen); i++) {
+                    u64 value = getBlock64<T, ReadDefault<T>>(fedData, i, nullptr);
+                    mHashValue = (((((value * cMurmur64Constant) ^ ((value * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ mHashValue) * cMurmur64Constant;
+                }
+            }
+
+            constexpr void feedNullTerminated(const T* str) {
+                size len = 0;
+                {
+                    const T* _str = str;
+                    while (*_str) {
+                        _str++;
+                        len++;
+                    }
+                }
+
+                feed(str, len);
+
+                const fu32 tail = len & 3;
+                if (tail > 0) {
+                    T tailData[sizeof(u32)] = {};
+                    for (size i = 0; i < tail; i++)
+                        tailData[i] = str[len - tail + i];
+                    feed(tailData, sizeof(tailData));
+                }
+            }
+
+            constexpr void calcWithCallback() {
+                for (fu64 i = 0; i < nblocks(); i++) {
+                    u64 value = getBlock64<T, Read>(mData, i, mUserData);
+                    mHashValue = (((((value * cMurmur64Constant) ^ ((value * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ mHashValue) * cMurmur64Constant;
+                }
+            }
+
+            constexpr u64 finalize() const {
+                constexpr auto read = Read::read;
+
+                u64 h1 = mHashValue;
+
+                const u64 tail = mLen - (mLen % 8);
+
+                switch (mLen & 7) {
+                case 7:
+                    h1 ^= u64(read(mData, tail + 6, mUserData)) << 48;
+                case 6:
+                    h1 ^= u64(read(mData, tail + 5, mUserData)) << 40;
+                case 5:
+                    h1 ^= u64(read(mData, tail + 4, mUserData)) << 32;
+                case 4:
+                    h1 ^= u64(read(mData, tail + 3, mUserData)) << 24;
+                case 3:
+                    h1 ^= u64(read(mData, tail + 2, mUserData)) << 16;
+                case 2:
+                    h1 ^= u64(read(mData, tail + 1, mUserData)) << 8;
+                case 1:
+                    h1 ^= read(mData, tail + 0, mUserData);
+                    h1 *= cMurmur64Constant;
+                }
+
+                return finalMix64(h1);
+            }
+        };
+
+        template <typename T, class Read>
         constexpr u32 hashMurmurImpl(const T* data, const fu32 len, const u32 seed = 0, void* userData = nullptr) {
-            HashMurmurImpl<T, Read> hash(data, len, seed, userData);
+            HashMurmur32Impl<T, Read> hash(data, len, seed, userData);
+            hash.calcWithCallback();
+            return hash.finalize();
+        }
+
+        template <typename T, class Read>
+        constexpr u64 hashMurmur64Impl(const T* data, const fu64 len, void* userData = nullptr) {
+            HashMurmur64Impl<T, Read> hash(data, len, userData);
             hash.calcWithCallback();
             return hash.finalize();
         }
@@ -166,10 +303,20 @@ namespace hk::util {
         return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str), seed);
     }
 
+    constexpr u64 hashMurmur64(const char* str) {
+        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str));
+    }
+
     template <typename T>
     constexpr u32 hashMurmur(const T* data, const fu32 len, const u32 seed = 0) {
         static_assert(sizeof(T) == 1);
         return detail::hashMurmurImpl<T, detail::ReadDefault<T>>(data, len, seed);
+    }
+
+    template <typename T>
+    constexpr u64 hashMurmur64(const T* data, const fu64 len) {
+        static_assert(sizeof(T) == 1);
+        return detail::hashMurmur64Impl<T, detail::ReadDefault<T>>(data, len);
     }
 
     // Not sure how to make constexpr type-punning work
@@ -238,5 +385,6 @@ namespace hk::util {
     static_assert(hashMurmur(":333333333", 0xB00B1E5) == 0x4f39bed5);
     static_assert(hashMurmur("lkdjtgljkwerlkgver#g#ää5r+#ä#23ü4#2ü3420395904e3r8i9", 0xB00B1E6) == 0xcaafb947);
     static_assert(hashCrc32("meow") == 0x8a106afe);
+    static_assert(hashMurmur64("engine__actor__ActorParam") == 0x3c520ab863c2a552);
 
 } // namespace hk::util
