@@ -17,6 +17,10 @@ namespace hk::util {
         constexpr TemplateString(const char (&str)[N]) {
             std::copy_n(str, N, value);
         }
+
+        constexpr TemplateString(const std::array<char, N>& str) {
+            std::copy_n(str.data(), N, value);
+        }
     };
 
 } // namespace hk::util

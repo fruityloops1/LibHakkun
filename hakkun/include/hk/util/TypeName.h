@@ -13,7 +13,7 @@ namespace hk::util {
      * @tparam T Type
      */
     template <typename T>
-    constexpr /* breaks when consteval is used? */ const char* getTypeName() {
+    constexpr /* breaks when consteval is used? */ const auto& getTypeNameData() {
         constexpr static const char* cPrettyFunctionData = __PRETTY_FUNCTION__;
         constexpr static size cPrettyFunctionDataLen = __builtin_strlen(cPrettyFunctionData);
         constexpr static auto dataArr = ([]() {
@@ -34,7 +34,17 @@ namespace hk::util {
             return data;
         })();
 
-        return dataArr.data();
+        return dataArr;
+    }
+
+    /**
+     * @brief Return name of type T as a string literal.
+     *
+     * @tparam T Type
+     */
+    template <typename T>
+    constexpr /* breaks when consteval is used? */ const char* getTypeName() {
+        return getTypeNameData<T>().data();
     }
 #endif
 
