@@ -62,6 +62,11 @@ namespace hk {
      *
      */
     using ResultSuccess = ResultV<0, 0>;
+    /**
+     * @brief Failed Result.
+     *
+     */
+    using ResultFailed = ResultV<0, 1>;
 
 #define HK_RESULT_MODULE(ID)            \
     namespace _hk_result_id_namespace { \
