@@ -1,4 +1,5 @@
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+#define INCLUDE_HK_DETAIL_DEFAULTRESULTS
 #include "hk/Result.h"
 #include "hk/svc/types.h"
 #include "hk/util/TypeName.h"
@@ -26,8 +27,8 @@ struct AddResultName {
 };
 
 #undef HK_DEFINE_RESULT
-#define HK_DEFINE_RESULT(NAME, DESCRIPTION)                                                                  \
-    struct Result##NAME : ::hk::ResultV<_hk_result_id_namespace::module, DESCRIPTION + __COUNTER__ * 0> { }; \
+#define HK_DEFINE_RESULT(NAME, DESCRIPTION)                                                                           \
+    struct Result##NAME : ::hk::ResultV<_hk_result_id_namespace::Module::cModule, DESCRIPTION + __COUNTER__ * 0> { }; \
     ::AddResultName<Result##NAME> _Add_##NAME;
 
 constexpr size cResultCountStart = __COUNTER__;
@@ -38,6 +39,13 @@ constexpr size cResultCountStart = __COUNTER__;
 #include "hk/services/nv/result.h" // IWYU pragma: keep
 #include "hk/services/socket/result.h" // IWYU pragma: keep
 #include "hk/svc/results.h" // IWYU pragma: keep
+
+namespace hk {
+
+#include "hk/detail/DefaultResults.ih" // IWYU pragma: keep
+#undef INCLUDE_HK_DETAIL_DEFAULTRESULTS
+
+} // namespace hk
 
 constexpr size cResultCount = __COUNTER__ - cResultCountStart;
 ResultNameEntry cResultNames[cResultCount];

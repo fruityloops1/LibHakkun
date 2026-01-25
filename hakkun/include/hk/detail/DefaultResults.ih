@@ -1,0 +1,16 @@
+#ifndef INCLUDE_HK_DETAIL_DEFAULTRESULTS
+#error "do not include"
+#endif
+
+HK_RESULT_MODULE(0)
+HK_DEFINE_RESULT_RANGE(Hakkun, 0, 49)
+HK_DEFINE_RESULT(Success, 0)
+HK_DEFINE_RESULT(Failed, 1)
+HK_DEFINE_RESULT(NotImplemented, 2)
+HK_DEFINE_RESULT(InvalidArgument, 3)
+HK_DEFINE_RESULT(InvalidAddress, 4)
+HK_DEFINE_RESULT(InvalidSize, 5)
+HK_DEFINE_RESULT(NotFound, 6)
+HK_DEFINE_RESULT(OutOfRange, 7)
+HK_DEFINE_RESULT(AlreadyMapped, 8)
+HK_DEFINE_RESULT(NotMapped, 9)

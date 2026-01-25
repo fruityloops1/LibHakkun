@@ -57,27 +57,21 @@ namespace hk {
         }
     };
 
-    /**
-     * @brief Successful Result.
-     *
-     */
-    using ResultSuccess = ResultV<0, 0>;
-    /**
-     * @brief Failed Result.
-     *
-     */
-    using ResultFailed = ResultV<0, 1>;
+    template <int Module>
+    struct ResultModule {
+        constexpr static int cModule = Module;
+    };
 
-#define HK_RESULT_MODULE(ID)            \
-    namespace _hk_result_id_namespace { \
-        constexpr int module = ID;      \
+#define HK_RESULT_MODULE(ID)                   \
+    namespace _hk_result_id_namespace {        \
+        using Module = ::hk::ResultModule<ID>; \
     }
 
 /**
  * @brief Define a range for result types to be used in current module.
  *
  */
-#define HK_DEFINE_RESULT_RANGE(NAME, MIN, MAX) using ResultRange##NAME = ::hk::ResultRange<::hk::ResultV<_hk_result_id_namespace::module, MIN>().getValue(), ::hk::ResultV<_hk_result_id_namespace::module, MAX>().getValue()>;
+#define HK_DEFINE_RESULT_RANGE(NAME, MIN, MAX) using ResultRange##NAME = ::hk::ResultRange<::hk::ResultV<_hk_result_id_namespace::Module::cModule, MIN>().getValue(), ::hk::ResultV<_hk_result_id_namespace::Module::cModule, MAX>().getValue()>;
 
 #ifndef HK_DEFINE_RESULT
 /**
@@ -85,13 +79,21 @@ namespace hk {
  *
  */
 #define HK_DEFINE_RESULT(NAME, DESCRIPTION) \
-    using Result##NAME = ::hk::ResultV<_hk_result_id_namespace::module, DESCRIPTION>;
+    using Result##NAME = ::hk::ResultV<_hk_result_id_namespace::Module::cModule, DESCRIPTION>;
 #endif
 
     template <typename ResultType>
     hk_alwaysinline bool isResult(Result value) {
         return value == ResultType();
     }
+
+#ifndef INCLUDE_HK_DETAIL_DEFAULTRESULTS
+
+#define INCLUDE_HK_DETAIL_DEFAULTRESULTS
+#include "hk/detail/DefaultResults.ih"
+#undef INCLUDE_HK_DETAIL_DEFAULTRESULTS
+
+#endif // INCLUDE_HK_DETAIL_DEFAULTRESULTS
 
 /**
  * @brief Return if Result within expression is unsuccessful.
