@@ -187,6 +187,12 @@ namespace hk {
     template <typename T, typename Base>
     concept Derived = std::is_base_of_v<Base, T>;
 
+    template <typename T>
+    concept ReferenceType = std::is_reference_v<T>;
+
+    template <typename T>
+    concept PointerType = std::is_pointer_v<T>;
+
 } // namespace hk
 
 #include "hk/Result.h"

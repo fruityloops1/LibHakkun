@@ -11,6 +11,9 @@
 
 namespace hk {
 
+    template <typename T>
+    class ValueOrResult;
+
     /**
      * @brief Holds a Result and a value of type T, when the Result is ResultSuccess().
      *
@@ -107,6 +110,103 @@ namespace hk {
         constexpr operator T() { return move(disown()); }
     };
 
+    /**
+     * @brief Holds a Result and a reference to a value of type T, when the Result is ResultSuccess().
+     *
+     * @tparam T
+     */
+    template <ReferenceType T>
+    class ValueOrResult<T> {
+        using BaseType = std::remove_reference_t<T>;
+
+        Result mResult = ResultSuccess();
+        BaseType* mValueReference = nullptr;
+
+        constexpr BaseType& get() {
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::get(): No value (%04d-%04d/0x%x)",
+                util::getTypeName<T>(),
+                mResult.getModule() + 2000,
+                mResult.getDescription(),
+                mResult.getValue());
+
+            return *mValueReference;
+        }
+
+    public:
+        using Type = T;
+
+        constexpr ValueOrResult(Result result)
+            : mResult(result) {
+            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
+        }
+
+        constexpr ValueOrResult(BaseType* ptr)
+            : mValueReference(ptr) {
+            if (mValueReference == nullptr)
+                mResult = diag::ResultNoValue();
+        }
+
+        constexpr ValueOrResult(BaseType&& value)
+            : ValueOrResult(&value) {
+        }
+
+        constexpr bool hasValue() const { return mResult.succeeded(); }
+
+        /**
+         * @brief If a value is contained, call func with the value and return its result.
+         *
+         * @tparam L
+         * @param func
+         * @return ValueOrResult<typename util::FunctionTraits<L>::ReturnType>
+         */
+        template <typename L>
+        constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
+            using Return = typename util::FunctionTraits<L>::ReturnType;
+
+            if (hasValue()) {
+                if constexpr (std::is_same_v<Return, void>) {
+                    func(get());
+                    return ResultSuccess();
+                } else
+                    return func(get());
+            } else
+                return mResult;
+        }
+
+        /**
+         * @brief If a value is contained, call func to convert it to a result.
+         *
+         * @tparam L
+         * @param func
+         * @return Result
+         */
+        template <typename L>
+        constexpr Result mapToResult(L func) {
+            if (hasValue())
+                return func(get());
+
+            return mResult;
+        }
+
+        /**
+         * @brief Retrieves the value, if valid. Aborts if not.
+         *
+         * @return T&
+         */
+        constexpr BaseType& value() const {
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::value(): No value (%04d-%04d/0x%x)",
+                util::getTypeName<T>(),
+                mResult.getModule() + 2000,
+                mResult.getDescription(),
+                mResult.getValue());
+            return get();
+        }
+
+        constexpr operator Result() const { return mResult; }
+        constexpr operator T&() { return get(); }
+        constexpr BaseType* operator->() { return &get(); }
+    };
+
     template <>
     class ValueOrResult<void> : public Result {
     public:
@@ -172,14 +272,14 @@ namespace hk {
  * Function must return Result.
  */
 #undef HK_TRY
-#define HK_TRY(VALUE)                                       \
-    ({                                                      \
+#define HK_TRY(VALUE)                                             \
+    ({                                                            \
         auto&& _value_temp = VALUE;                               \
-                                                            \
-        ::hk::Result _result_temp = _value_temp;                        \
+                                                                  \
+        ::hk::Result _result_temp = _value_temp;                  \
         if (_result_temp.failed())                                \
             return _result_temp;                                  \
-                                                            \
+                                                                  \
         ::hk::detail::getTryExpressionValue(::move(_value_temp)); \
     })
 

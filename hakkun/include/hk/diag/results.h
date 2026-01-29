@@ -10,6 +10,7 @@ namespace hk::diag {
     HK_DEFINE_RESULT(AssertionFailure, 10)
     HK_DEFINE_RESULT(Abort, 11)
     HK_DEFINE_RESULT(ValueDisowned, 12)
+    HK_DEFINE_RESULT(NoValue, 13)
     HK_DEFINE_RESULT(NotAnNnsdkThread, 19)
 
 } // namespace hk::diag
