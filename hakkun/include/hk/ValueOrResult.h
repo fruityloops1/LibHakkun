@@ -4,6 +4,7 @@
 #include "hk/diag/diag.h"
 #include "hk/diag/results.h"
 #include "hk/util/Lambda.h"
+#include "hk/util/TemplateString.h"
 #include "hk/util/TypeName.h"
 #include <memory>
 #include <type_traits>
@@ -217,42 +218,69 @@ namespace hk {
         ValueOrResult() = default;
     };
 
+    template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
+    struct UnwrapChecker;
+
+    template <PointerType T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
+    struct UnwrapChecker<T, AbortMsg, File, Line> {
+        static hk_alwaysinline T check(T value) {
+            if (value == nullptr) {
+                diag::abortImpl(
+                    svc::BreakReason_User,
+                    diag::ResultNoValue(),
+                    File.value,
+                    Line,
+                    diag::cNullptrUnwrapFormat,
+                    AbortMsg.value);
+            }
+            return value;
+        }
+    };
+
+    template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
+    struct UnwrapChecker<ValueOrResult<T>, AbortMsg, File, Line> {
+        static hk_alwaysinline T check(ValueOrResult<T>&& value) {
+            const Result _result_temp = value;
+            if (_result_temp.failed()) {
+                const char* _result_temp_name = diag::getResultName(_result_temp);
+                if (_result_temp_name != nullptr) {
+                    diag::abortImpl(
+                        svc::BreakReason_User,
+                        _result_temp,
+                        File.value,
+                        Line,
+                        diag::cUnwrapResultFormatWithName,
+                        _result_temp.getModule() + 2000,
+                        _result_temp.getDescription(),
+                        _result_temp_name,
+                        AbortMsg.value);
+                } else {
+                    diag::abortImpl(
+                        svc::BreakReason_User,
+                        _result_temp,
+                        File.value,
+                        Line,
+                        diag::cUnwrapResultFormat,
+                        _result_temp.getModule() + 2000,
+                        _result_temp.getDescription(),
+                        _result_temp.getValue(),
+                        AbortMsg.value);
+                }
+            }
+            return move((typename ValueOrResult<T>::Type)value);
+        }
+    };
+
 /**
  * @brief Retrieve the value of a ValueOrResult<T>, abort if the Result is unsuccessful.
+ *        When VALUE is a pointer, abort if it is nullptr.
  *
  */
-#define HK_UNWRAP(VALUE)                                                                \
-    ({                                                                                  \
-        auto&& _hk_unwrap_v = VALUE;                                                    \
-        using _ValueOrResult_T = std::remove_reference_t<decltype(_hk_unwrap_v)>::Type; \
-        ::hk::Result _result_temp = _hk_unwrap_v;                                       \
-        if (_result_temp.failed()) {                                                    \
-            const char* _result_temp_name = ::hk::diag::getResultName(_result_temp);    \
-            if (_result_temp_name != nullptr) {                                         \
-                ::hk::diag::abortImpl(                                                  \
-                    ::hk::svc::BreakReason_User,                                        \
-                    _result_temp,                                                       \
-                    __FILE__,                                                           \
-                    __LINE__,                                                           \
-                    ::hk::diag::cAbortUnlessResultFormatWithName,                       \
-                    _result_temp.getModule() + 2000,                                    \
-                    _result_temp.getDescription(),                                      \
-                    _result_temp_name,                                                  \
-                    "HK_UNWRAP(" #VALUE ")");                                           \
-            } else {                                                                    \
-                ::hk::diag::abortImpl(                                                  \
-                    ::hk::svc::BreakReason_User,                                        \
-                    _result_temp,                                                       \
-                    __FILE__,                                                           \
-                    __LINE__,                                                           \
-                    ::hk::diag::cAbortUnlessResultFormat,                               \
-                    _result_temp.getModule() + 2000,                                    \
-                    _result_temp.getDescription(),                                      \
-                    _result_temp.getValue(),                                            \
-                    "HK_UNWRAP(" #VALUE ")");                                           \
-            }                                                                           \
-        }                                                                               \
-        (_ValueOrResult_T) _hk_unwrap_v;                                                \
+#define HK_UNWRAP(VALUE)                                                                                   \
+    ({                                                                                                     \
+        auto&& _hk_unwrap_v = VALUE;                                                                       \
+        using _ValueT = std::remove_reference_t<decltype(_hk_unwrap_v)>;                                   \
+        ::hk::UnwrapChecker<_ValueT, #VALUE, __FILE__, __LINE__>::check(::forward<_ValueT>(_hk_unwrap_v)); \
     })
 
     namespace detail {

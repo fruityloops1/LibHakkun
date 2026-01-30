@@ -41,7 +41,7 @@ namespace hk::diag {
         return (void*)(module->range().start() + arbitraryOffset);
     }
 
-    constexpr char sAbortFormat[] = R"(
+    constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~
 File: %s:%d
 )";
@@ -59,7 +59,7 @@ File: %s:%d
         vsnprintf(userMsgBuf, sizeof(userMsgBuf), msgFmt, arg);
 
         char headerMsgBuf[0x80];
-        snprintf(headerMsgBuf, sizeof(headerMsgBuf), sAbortFormat, file, line);
+        snprintf(headerMsgBuf, sizeof(headerMsgBuf), cAbortFormat, file, line);
 
         logLine(headerMsgBuf);
         logLine(userMsgBuf);
@@ -80,7 +80,7 @@ File: %s:%d
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void logBuffer(const char* buf, size length) {
-        ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), length});
+        ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length });
         hkLogSink(buf, length);
     }
 
@@ -91,7 +91,7 @@ File: %s:%d
         char buf[len + 1];
         vsnprintf(buf, len + 1, fmt, listCopy);
 
-        ipclogger::IpcLogger::instance()->logWithoutLine({cast<const u8*>(buf), len});
+        ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len });
         hkLogSink(buf, len);
     }
 
@@ -108,7 +108,7 @@ File: %s:%d
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 2];
         vsnprintf(buf, len + 2, fmt, listCopy);
-        ipclogger::IpcLogger::instance()->logWithLine({cast<const u8*>(buf), len});
+        ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len });
 
         buf[len] = '\n';
         hkLogSink(buf, len + 1);
@@ -121,7 +121,7 @@ File: %s:%d
         va_end(args);
     }
 
-    void debugLog(const char *fmt, ...) {
+    void debugLog(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
         logLineImpl(fmt, args);

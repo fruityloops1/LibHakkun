@@ -25,10 +25,21 @@ AssertionFailed: %s
         R"(
 ResultAbort (%04d-%04d/0x%x) [from %s]
 )";
-
     constexpr char cAbortUnlessResultFormatWithName[] =
         R"(
 ResultAbort (%04d-%04d/%s) [from %s]
+)";
+    constexpr char cUnwrapResultFormat[] =
+        R"(
+Unwrap (%04d-%04d/0x%x) [from %s]
+)";
+    constexpr char cUnwrapResultFormatWithName[] =
+        R"(
+Unwrap (%04d-%04d/%s) [from %s]
+)";
+    constexpr char cNullptrUnwrapFormat[] =
+        R"(
+Unwrap (nullptr) [from %s]
 )";
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
