@@ -144,7 +144,7 @@ namespace hk {
         constexpr ValueOrResult(BaseType* ptr)
             : mValueReference(ptr) {
             if (mValueReference == nullptr)
-                mResult = diag::ResultNoValue();
+                mResult = ResultNoValue();
         }
 
         constexpr ValueOrResult(BaseType&& value)
@@ -227,7 +227,7 @@ namespace hk {
             if (value == nullptr) {
                 diag::abortImpl(
                     svc::BreakReason_User,
-                    diag::ResultNoValue(),
+                    ResultNoValue(),
                     File.value,
                     Line,
                     diag::cNullptrUnwrapFormat,
