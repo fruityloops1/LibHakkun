@@ -1,0 +1,10 @@
+#include "hk/diag/results.h"
+#include "hk/hook/results.h"
+#include "hk/ro/results.h"
+#include "hk/services/nv/results.h"
+#include "hk/services/socket/result.h"
+#include "hk/svc/results.h"
+
+#if __has_include_next("HakkunResults.ih")
+#include_next "HakkunResults.ih"
+#endif

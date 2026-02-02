@@ -33,12 +33,8 @@ struct AddResultName {
 
 constexpr size cResultCountStart = __COUNTER__;
 
-#include "hk/diag/results.h" // IWYU pragma: keep
-#include "hk/hook/results.h" // IWYU pragma: keep
-#include "hk/ro/results.h" // IWYU pragma: keep
-#include "hk/services/nv/result.h" // IWYU pragma: keep
-#include "hk/services/socket/result.h" // IWYU pragma: keep
-#include "hk/svc/results.h" // IWYU pragma: keep
+#define HK_COLLECTING_RESULTNAMES
+#include "HakkunResults.ih" // IWYU pragma: keep
 
 namespace hk {
 
@@ -46,6 +42,8 @@ namespace hk {
 #undef INCLUDE_HK_DETAIL_DEFAULTRESULTS
 
 } // namespace hk
+
+#undef HK_COLLECTING_RESULTNAMES
 
 constexpr size cResultCount = __COUNTER__ - cResultCountStart;
 ResultNameEntry cResultNames[cResultCount];
