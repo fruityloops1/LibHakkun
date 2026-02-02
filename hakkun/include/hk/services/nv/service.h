@@ -3,7 +3,7 @@
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
 #include "hk/services/nv/ioctl.h"
-#include "hk/services/nv/result.h"
+#include "hk/services/nv/results.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
@@ -54,7 +54,7 @@ namespace hk::nvdrv {
             auto request = sf::Request(instance(), 3, &transferMemorySize);
             request.addCopyHandle(svc::CurrentProcess);
             request.addCopyHandle(transferMemoryHandle);
-            HK_TRY(instance()->invokeRequest(move(request), sf::inlineDataExtractor<u32>()).mapToResult(convertErrorToResult));
+            HK_TRY(instance()->invokeRequest(move(request), sf::inlineDataExtractor<u32>()).mapToResult(ResultMapNvidia::toResult));
 
             if (appletResourceUserId.has_value())
                 HK_TRY(instance()->setAppletResourceUserId(*appletResourceUserId));
@@ -66,19 +66,19 @@ namespace hk::nvdrv {
             auto input = sf::packInput(u64(0), appletResourceUserId);
             auto request = sf::Request(this, 8, &input);
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
-                .mapToResult(convertErrorToResult);
+                .mapToResult(ResultMapNvidia::toResult);
         }
 
         ValueOrResult<u32> open(std::string_view view) {
             auto request = sf::Request(this, 0);
             request.addInAutoselect(view.data(), view.size());
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
-                .mapToResult(convertErrorToResult);
+                .mapToResult(ResultMapNvidia::toResult);
         }
 
         Result close(u32 fd) {
             return sf::invokeSimple<u32>(this, 2, &fd)
-                .mapToResult(convertErrorToResult);
+                .mapToResult(ResultMapNvidia::toResult);
         }
 
         template <typename A, typename I = u8>
@@ -103,13 +103,13 @@ namespace hk::nvdrv {
                 request.addOutAutoselect(0, 0);
 
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
-                .mapToResult(convertErrorToResult);
+                .mapToResult(ResultMapNvidia::toResult);
         }
 
         ValueOrResult<Handle> queryEvent(u32 fd, u32 eventId) {
             auto input = sf::packInput(fd, eventId);
             return invokeRequest(sf::Request(this, 4, &input), [](sf::Response& response) -> ValueOrResult<Handle> {
-                HK_TRY(convertErrorToResult(sf::inlineDataExtractor<u32>()(response)));
+                HK_TRY(ResultMapNvidia::toResult(sf::inlineDataExtractor<u32>()(response)));
                 return response.nextCopyHandle();
             });
         }

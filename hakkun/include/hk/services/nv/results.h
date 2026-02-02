@@ -2,6 +2,9 @@
 #pragma once
 
 #include "hk/Result.h"
+#ifndef HK_COLLECTING_RESULTNAMES
+#include "hk/ResultMap.h"
+#endif
 
 namespace hk::nvdrv {
 
@@ -28,6 +31,27 @@ namespace hk::nvdrv {
     HK_DEFINE_RESULT(IoctlFailed, 67)
     HK_DEFINE_RESULT(UnhandledError, 68)
 
-    Result convertErrorToResult(u32 error);
+#ifndef HK_COLLECTING_RESULTNAMES
+    using ResultMapNvidia = ResultMap<int,
+        { 0, ResultSuccess() },
+        { 1, ResultUnimplemented() },
+        { 2, ResultUnsupported() },
+        { 3, ResultUninitialized() },
+        { 4, ResultBadArgument() },
+        { 5, ResultTimeout() },
+        { 6, ResultOutOfMemory() },
+        { 7, ResultReadOnly() },
+        { 8, ResultInvalidState() },
+        { 9, ResultInvalidAddress() },
+        { 10, ResultInvalidSize() },
+        { 11, ResultInvalidValue() },
+        { 13, ResultAlreadyAllocated() },
+        { 14, ResultBusy() },
+        { 15, ResultResourceError() },
+        { 16, ResultCountMismatch() },
+        { 0x1000, ResultSharedMemoryTooSmall() },
+        { 0x30003, ResultOperationFailed() },
+        { 0x3000F, ResultIoctlFailed() }>;
+#endif
 
 } // namespace hk::nvdrv

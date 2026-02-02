@@ -23,7 +23,7 @@ namespace hk {
     template <typename T>
     class ValueOrResult {
         Result mResult = ResultSuccess();
-        union {
+        union { // this is a union because it allows you to control the destruction of the object within in constexpr
             T mValue;
         };
 
