@@ -5,4 +5,4 @@
 
 namespace hk::nvdrv {
     HK_SINGLETON_IMPL(NvidiaDriver);
-}
+} // namespace hk::nvdrv

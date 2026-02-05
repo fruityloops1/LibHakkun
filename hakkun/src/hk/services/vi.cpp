@@ -1,6 +1,7 @@
 #include "hk/services/vi/service.h"
 
 namespace hk::vi {
+
     HK_SINGLETON_IMPL(VideoInterface);
     HK_SINGLETON_IMPL(ApplicationDisplayService);
     HK_SINGLETON_IMPL(SystemDisplayService);
@@ -20,7 +21,7 @@ namespace hk::vi {
 
     Result Display::open() {
         auto rc = ApplicationDisplayService::instance()->openDisplay(*this);
-        return rc.map([this](u64 id){ this->id = id; });
+        return rc.map([this](u64 id) { this->id = id; });
     }
 
     Result Display::close() {
@@ -42,6 +43,5 @@ namespace hk::vi {
     ValueOrResult<Handle> Display::getVsyncEventForDebug() {
         return ApplicationDisplayService::instance()->getDisplayVsyncEventForDebug(*this);
     }
-
 
 } // namespace hk::vi

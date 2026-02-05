@@ -1,11 +1,11 @@
 #pragma once
 
-#include "hk/types.h"
+#include "hk/ValueOrResult.h"
 
 namespace hk::hook {
 
     ptr findAslr(size searchSize);
     ptr findStack(size searchSize);
-    Result mapRoToRw(ptr addr, size mapSize, ptr* outRw);
+    ValueOrResult<ptr> mapRoToRw(ptr addr, size mapSize);
 
 } // namespace hk::hook

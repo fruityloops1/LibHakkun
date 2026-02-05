@@ -179,12 +179,10 @@ namespace hk::svc {
 
     hk_noreturn Result BreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
 
-    inline hk_alwaysinline Result getProcessHandleMesosphere(Handle* out) {
+    inline hk_alwaysinline ValueOrResult<Handle> getProcessHandleMesosphere() {
         u64 value = 0;
-        Result rc = GetInfo(&value, InfoType_MesosphereCurrentProcess, 0, 0);
-        if (rc.succeeded())
-            *out = Handle(value);
-        return rc;
+        HK_TRY(GetInfo(&value, InfoType_MesosphereCurrentProcess, 0, 0));
+        return Handle(value);
     }
 
     inline hk_alwaysinline void clearCache(ptr addr, ptrdiff size) {
@@ -193,11 +191,7 @@ namespace hk::svc {
 #ifdef __aarch64__
         __builtin___clear_cache((char*)addr, (char*)addr + size);
 #else // ILP32 userland cannot flush by itself
-        Handle process;
-        Result rc = getProcessHandleMesosphere(&process);
-#ifndef HK_RELEASE
-        HK_ABORT_UNLESS_R(rc);
-#endif
+        Handle process = HK_UNWRAP(getProcessHandleMesosphere());
         FlushProcessDataCache(process, addr, size);
         InvalidateProcessDataCache(process, addr, size);
 #endif

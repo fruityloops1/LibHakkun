@@ -9,7 +9,7 @@ namespace hk::hook {
         section(.text) static TrampolineBackup sTrampolinePoolData[HK_HOOK_TRAMPOLINE_POOL_SIZE];
 
         static void* mapRw() {
-            HK_ABORT_UNLESS_R(mapRoToRw(ptr(sTrampolinePoolData), sizeof(sTrampolinePoolData), &sRwAddr));
+            sRwAddr = HK_UNWRAP(mapRoToRw(ptr(sTrampolinePoolData), sizeof(sTrampolinePoolData)));
             return cast<void*>(sRwAddr);
         }
 

@@ -5,6 +5,7 @@
 #include <limits>
 
 namespace hk::sf {
+
     u16 Service::pointerBufferSize() {
         if (mPointerBufferSize != std::numeric_limits<u16>::max())
             return mPointerBufferSize;
@@ -24,4 +25,5 @@ namespace hk::sf {
         request.setDomainClose();
         return invokeControl(move(request), inlineDataExtractor<void>());
     }
-}
+
+} // namespace hk::sf

@@ -49,22 +49,18 @@ namespace hk::hook {
         return findMap(searchSize, svc::InfoType_StackRegionAddress, svc::InfoType_StackRegionSize);
     }
 
-    Result mapRoToRw(ptr addr, size mapSize, ptr* outRw) {
+    ValueOrResult<ptr> mapRoToRw(ptr addr, size mapSize) {
         ptr srcAligned = alignDownPage(addr);
         ptrdiff ptrToAlignedDiff = addr - srcAligned;
 
         size uppedSize = alignUpPage(mapSize + ptrToAlignedDiff);
         ptr dest = findAslr(uppedSize);
 
-        Handle curProcess;
-        HK_ABORT_UNLESS_R(svc::getProcessHandleMesosphere(&curProcess));
+        Handle curProcess = HK_TRY(svc::getProcessHandleMesosphere());
 
-        // HK_TRY(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
-        HK_ABORT_UNLESS_R(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
+        HK_TRY(svc::MapProcessMemory(dest, curProcess, srcAligned, uppedSize));
 
-        *outRw = dest + ptrToAlignedDiff;
-
-        return ResultSuccess();
+        return dest + ptrToAlignedDiff;
     }
 
 } // namespace hk::hook

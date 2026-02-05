@@ -50,10 +50,9 @@ namespace hk::ro {
         HK_UNLESS(mTextRwMapping.start() == 0, ResultAlreadyMapped());
         HK_UNLESS(mRodataRwMapping.start() == 0, ResultAlreadyMapped());
 
-        ptr rw = 0;
-        HK_TRY(hook::mapRoToRw(mTextRange.start(), mTextRange.size(), &rw));
+        ptr rw = HK_TRY(hook::mapRoToRw(mTextRange.start(), mTextRange.size()));
         mTextRwMapping = { rw, mTextRange.size() };
-        HK_TRY(hook::mapRoToRw(mRodataRange.start(), mRodataRange.size(), &rw));
+        rw = HK_TRY(hook::mapRoToRw(mRodataRange.start(), mRodataRange.size()));
         mRodataRwMapping = { rw, mRodataRange.size() };
 
         return ResultSuccess();
