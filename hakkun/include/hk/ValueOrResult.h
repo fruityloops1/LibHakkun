@@ -116,16 +116,14 @@ namespace hk {
      *
      * @tparam T
      */
-    template <ReferenceType T>
-    class ValueOrResult<T> {
-        using BaseType = std::remove_reference_t<T>;
-
+    template <typename T>
+    class ValueOrResult<T&> {
         Result mResult = ResultSuccess();
-        BaseType* mValueReference = nullptr;
+        T* mValueReference = nullptr;
 
-        constexpr BaseType& get() {
+        constexpr T& get() {
             HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::get(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T>(),
+                util::getTypeName<T&>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
@@ -138,16 +136,16 @@ namespace hk {
 
         constexpr ValueOrResult(Result result)
             : mResult(result) {
-            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
+            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T&>());
         }
 
-        constexpr ValueOrResult(BaseType* ptr)
+        constexpr ValueOrResult(T* ptr)
             : mValueReference(ptr) {
             if (mValueReference == nullptr)
                 mResult = ResultNoValue();
         }
 
-        constexpr ValueOrResult(BaseType&& value)
+        constexpr ValueOrResult(T&& value)
             : ValueOrResult(&value) {
         }
 
@@ -194,9 +192,9 @@ namespace hk {
          *
          * @return T&
          */
-        constexpr BaseType& value() const {
+        constexpr T& value() const {
             HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::value(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T>(),
+                util::getTypeName<T&>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
@@ -205,7 +203,7 @@ namespace hk {
 
         constexpr operator Result() const { return mResult; }
         constexpr operator T&() { return get(); }
-        constexpr BaseType* operator->() { return &get(); }
+        constexpr T* operator->() { return &get(); }
     };
 
     template <>
@@ -221,9 +219,9 @@ namespace hk {
     template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
     struct UnwrapChecker;
 
-    template <PointerType T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
-    struct UnwrapChecker<T, AbortMsg, File, Line> {
-        static hk_alwaysinline T check(T value) {
+    template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
+    struct UnwrapChecker<T*, AbortMsg, File, Line> {
+        static hk_alwaysinline T* check(T* value) {
             if (value == nullptr) {
                 diag::abortImpl(
                     svc::BreakReason_User,
@@ -267,7 +265,41 @@ namespace hk {
                         AbortMsg.value);
                 }
             }
-            return move((typename ValueOrResult<T>::Type)value);
+            return move((T)value);
+        }
+    };
+
+    template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
+    struct UnwrapChecker<ValueOrResult<T&>, AbortMsg, File, Line> {
+        static hk_alwaysinline ValueOrResult<T&> check(ValueOrResult<T&>&& value) {
+            const Result _result_temp = value;
+            if (_result_temp.failed()) {
+                const char* _result_temp_name = diag::getResultName(_result_temp);
+                if (_result_temp_name != nullptr) {
+                    diag::abortImpl(
+                        svc::BreakReason_User,
+                        _result_temp,
+                        File.value,
+                        Line,
+                        diag::cUnwrapResultFormatWithName,
+                        _result_temp.getModule() + 2000,
+                        _result_temp.getDescription(),
+                        _result_temp_name,
+                        AbortMsg.value);
+                } else {
+                    diag::abortImpl(
+                        svc::BreakReason_User,
+                        _result_temp,
+                        File.value,
+                        Line,
+                        diag::cUnwrapResultFormat,
+                        _result_temp.getModule() + 2000,
+                        _result_temp.getDescription(),
+                        _result_temp.getValue(),
+                        AbortMsg.value);
+                }
+            }
+            return move(value);
         }
     };
 
