@@ -324,6 +324,10 @@ namespace hk {
         inline hk_alwaysinline constexpr T getTryExpressionValue(ValueOrResult<T>&& value) {
             return move((T)value);
         }
+        template <typename T>
+        inline hk_alwaysinline constexpr ValueOrResult<T&> getTryExpressionValue(ValueOrResult<T&>&& value) {
+            return move(value);
+        }
 
     } // namespace detail
 
