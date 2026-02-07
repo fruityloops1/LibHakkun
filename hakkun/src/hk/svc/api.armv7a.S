@@ -84,6 +84,16 @@ SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPj
     bx lr
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc15SendSyncRequestENS_6HandleE
+	svc 0x21
+	bx lr
+SVC_END
+
+SVC_BEGIN _ZN2hk3svc29SendSyncRequestWithUserBufferEjjNS_6HandleE
+	svc 0x22
+	bx lr
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvj
 	svc 0x26
 	bx lr
