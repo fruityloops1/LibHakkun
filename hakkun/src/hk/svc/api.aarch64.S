@@ -126,6 +126,11 @@ SVC_BEGIN _ZN2hk3svc15SendSyncRequestENS_6HandleE
   ret
 SVC_END
 
+SVC_BEGIN _ZN2hk3svc29SendSyncRequestWithUserBufferEmmNS_6HandleE
+  svc 0x22
+  ret
+SVC_END
+
 SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvm
 	svc 0x26
 	ret

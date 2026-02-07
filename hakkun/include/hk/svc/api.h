@@ -5,6 +5,7 @@
 #include "hk/util/Tuple.h"
 
 #include "hk/svc/cpu.h"
+#include <span>
 
 namespace hk::svc {
 
@@ -31,6 +32,7 @@ namespace hk::svc {
     Result ConnectToNamedPort(Handle* outHandle, const char* name);
     Result SendSyncRequestLight(Handle sessionHandle, u8 data[28]);
     Result SendSyncRequest(Handle sessionHandle);
+    Result SendSyncRequestWithUserBuffer(ptr buffer, size bufferSize, Handle sessionHandle);
     hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
     Result OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
@@ -89,6 +91,10 @@ namespace hk::svc {
         HK_TRY(ConnectToNamedPort(&outHandle, name));
 
         return outHandle;
+    }
+
+    inline hk_alwaysinline Result SendSyncRequestWithUserBuffer(std::span<u8> userBuffer, Handle sessionHandle) {
+        return SendSyncRequestWithUserBuffer(ptr(userBuffer.data()), userBuffer.size_bytes(), sessionHandle);
     }
 
     inline hk_alwaysinline ValueOrResult<s32> WaitSynchronization(const Handle* handles, s32 numHandles, s64 timeout) {
