@@ -165,7 +165,7 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc13CreateSessionEPNS_6HandleES2_bm
 	stp x0, x1, [sp, #-16]!
-	svc 0x41
+	svc 0x40
 	ldp x3, x4, [sp], #16
 	str w1, [x3]
 	str w2, [x4]
