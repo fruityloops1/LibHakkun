@@ -230,21 +230,24 @@ namespace hk::vi {
         static ValueOrResult<VideoInterface*> initialize() {
             switch (Type) {
             case ServiceType::Application:
-                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:u">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"vi:u">()));
                 break;
             case ServiceType::System:
-                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:s">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"vi:s">()));
                 break;
             case ServiceType::Manager:
-                createInstance(sm::ServiceManager::instance()->getServiceHandle<"vi:m">());
+                createInstance(HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"vi:m">()));
                 break;
             }
 
             instance()->mType = Type;
 
             ApplicationDisplayService::createInstance(HK_TRY(instance()->getDisplayService()));
-            SystemDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getSystemDisplayService()));
-            ManagerDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getManagerDisplayService()));
+
+            if (Type == ServiceType::Manager || Type == ServiceType::System)
+                SystemDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getSystemDisplayService()));
+            if (Type == ServiceType::Manager)
+                ManagerDisplayService::createInstance(HK_TRY(ApplicationDisplayService::instance()->getManagerDisplayService()));
 
             return instance();
         }
