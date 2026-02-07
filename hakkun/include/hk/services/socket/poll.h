@@ -17,4 +17,4 @@ namespace hk::socket {
     };
 
     static_assert(sizeof(PollFd) == 8);
-}
+} // namespace hk::socket
