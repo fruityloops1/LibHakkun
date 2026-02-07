@@ -23,7 +23,10 @@ namespace hk::socket {
     };
 
     enum class Protocol : u8 {
-        Tcp = 2,
+        // "dummy for IP" -libnx bsd header vendor
+        Ip = 0,
+        Icmp = 1,
+        Tcp = 6,
         Udp = 17,
     };
 

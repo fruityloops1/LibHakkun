@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/types.h"
+#include <span>
 
 namespace hk::sf::hipc {
 
@@ -71,6 +72,11 @@ namespace hk::sf::hipc {
 
         u64 size() const {
             return u64(sizeLow) | (u64(sizeHigh) << 32);
+        }
+
+        template<typename T>
+        std::span<T> span() {
+            return std::span(cast<T*>(address()), size());
         }
     };
 

@@ -5,6 +5,7 @@
 #include "hk/services/sm.h"
 #include "hk/services/socket/address.h"
 #include "hk/services/socket/config.h"
+#include "hk/services/socket/poll.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/svc/api.h"
@@ -54,6 +55,7 @@ namespace hk::socket {
             return invokeRequest(move(request));
         }
 
+        // A tuple of return value and errno.
         using Ret = Tuple<s32, s32>;
 
     private:
@@ -73,21 +75,31 @@ namespace hk::socket {
             auto request = sf::Request(this, Id, &input);
 
             request.addOutAutoselect(address, sizeof(A));
-            return (invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
     public:
         ValueOrResult<Ret> socket(AddressFamily domain, Type type, Protocol protocol) {
             std::array<u8, 12> input = sf::packInput(u32(domain), u32(type), u32(protocol));
-            return (invokeRequest(sf::Request(this, 2, &input), sf::inlineDataExtractor<Ret>()));
+            return invokeRequest(sf::Request(this, 2, &input), sf::inlineDataExtractor<Ret>());
+        }
+
+        ValueOrResult<Ret> poll(std::span<PollFd> fds, s32 timeout) {
+            auto input = sf::packInput(u32(fds.size()), timeout);
+            static_assert(sizeof(input) == 8);
+            
+            auto request = sf::Request(this, 6, &input);
+            request.addInAutoselect<PollFd>(fds);
+            request.addOutAutoselect<PollFd>(fds);
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
         ValueOrResult<Ret> recv(s32 fd, std::span<u8> buffer, s32 flags) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 8, &input);
 
-            request.addOutAutoselect(buffer.data(), buffer.size_bytes());
-            return (invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
+            request.addOutAutoselect(buffer);
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
         template <typename A, typename T>
@@ -96,9 +108,9 @@ namespace hk::socket {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 9, &input);
 
-            request.addOutAutoselect(buffer.data(), buffer.size_bytes());
+            request.addOutAutoselect(buffer);
             request.addOutAutoselect(&address, sizeof(A));
-            return (invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
         template <typename T>
@@ -106,9 +118,9 @@ namespace hk::socket {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 10, &input);
 
-            request.addInAutoselect(data.data(), data.size_bytes());
+            request.addInAutoselect(data);
 
-            return (invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
         template <typename A, typename T>
@@ -116,24 +128,19 @@ namespace hk::socket {
         ValueOrResult<Ret> sendTo(s32 fd, std::span<const T> data, s32 flags, const A& address) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 11, &input);
-            request.addInAutoselect(data.data(), data.size_bytes());
+            request.addInAutoselect(data);
             request.addInAutoselect(&address, sizeof(SocketAddrIpv4));
-            request.enableDebug(true, true);
-            return (invokeRequest(move(request), sf::inlineDataExtractor<Ret>()));
+            return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
         ValueOrResult<Tuple<s32, s32, SocketAddrIpv4>> accept(s32 fd) {
             SocketAddrIpv4 outAddr;
-            auto input = sf::packInput(fd, sizeof(outAddr));
-            auto request = sf::Request(this, 12, &input);
+            auto request = sf::Request(this, 12, &fd);
 
             request.addOutAutoselect(&outAddr, sizeof(outAddr));
 
-            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<s32, s32, u32>>())
-                .map([=](Tuple<s32, s32, u32> tuple) -> Tuple<s32, s32, SocketAddrIpv4> {
-                    u32 _addrlen = tuple.c;
-                    return { tuple.a, tuple.b, outAddr };
-                });
+            auto [outFd, errno, _addrlen] = HK_TRY(invokeRequest(move(request), sf::inlineDataExtractor<Tuple<s32, s32, u32>>()));
+            return Tuple<s32, s32, SocketAddrIpv4>(outFd, errno, outAddr);
         }
 
         template <typename A>
@@ -164,7 +171,7 @@ namespace hk::socket {
             auto input = sf::packInput(fd, level, optName);
             auto request = sf::Request(this, 17, &input);
 
-            request.addOutAutoselect(opt.data(), opt.size_bytes());
+            request.addOutAutoselect(opt);
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
@@ -184,7 +191,7 @@ namespace hk::socket {
             auto input = sf::packInput(fd, level, optName);
             auto request = sf::Request(this, 21, &input);
 
-            request.addInAutoselect(opt.data(), opt.size_bytes());
+            request.addInAutoselect(opt);
 
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
@@ -205,7 +212,7 @@ namespace hk::socket {
         ValueOrResult<Ret> write(s32 fd, std::span<const u8> data) {
             auto request = sf::Request(this, 24, &fd);
 
-            request.addInAutoselect(data.data(), data.size_bytes());
+            request.addInAutoselect(data);
 
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
@@ -213,7 +220,7 @@ namespace hk::socket {
         ValueOrResult<Ret> read(s32 fd, std::span<u8> buffer) {
             auto request = sf::Request(this, 25, &fd);
 
-            request.addOutAutoselect(buffer.data(), buffer.size_bytes());
+            request.addOutAutoselect(buffer);
 
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
