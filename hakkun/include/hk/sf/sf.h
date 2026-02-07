@@ -206,7 +206,7 @@ namespace hk::sf {
             mHipcOutPointerSizes.add(size);
         }
 
-        constexpr void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             if (mServerPointerSize > 0 && size <= mServerPointerSize) {
                 addInPointer(data, size);
                 mHipcSendBuffers.add(hipc::Buffer(mode, u64(nullptr), 0));
@@ -214,6 +214,11 @@ namespace hk::sf {
                 addInPointer(nullptr, 0);
                 mHipcSendBuffers.add(hipc::Buffer(mode, u64(data), size));
             }
+        }
+
+        template<typename T>
+        void addInAutoselect(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addInAutoselect(span.data(), span.size_bytes(), mode);
         }
 
         void addOutAutoselect(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
@@ -230,6 +235,11 @@ namespace hk::sf {
                     u64(data),
                     size));
             }
+        }
+
+        template<typename T>
+        void addOutAutoselect(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addOutAutoselect(span.data(), span.size_bytes(), mode);
         }
 
         void addInMapAlias(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
