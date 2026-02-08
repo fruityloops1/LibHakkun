@@ -21,6 +21,7 @@ set(SOURCES
     src/hk/sail/init.cpp
 
     src/hk/services/am.cpp
+    src/hk/services/apm.cpp
     src/hk/services/socket.cpp
     src/hk/services/sm.cpp
     src/hk/services/pm.cpp

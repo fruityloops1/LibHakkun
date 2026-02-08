@@ -42,8 +42,8 @@ namespace hk::sf::cmif {
     };
 
     enum class DomainTag : u8 {
-        Request = 0,
-        Close = 1,
+        Request = 1,
+        Close = 2,
     };
 
 } // namespace hk::sf::cmif

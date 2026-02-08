@@ -59,15 +59,19 @@ namespace hk::sf {
         return [](sf::Response& response) -> Handle { return response.nextCopyHandle(); };
     }
 
-    template <typename T = void, typename... Args>
+    template <typename T = void, bool enableDebug = false, typename... Args>
     ValueOrResult<T> invokeSimple(sf::Service* service, s32 id, const Args&... args) {
         auto input = packInput(args...);
+        auto request = sf::Request(service, id, &input);
+        if (enableDebug) {
+            request.enableDebug();
+        }
         if constexpr (std::is_same_v<T, sf::Service>) {
-            return service->invokeRequest(sf::Request(service, id, &input), subserviceExtractor(service));
+            return service->invokeRequest(move(request), subserviceExtractor(service));
         } else if constexpr (std::is_same_v<T, Handle>) {
-            return service->invokeRequest(sf::Request(service, id, &input), handleExtractor());
+            return service->invokeRequest(move(request), handleExtractor());
         } else {
-            return service->invokeRequest(sf::Request(service, id, &input), inlineDataExtractor<T>());
+            return service->invokeRequest(move(request), inlineDataExtractor<T>());
         };
     }
 
