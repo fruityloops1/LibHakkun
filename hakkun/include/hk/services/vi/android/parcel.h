@@ -5,8 +5,9 @@
 #include <array>
 #include <span>
 #include <string_view>
+#include <type_traits>
 
-namespace hk::vi::parcel {
+namespace hk::vi::detail {
 
     struct ParcelHeader {
         u32 payloadOffset = sizeof(ParcelHeader);
@@ -14,12 +15,14 @@ namespace hk::vi::parcel {
         u32 objectsOffset = sizeof(ParcelHeader);
         u32 objectsSize = 0;
 
-        std::span<const u8> payload() const {
-            return std::span(cast<const u8*>(this) + payloadOffset, payloadSize);
+        template<typename T = u8>
+        std::span<const T> payload() const {
+            return std::span(cast<const T*>(this) + payloadOffset, payloadSize / sizeof(T));
         }
 
-        std::span<const u8> objects() const {
-            return std::span(cast<const u8*>(this) + objectsOffset, objectsSize);
+        template<typename T = u8>
+        std::span<const T> objects() const {
+            return std::span(cast<const T*>(this) + objectsOffset, objectsSize / sizeof(T));
         }
     };
 
@@ -59,10 +62,11 @@ namespace hk::vi::parcel {
         template <typename P, typename O>
         void write(P&& payloadWriter, O&& objectWriter) {
             util::Stream<u8> stream(data.data(), data.size());
-            payloadWriter(stream);
+            auto& streamRef = stream;
+            payloadWriter(streamRef);
             header.payloadSize = stream.tell();
             header.objectsOffset = sizeof(ParcelHeader) + stream.tell();
-            objectWriter(stream);
+            objectWriter(streamRef);
             header.objectsSize = stream.tell() - header.payloadSize;
         }
 
@@ -72,4 +76,4 @@ namespace hk::vi::parcel {
         }
     };
 
-} // namespace hk::vi::parcel
+} // namespace hk::vi::detail

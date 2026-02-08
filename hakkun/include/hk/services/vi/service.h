@@ -2,6 +2,7 @@
 
 #include "hk/ValueOrResult.h"
 #include "hk/services/sm.h"
+#include "hk/services/vi/android/binder.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/types.h"
@@ -20,8 +21,14 @@ namespace hk::vi {
     };
 
     using DisplayName = std::array<char, 0x40>;
+    struct NativeWindowParcel {
+        std::array<u8, 0x100> data;
+        u32 size;
+    };
 
-    using NativeWindow = std::array<u8, 0x100>;
+    struct LayerId {
+        u64 value = 0;
+    };
 
     struct Display {
         bool isInitialized = false;
@@ -68,8 +75,12 @@ namespace hk::vi {
     };
 
     struct Layer {
-        bool isInitialized = false;
-        u64 id = 0;
+        LayerId id;
+        u32 binderObjectId;
+
+        Layer(LayerId id, u32 objectId)
+            : id(id)
+            , binderObjectId(objectId) { }
     };
 
     class SystemDisplayService : sf::Service {
@@ -147,23 +158,31 @@ namespace hk::vi {
             return sf::invokeSimple<Tuple<u64, u64>>(this, 1102, &display.id);
         }
 
-        ValueOrResult<Tuple<u64, NativeWindow>> openLayer(Display& display, u64 layerId, u64 appletResourceUserId) {
-            NativeWindow nativeWindow;
+        // returns the native window size and the native window parcel.
+        ValueOrResult<NativeWindowParcel> openLayer(Display& display, LayerId layerId, u64 appletResourceUserId) {
+            std::array<u8, 256> nativeWindow;
 
-            auto input = sf::packInput(display.name, layerId, appletResourceUserId);
+            auto input = sf::packInput(u64(0), display.name, layerId, appletResourceUserId);
             auto request = sf::Request(this, 2020, &input);
             request.setSendPid();
-            request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
-            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, NativeWindow>>());
+            request.addOutMapAlias<u8>(nativeWindow);
+            return invokeRequest(move(request), sf::inlineDataExtractor<u64>())
+                .map([=](u64 nativeWindowSize) -> NativeWindowParcel {
+                    return NativeWindowParcel { .data = nativeWindow, .size = u32(nativeWindowSize) };
+                });
         }
 
-        ValueOrResult<Tuple<u64, u64, NativeWindow>> createStrayLayer(Display& display, u32 flags) {
-            NativeWindow nativeWindow;
+        // returns the LayerId, native window size, and the native window parcel.
+        ValueOrResult<Tuple<LayerId, NativeWindowParcel>> createStrayLayer(Display& display, u32 flags) {
+            std::array<u8, 256> nativeWindow;
 
             auto input = sf::packInput(flags, display.id);
             auto request = sf::Request(this, 2030, &input);
-            request.addOutMapAlias(nativeWindow.data(), nativeWindow.size());
-            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64, NativeWindow>>());
+            request.addOutMapAlias<u8>(nativeWindow);
+            return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<LayerId, u64>>())
+                .map([=](Tuple<LayerId, u64> out) -> Tuple<LayerId, NativeWindowParcel> {
+                    return { out.a, NativeWindowParcel { .data = nativeWindow, .size = u32(out.b) } };
+                });
         }
 
         Result destroyStrayLayer(Layer& layer) {
@@ -181,7 +200,7 @@ namespace hk::vi {
         ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageMap(std::span<u8> map, s64 width, s64 height, u64 handle, u64 aruid) {
             auto input = sf::packInput(width, height, handle, aruid);
             auto request = sf::Request(this, 2450, &input);
-            request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
+            request.addOutMapAlias(map, sf::hipc::BufferMode::NonSecure);
             request.setSendPid();
             return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64>>());
         }
@@ -189,7 +208,7 @@ namespace hk::vi {
         ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageCropMap(std::span<u8> map, f32 f1, f32 f2, f32 f3, f32 f4, u64 u1, u64 u2, u64 u3, u64 aruid) {
             auto input = sf::packInput(f1, f2, f3, f4, u1, u2, u3, aruid);
             auto request = sf::Request(this, 2451, &input);
-            request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
+            request.addOutMapAlias(map, sf::hipc::BufferMode::NonSecure);
             request.setSendPid();
             return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64>>());
         }
@@ -270,7 +289,8 @@ namespace hk::vi {
     };
 
     Result initialize();
-    Result openDefaultDisplay();
+    ValueOrResult<Display> openDefaultDisplay();
     size listDisplays(std::span<DisplayInfo> displays);
+    ValueOrResult<Layer> openLayer(Display& display, LayerId layerId, u64 aruid);
 
 } // namespace hk::vi

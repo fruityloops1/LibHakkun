@@ -14,7 +14,13 @@ namespace hk::am::detail {
             : sf::Service(forward<sf::Service>(service)) { }
 
         ValueOrResult<u64> getAppletResourceUserId() {
-            return sf::invokeSimple<u64>(this, 1);
+            auto request = sf::Request(this, 1);
+            request.forceDataSize(8);
+            return invokeRequest(move(request), sf::inlineDataExtractor<u64>());
+        }
+
+        Result acquireForegroundRights() {
+            return sf::invokeSimple(this, 10);
         }
     };
 

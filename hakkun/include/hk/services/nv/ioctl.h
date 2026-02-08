@@ -19,4 +19,6 @@ namespace hk::nvdrv {
         u32 value;
     };
 
+    inline Ioctl ioctlVal(u32 value) { return { .value = value }; }
+
 } // namespace hk::nvdrv

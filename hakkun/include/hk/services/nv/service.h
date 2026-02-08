@@ -55,7 +55,6 @@ namespace hk::nvdrv {
             request.addCopyHandle(svc::CurrentProcess);
             request.addCopyHandle(transferMemoryHandle);
             HK_TRY(instance()->invokeRequest(move(request), sf::inlineDataExtractor<u32>()).mapToResult(ResultMapNvidia::toResult));
-
             if (appletResourceUserId.has_value())
                 HK_TRY(instance()->setAppletResourceUserId(*appletResourceUserId));
 
@@ -65,6 +64,7 @@ namespace hk::nvdrv {
         Result setAppletResourceUserId(u64 appletResourceUserId) {
             auto input = sf::packInput(u64(0), appletResourceUserId);
             auto request = sf::Request(this, 8, &input);
+            request.setSendPid();
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
                 .mapToResult(ResultMapNvidia::toResult);
         }

@@ -8,6 +8,12 @@
 
 namespace hk::am::detail {
 
+    enum class FocusState {
+        Focused = 1,
+        LibraryAppletFocused = 2,
+        HomeMenuOrSleeping = 3,
+    };
+
     class CommonStateGetter : public sf::Service {
         HK_SINGLETON(CommonStateGetter);
 
@@ -24,6 +30,10 @@ namespace hk::am::detail {
             if (Result(result).getValue() == 0x680)
                 return std::optional<u32>(std::nullopt);
             return result.map([](u32 value) { return std::optional(value); });
+        }
+
+        ValueOrResult<FocusState> getCurrentFocusState() {
+            return sf::invokeSimple<FocusState>(this, 9);
         }
     };
 

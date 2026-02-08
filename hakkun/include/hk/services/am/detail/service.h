@@ -1,30 +1,23 @@
 #pragma once
 
-#include "hk/Result.h"
 #include "hk/ValueOrResult.h"
+#include "hk/services/am/appType.h"
 #include "hk/services/am/detail/applicationProxy.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
-#include "hk/sf/utils.h"
-#include "hk/svc/api.h"
-#include "hk/svc/types.h"
-#include "hk/types.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
 
 namespace hk::am::detail {
 
-    enum class AppType {
-        System = 0,
-        Application = 1,
-    };
-
     class AppletManager : public sf::Service {
         HK_SINGLETON(AppletManager);
+        AppType type;
 
     public:
-        AppletManager(sf::Service&& service)
-            : sf::Service(forward<sf::Service>(service)) { }
+        AppletManager(sf::Service&& service, AppType type)
+            : sf::Service(forward<sf::Service>(service))
+            , type(type) { }
 
         template <AppType Type>
         static ValueOrResult<AppletManager*> initialize() {
@@ -32,22 +25,23 @@ namespace hk::am::detail {
             sf::Service service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<name>());
             HK_TRY(service.convertToDomain());
 
-            createInstance(move(service));
+            createInstance(move(service), Type);
             return instance();
         }
 
         ValueOrResult<ApplicationProxy*> initializeApplicationProxy() {
             // OpenApplicationProxy
-            auto input = sf::packInput(u64(0), u64(0));
-            auto request = sf::Request(this, 0, &input);
-            request.setSendPid();
-            request.addCopyHandle(svc::CurrentProcess);
+            std::array<u32, size_t(AppType::_Count)> ids = { 0, 100, 200, 300, 350 };
 
             do {
+                auto input = sf::packInput(u64(0));
+                auto request = sf::Request(this, ids[size(type)], &input);
+                request.setSendPid();
+                request.addCopyHandle(svc::CurrentProcess);
                 ValueOrResult<sf::Service> result = invokeRequest(move(request), sf::subserviceExtractor(this));
 
                 if (result.hasValue()) {
-                    ApplicationProxy::createInstance(result);
+                    ApplicationProxy::createInstance(result, type);
                     return ApplicationProxy::instance();
                 }
 
