@@ -52,30 +52,35 @@ namespace hk::sf {
         }
 
         static Service domainSubservice(Service* parent, u32 object) {
-            return Service(parent->mSession, object, false);
+            return Service(parent->mSession, object, false, parent->mPointerBufferSize);
         }
 
         Result release();
 
-        Service(Handle session, std::optional<u32> object, bool isRoot)
+        Service(Handle session, std::optional<u32> object, bool isRoot, u16 pointerBufferSize)
             : mSession(session)
             , mObject(object)
-            , mOwnedHandle(isRoot) { }
+            , mOwnedHandle(isRoot)
+            , mPointerBufferSize(pointerBufferSize) { }
 
     public:
         Service(Service&& old)
             : mSession(old.mSession)
-            , mOwnedHandle(old.mOwnedHandle) {
+            , mObject(old.mObject)
+            , mOwnedHandle(old.mOwnedHandle)
+            , mPointerBufferSize(old.mPointerBufferSize) {
             old.mSession = 0;
             old.mOwnedHandle = false;
+            old.mObject = std::nullopt;
         }
+
         Service(Handle handle)
             : mSession(handle)
             , mObject(std::nullopt)
             , mOwnedHandle(true) { }
 
         static Service fromHandle(Handle session) {
-            return Service(session, std::nullopt, false);
+            return Service(session, std::nullopt, false, std::numeric_limits<u16>::max());
         }
 
         ~Service() {
@@ -124,6 +129,7 @@ namespace hk::sf {
         u16 mServerPointerSize = 0;
         u32 mCommandId = 0;
         u32 mToken = 0;
+        u32 mHardcodedDataSize = 0;
         cmif::DomainTag mDomainTag = cmif::DomainTag::Request;
         util::FixedVec<u32, 8> mObjects;
         util::FixedVec<Handle, 8> mHipcCopyHandles;
@@ -171,7 +177,11 @@ namespace hk::sf {
         }
 
         constexpr void setToken(u32 token) {
-            this->mToken = token;
+            mToken = token;
+        }
+
+        constexpr void forceDataSize(u32 byteCount) {
+            mHardcodedDataSize = byteCount;
         }
 
         constexpr void setSendPid() {
@@ -249,6 +259,11 @@ namespace hk::sf {
                 size));
         }
 
+        template <typename T>
+        void addInMapAlias(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addInMapAlias(span.data(), span.size_bytes(), mode);
+        }
+
         void addOutMapAlias(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             mHipcReceiveBuffers.add(hipc::Buffer(
                 mode,
@@ -256,11 +271,21 @@ namespace hk::sf {
                 size));
         }
 
+        template <typename T>
+        void addOutMapAlias(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addOutMapAlias(span.data(), span.size_bytes(), mode);
+        }
+
         void addInOutMapAlias(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             mHipcExchangeBuffers.add(hipc::Buffer(
                 mode,
                 u64(data),
                 size));
+        }
+
+        template <typename T>
+        void addInOutMapAlias(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addInOutMapAlias(span.data(), span.size_bytes(), mode);
         }
 
     private:
@@ -273,13 +298,11 @@ namespace hk::sf {
             struct Sizes {
                 u16 hipcDataSize;
                 u16 cmifDataSize;
-            };
-
-            Sizes sizes = [this, service]() {
+            } sizes = [this, service]() {
                 u16 hipcDataSize = 16;
                 u16 cmifDataSize = sizeof(cmif::InHeader) + mData.size_bytes();
 
-                if (!service->mOwnedHandle) {
+                if (service->isDomain()) {
                     hipcDataSize += sizeof(cmif::DomainInHeader);
                     hipcDataSize += sizeof(u32) * mObjects.size();
                 }
@@ -338,7 +361,7 @@ namespace hk::sf {
                 .magic = cmif::cInHeaderMagic,
                 .version = 0,
                 .command = mCommandId,
-                .token = mToken,
+                .token = service->mObject ? 0 : mToken,
             });
 
             writer.writeIterator<u8>(mData);
@@ -394,7 +417,7 @@ namespace hk::sf {
 
     private:
         friend class Service;
-        static Response readFromTls(Service* service, bool printResponse) {
+        static Response readFromTls(Service* service, u32 hardcodedDataBytes) {
             util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
 
             auto header = HK_UNWRAP(reader.read<hipc::Header>());
@@ -404,60 +427,69 @@ namespace hk::sf {
                 auto specialHeader = HK_UNWRAP(reader.read<hipc::SpecialHeader>());
 
                 if (specialHeader.sendPid)
-                    response.pid = reader.read<u64>();
+                    response.pid = HK_UNWRAP(reader.read<u64>());
 
                 for (u8 i = 0; i < specialHeader.copyHandleCount; i++)
-                    response.hipcCopyHandles.add(reader.read<Handle>());
+                    response.hipcCopyHandles.add(HK_UNWRAP(reader.read<Handle>()));
                 for (u8 i = 0; i < specialHeader.moveHandleCount; i++)
-                    response.hipcMoveHandles.add(reader.read<Handle>());
+                    response.hipcMoveHandles.add(HK_UNWRAP(reader.read<Handle>()));
             }
 
             for (u8 i = 0; i < header.sendStaticCount; i++)
-                response.hipcSendStatics.add(reader.read<hipc::Static>());
+                response.hipcSendStatics.add(HK_UNWRAP(reader.read<hipc::Static>()));
             reader.seek(alignUp(reader.tell(), 16));
 
             size dataWordsLeft = header.dataWords - 4;
 
+            u32 objectCount = 0;
             if (service->isDomain()) {
                 auto domainOut = HK_UNWRAP(reader.read<cmif::DomainOutHeader>());
-                for (u8 i = 0; i < domainOut.objectCount; i++)
-                    response.objects.add(reader.read<u32>());
-                dataWordsLeft -= sizeof(cmif::DomainOutHeader) / 4 + response.objects.size();
+                dataWordsLeft -= sizeof(cmif::DomainOutHeader) / 4;
+                dataWordsLeft -= domainOut.objectCount;
+                objectCount = domainOut.objectCount;
             }
 
             auto outHeader = HK_UNWRAP(reader.read<cmif::OutHeader>());
             dataWordsLeft -= sizeof(cmif::OutHeader) / 4;
             response.result = outHeader.result;
-            response.data = std::span(svc::getTLS()->ipcMessageBuffer + reader.tell(), dataWordsLeft * 4);
+            response.data = std::span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
+            reader.seek(reader.tell() + response.data.size_bytes());
+            for (u8 i = 0; i < objectCount; i++)
+                response.objects.add(HK_UNWRAP(reader.read<u32>()));
 
             // todo: recv statics
-
-#if !defined(HK_RELEASE)
-            if (printResponse) {
-                u8 buf[256] = {};
-                memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-                diag::logLine("");
-                for (int i = 0; i < (reader.tell() + dataWordsLeft * 4); i += 16)
-                    diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                        buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
-                        buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
-                        buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
-                        buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
-                memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
-            }
-#endif
 
             return response;
         }
     };
+
+    inline void printResponse(bool printResponse, u32 wordCount) {
+#if !defined(HK_RELEASE)
+        if (printResponse) {
+            util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
+            u8 buf[256] = {};
+            memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
+            diag::logLine("");
+            for (int i = 0; i < wordCount * 4; i += 16)
+                diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                    buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
+                    buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
+                    buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
+                    buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
+            memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
+        }
+#endif
+    }
 
     template <typename ResponseExtractor>
     inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> Service::invoke(cmif::MessageTag tag, Request&& request, ResponseExtractor extractor) {
         using Return = typename util::FunctionTraits<ResponseExtractor>::ReturnType;
 
         request.writeToTls(this, tag);
-        HK_TRY(svc::SendSyncRequest(mSession));
-        auto response = Response::readFromTls(this, request.mPrintResponse);
+        Result result = svc::SendSyncRequest(mSession);
+        printResponse(request.mPrintResponse, 32);
+        HK_TRY(result);
+        auto response = Response::readFromTls(this, request.mHardcodedDataSize);
         HK_TRY(response.result);
 
         if constexpr (std::is_same_v<Return, void>)
@@ -468,8 +500,10 @@ namespace hk::sf {
 
     inline Result Service::invoke(cmif::MessageTag tag, Request&& request) {
         request.writeToTls(this, tag);
-        HK_TRY(svc::SendSyncRequest(mSession));
-        auto response = Response::readFromTls(this, request.mPrintResponse);
+        Result result = svc::SendSyncRequest(mSession);
+        printResponse(request.mPrintResponse, 32);
+        HK_TRY(result);
+        auto response = Response::readFromTls(this, request.mHardcodedDataSize);
         return response.result;
     }
 
