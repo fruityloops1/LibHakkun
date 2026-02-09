@@ -2,6 +2,7 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+#include "hk/util/Algorithm.h"
 #include "hk/util/Allocator.h"
 #include "hk/util/TypeName.h"
 #include <algorithm>
@@ -33,14 +34,14 @@ namespace hk::util {
     public:
         Vec() {
             mData = cast<T*>(Allocator::allocate(ReserveSize * sizeof(T), alignof(T)));
-            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(): Allocation failed (ReserveSize = %zu)", getTypeName<T>(), ReserveSize);
+            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(): allocation failed (ReserveSize = %zu)", getTypeName<T>(), ReserveSize);
         }
 
         Vec(const Vec& other)
             : mData(cast<T*>(Allocator::allocate(other.mCapacity * sizeof(T), alignof(T))))
             , mSize(other.mSize)
             , mCapacity(other.mCapacity) {
-            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(Vec&): Allocation failed (Capacity = %zu)", getTypeName<T>(), mCapacity);
+            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(Vec&): allocation failed (Capacity = %zu)", getTypeName<T>(), mCapacity);
             for (::size i = 0; i < other.mSize; i++)
                 new (valueAt(i)) T(*other.valueAt(i));
         }
@@ -68,7 +69,7 @@ namespace hk::util {
 
             T* newData = cast<T*>(Allocator::allocate(capacity * sizeof(T), alignof(T)));
             for (::size i = 0; i < mSize; i++) {
-                new (&newData[i]) T(move(*valueAt(i)));
+                new (&newData[i]) T(::move(*valueAt(i)));
                 valueAt(i)->~T();
             }
 
@@ -86,31 +87,63 @@ namespace hk::util {
         void add(T&& value) {
             if (mSize >= mCapacity)
                 reserve(mCapacity + ReserveSize);
-            new (valueAt(mSize++)) T(move(value));
+            new (valueAt(mSize++)) T(::move(value));
+        }
+
+        T& insert(const T& value, size index = 0) {
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
+
+            HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            move(index + 1, index, mSize++ - index);
+            return *new (valueAt(index)) T(value);
+        }
+
+        T& insert(T&& value, size index = 0) {
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
+
+            HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            move(index + 1, index, mSize++ - index);
+            return *new (valueAt(index)) T(::move(value));
+        }
+
+        void move(size dstIdx, size srcIdx, size toMove) {
+            if (dstIdx == srcIdx or toMove == 0)
+                return;
+
+            if constexpr (std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+                std::memmove(valueAt(dstIdx), valueAt(srcIdx), toMove * sizeof(T));
+            else {
+                if (dstIdx < srcIdx)
+                    for (::size i = 0; i < toMove; i++) {
+                        T* to = valueAt(dstIdx + i);
+                        T* from = valueAt(srcIdx + i);
+                        new (to) T(::move(*from));
+                        from->~T();
+                    }
+                else
+                    for (::size i = toMove; i != 0; i--) {
+                        T* to = valueAt(dstIdx + i - 1);
+                        T* from = valueAt(srcIdx + i - 1);
+                        new (to) T(::move(*from));
+                        from->~T();
+                    }
+            }
         }
 
         T remove(size index) {
             HK_ABORT_UNLESS(index < mSize, "hk::util::Vec<%s>::remove(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
 
-            T removedValue = T(move(*valueAt(index)));
+            T removedValue = T(::move(*valueAt(index)));
             valueAt(index)->~T();
 
-            if (index < mSize - 1) {
-                ::size toMove = mSize - index - 1;
-                if constexpr (std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
-                    std::memmove(valueAt(index), valueAt(index + 1), toMove * sizeof(T));
-                else
-                    for (::size i = 0; i < toMove; i++) {
-                        T* to = valueAt(index + i);
-                        T* from = valueAt(index + i + 1);
-                        new (to) T(move(*from));
-                        from->~T();
-                    }
-            }
+            if (index < mSize - 1)
+                move(index, index + 1, mSize - index - 1);
 
             mSize--;
 
-            return move(removedValue);
+            return ::move(removedValue);
         }
 
         T& operator[](size index) {
@@ -166,6 +199,15 @@ namespace hk::util {
         template <typename Compare>
         void sort(Compare comp) {
             std::sort(valueAt(0), valueAt(mSize), comp);
+        }
+
+        template <bool FindBetweenIdx = false, typename ST, typename GetFunc>
+        s32 binarySearch(GetFunc getValue, ST searchValue) const {
+            return util::binarySearch<FindBetweenIdx>([this, getValue](s32 index) {
+                const T* value = valueAt(index);
+                return getValue(*value);
+            },
+                0, mSize - 1, searchValue);
         }
 
         ::size size() const { return mSize; }

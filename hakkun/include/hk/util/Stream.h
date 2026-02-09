@@ -133,7 +133,7 @@ namespace hk::util {
             for (size i = 0; i < amount; i++)
                 arr.add(read<T>());
 
-            return arr;
+            return move(arr);
         }
 
         static constexpr bool isReadOnly() { return cIsReadOnly; }
