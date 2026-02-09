@@ -145,7 +145,7 @@ namespace hk {
                 mResult = ResultNoValue();
         }
 
-        constexpr ValueOrResult(T&& value)
+        constexpr ValueOrResult(T& value)
             : ValueOrResult(&value) {
         }
 
