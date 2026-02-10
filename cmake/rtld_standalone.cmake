@@ -20,7 +20,7 @@ function(add_rtld_standalone)
         ${PROJECT_SOURCE_DIR}/sys/hakkun/src/rtld/standalone/SdkImportsFakeLib.cpp
     )   
     target_link_options(SdkImportsFakeLib PRIVATE -Wl,--export-dynamic)
-    target_link_options(SdkImportsFakeLib PRIVATE -Wl,-fini=rtldFini)
+    target_link_options(SdkImportsFakeLib PRIVATE -Wl,-fini=rtldFini -fuse-ld=lld)
     add_to_visibility(${PROJECT_SOURCE_DIR}/sys/data/exported_syms_rtld_fakelib.txt)
     apply_module_config(SdkImportsFakeLib FALSE _start)
 
