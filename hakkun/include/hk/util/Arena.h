@@ -13,7 +13,7 @@ namespace hk::util {
      * @tparam T
      * @tparam Allocator
      */
-    template <typename T, AllocatorType Allocator = MallocAllocator>
+    template <typename T, AllocatorType Allocator = DefaultAllocator>
     class Arena {
         using Key = u32;
         using Entry = Tuple<Key, T>;

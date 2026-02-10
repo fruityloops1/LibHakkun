@@ -17,7 +17,7 @@ namespace hk::util {
      * @tparam T
      * @tparam ReserveSize Amount of elements to reserve by default or when pushing elements past the current capacity
      */
-    template <typename T, size ReserveSize = 16, AllocatorType Allocator = MallocAllocator>
+    template <typename T, size ReserveSize = 16, AllocatorType Allocator = DefaultAllocator>
     class Vec {
         T* mData = nullptr;
         size mSize = 0;
