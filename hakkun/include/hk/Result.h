@@ -96,12 +96,12 @@ namespace hk {
 
         template <typename T>
         struct ResultChecker {
-            hk_alwaysinline static Result check(const T&& value) { return Result(value); }
+            hk_alwaysinline static constexpr Result check(const T&& value) { return Result(value); }
         };
 
         template <typename T>
         struct ResultChecker<T*> {
-            hk_alwaysinline static Result check(const T*&& ptr) {
+            hk_alwaysinline static constexpr Result check(const T*&& ptr) {
                 if (ptr != nullptr)
                     return hk::ResultSuccess();
                 else
