@@ -18,7 +18,7 @@ namespace hk::util {
         using Key = u32;
         using Entry = Tuple<Key, T>;
 
-        Vec<Entry> mEntries;
+        Vec<Entry, 16, Allocator> mEntries;
         Key mCurrentKey = 0;
 
     public:
