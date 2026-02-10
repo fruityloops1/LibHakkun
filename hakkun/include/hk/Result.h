@@ -92,17 +92,40 @@ namespace hk {
 #include "hk/detail/DefaultResults.ih"
 #undef INCLUDE_HK_DETAIL_DEFAULTRESULTS
 
+    namespace detail {
+
+        template <typename T>
+        struct ResultChecker {
+            hk_alwaysinline static Result check(const T&& value) { return Result(value); }
+        };
+
+        template <typename T>
+        struct ResultChecker<T*> {
+            hk_alwaysinline static Result check(const T*&& ptr) {
+                if (ptr != nullptr)
+                    return hk::ResultSuccess();
+                else
+                    return hk::ResultNoValue();
+            }
+        };
+    } // namespace detail
+
 #endif // INCLUDE_HK_DETAIL_DEFAULTRESULTS
 
 /**
  * @brief Return if Result within expression is unsuccessful.
+ * If expression is pointer, return ResultNoValue() if it is nullptr.
  * Function must return Result.
  */
-#define HK_TRY(RESULT)                            \
-    {                                             \
-        const ::hk::Result _result_temp = RESULT; \
-        if (_result_temp.failed())                \
-            return _result_temp;                  \
+#define HK_TRY(VALUE)                                                                                                   \
+    {                                                                                                                   \
+        auto&& _value_temp = VALUE;                                                                                     \
+        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                 \
+                                                                                                                        \
+        const ::hk::Result _result_temp = ::hk::detail::ResultChecker<_ValueT>::check(::forward<_ValueT>(_value_temp)); \
+        if (_result_temp.failed())                                                                                      \
+            return _result_temp;                                                                                        \
+        ::move(_value_temp);                                                                                            \
     }
 
 /**
