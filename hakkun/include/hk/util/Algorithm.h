@@ -13,10 +13,11 @@ namespace hk::util {
      * @param low
      * @param high
      * @param searchValue
+     * @param findBetween whether to return -1 or in between index with no exact match
      * @return s32
      */
     template <typename T, typename GetFunc>
-    s32 binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue) {
+    size binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue, bool findBetween = false) {
         while (low <= high) {
             fs32 mid = (low + high) / 2;
             if (get(mid) == searchValue)
@@ -28,7 +29,7 @@ namespace hk::util {
                 high = mid - 1;
         }
 
-        return -1;
+        return findBetween ? low : -1;
     }
 
 } // namespace hk::util
