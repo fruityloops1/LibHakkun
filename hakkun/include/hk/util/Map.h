@@ -92,6 +92,13 @@ namespace hk::util {
             return *value;
         }
 
+        ValueOrResult<V> remove(const K& key) {
+            ::size index = binarySearch(key);
+            HK_UNLESS(index != -1, ResultNoValue());
+
+            return move(VecType::remove(index));
+        }
+
         V& operator[](const K& key) {
             V* value = find(key);
             return value ? *value : insert(key, {}).b;
