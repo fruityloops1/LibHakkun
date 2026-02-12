@@ -140,6 +140,10 @@ namespace hk::hook {
         ptr offset = addr - module->range().start();                                                 \
         return write##NAME(module, offset, branchToFunc);                                            \
     }                                                                                                \
+    template <typename Func, typename T, typename R, typename... Args>                               \
+    hk_alwaysinline Result write##NAME##AtPtr(R (T::*addr)(Args...), Func* branchToFunc) {           \
+        return write##NAME##AtPtr(pun<ptr>(addr), branchToFunc);                                     \
+    }                                                                                                \
     template <util::TemplateString Symbol, typename Func>                                            \
     hk_alwaysinline Result write##NAME##AtSym(Func* branchToFunc) {                                  \
         ptr addr;                                                                                    \
