@@ -61,6 +61,11 @@ namespace hk::hook {
             return installAtOffset(module, ptr(addr) - module->range().start());
         }
 
+        template <typename T, typename R, typename... Args>
+        Result installAtPtr(R (T::*addr)(Args...)) {
+            return installAtPtr(pun<void*>(addr));
+        }
+
         template <util::TemplateString Symbol>
         hk_alwaysinline Result installAtSym() {
             ptr addr = util::lookupSymbol<Symbol>();

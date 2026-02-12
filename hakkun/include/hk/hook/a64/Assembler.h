@@ -1084,6 +1084,11 @@ namespace hk::hook::a64 {
             return *this;
         }
 
+        template <typename T, typename R, typename... Args>
+        AsmBlock& installAtPtr(R (T::*addr)(Args...)) {
+            return installAtPtr(pun<void*>(addr));
+        }
+
         template <util::TemplateString Symbol>
         AsmBlock& installAtSym() {
             tryInstallAtSym<Symbol>();

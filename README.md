@@ -159,8 +159,8 @@ some_other_sead_thingy = 0123456789ABCDEF @ game - 0x20
 some_another_sead_thingy = 0?23????89AB???F @ game - 0x20 // masking
 
 // data may change
-some_other_sead_thingy2 = FEDCBA9876543210 @ game<110 - 0x20 // before 910
-some_other_sead_thingy3 = 0123456789ABCDEF @ game>110 - 0x20 // at and after 910
+some_other_sead_thingy2 = FEDCBA9876543210 @ game<110 - 0x20 // before 110
+some_other_sead_thingy3 = 0123456789ABCDEF @ game>110 - 0x20 // at and after 110
 
 // optimization
 some_shit = 0123456789ABCDEF @ game:text + 0x20 // only search .text section
@@ -198,7 +198,8 @@ extern "C" void hkMain() {
     myHook.uninstall(); // hooks can be uninstalled
     myHook.installAtOffset(ro::getMainModule(), 0x1234); // by offset (not recommended)
     myHook.uninstall();
-    myHook.installAtPtr(/* rare usecase */);
+    myHook.installAtPtr(BlahFunc);
+    myHook.installAtPtr(&BlahClass::Func);
 
     // replace hooks are also a thing, use HkReplace instead of HkTrampoline
 
