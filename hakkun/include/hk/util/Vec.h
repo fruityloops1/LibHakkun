@@ -208,7 +208,7 @@ namespace hk::util {
         }
 
         template <typename ST, typename GetFunc>
-        s32 binarySearch(GetFunc getValue, ST searchValue, bool findBetween = false) const {
+        size binarySearch(GetFunc getValue, ST searchValue, bool findBetween = false) const {
             return util::binarySearch([this, getValue](s32 index) {
                 const T* value = valueAt(index);
                 return getValue(*value);

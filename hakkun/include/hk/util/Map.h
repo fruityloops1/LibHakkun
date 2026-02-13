@@ -21,7 +21,7 @@ namespace hk::util {
         using VecType = Vec<Pair, ReserveSize, Allocator>;
         using Hash = size;
 
-        s32 binarySearch(const K& key, bool findBetween = false) const {
+        size binarySearch(const K& key, bool findBetween = false) const {
             return VecType::binarySearch([](const Pair& pair) -> Hash { return HashFunc::hash(pair.a); }, HashFunc::hash(key), findBetween);
         }
 
