@@ -4,6 +4,9 @@
 
 namespace hk {
 
+    template <typename T>
+    class ValueOrResult;
+
     /**
      * @brief Value representing the result of an operation.
      *
@@ -28,6 +31,8 @@ namespace hk {
         constexpr u32 getValue() const { return value; }
         constexpr operator u32() const { return value; }
         constexpr operator bool() const { return failed(); }
+        template <typename T>
+        constexpr operator ValueOrResult<T>() const;
 
         constexpr int getModule() const { return value & 0b0111111111; }
         constexpr int getDescription() const { return ((value) >> 9) & 0b01111111111111; }

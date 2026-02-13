@@ -15,6 +15,9 @@ namespace hk {
     template <typename T>
     class ValueOrResult;
 
+    template <typename T>
+    constexpr Result::operator ValueOrResult<T>() const { return ValueOrResult<T>(*this); }
+
     /**
      * @brief Holds a Result and a value of type T, when the Result is ResultSuccess().
      *
@@ -41,7 +44,7 @@ namespace hk {
     public:
         using Type = T;
 
-        constexpr ValueOrResult(Result result)
+        explicit constexpr ValueOrResult(Result result)
             : mResult(result) {
             HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
         }
@@ -134,7 +137,7 @@ namespace hk {
     public:
         using Type = T;
 
-        constexpr ValueOrResult(Result result)
+        explicit constexpr ValueOrResult(Result result)
             : mResult(result) {
             HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T&>());
         }
