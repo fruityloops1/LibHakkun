@@ -57,22 +57,22 @@ namespace hk::ro {
                 const auto& data = module.data();
 
                 diag::logLine("Module[%d]:", i);
-                diag::logLine("\tName: %s", module.getModuleName());
+                diag::logLine("\tName:     %s", module.getModuleName());
                 if (module.getBuildId() != nullptr) {
                     const u8* d = module.getBuildId();
 
                     static_assert(cBuildIdSize == 0x10);
-                    diag::logLine("\tBuildId: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (...)",
+                    diag::logLine("\tBuildId:  %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x (...)",
                         d[0], d[1], d[2], d[3],
                         d[4], d[5], d[6], d[7],
                         d[8], d[9], d[10], d[11],
                         d[12], d[13], d[14], d[15]);
                 } else {
-                    diag::logLine("\tBuildId: NotFound");
+                    diag::logLine("\tBuildId:  NotFound");
                 }
-                diag::logLine("\tRange: %p-%p", range.start(), range.end() - 1);
-                diag::logLine("\tText: %p-%p", text.start(), text.end() - 1);
-                diag::logLine("\tRodata: %p-%p", rodata.start(), rodata.end() - 1);
+                diag::logLine("\tRange:    %p-%p", range.start(), range.end() - 1);
+                diag::logLine("\tText:     %p-%p", text.start(), text.end() - 1);
+                diag::logLine("\tRodata:   %p-%p", rodata.start(), rodata.end() - 1);
                 diag::logLine("\tData/Bss: %p-%p", data.start(), data.end() - 1);
                 diag::logLine("\tnn::ro::detail::RoModule*: %p", nnModule);
             }
