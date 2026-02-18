@@ -97,17 +97,25 @@ namespace hk {
         }
 
         /**
-         * @brief Retrieves the value, if valid. Aborts if not.
+         * @brief Get inner value without disowning.
          *
          * @return const T&
          */
-        constexpr const T& value() const {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::value(): No value (%04d-%04d/0x%x)",
+        constexpr const T& getInnerValue() const {
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::getInnerValue(): No value (%04d-%04d/0x%x)",
                 util::getTypeName<T>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
             return mValue;
+        }
+
+        constexpr T operator or(T&& defaultValue) {
+            return hasValue() ? move(disown()) : move(defaultValue);
+        }
+
+        constexpr T operator or(const T& defaultValue) {
+            return hasValue() ? move(disown()) : defaultValue;
         }
 
         constexpr operator Result() const { return mResult; }
@@ -191,17 +199,21 @@ namespace hk {
         }
 
         /**
-         * @brief Retrieves the value, if valid. Aborts if not.
+         * @brief Get inner value without disowning.
          *
          * @return T&
          */
-        constexpr T& value() const {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::value(): No value (%04d-%04d/0x%x)",
+        constexpr T& getInnerValue() const {
+            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::getInnerValue(): No value (%04d-%04d/0x%x)",
                 util::getTypeName<T&>(),
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
             return get();
+        }
+
+        constexpr T& operator or(T& defaultValue) const {
+            return hasValue() ? get() : defaultValue;
         }
 
         constexpr operator Result() const { return mResult; }

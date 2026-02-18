@@ -95,15 +95,13 @@ namespace hk::socket {
             return std::byteswap(value2);
         }
 
-        template <util::TemplateString address>
+        template <util::TemplateString Address>
         consteval static SocketAddrIpv4 parse(u16 port) {
-            static_assert(__builtin_strlen(address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
-            constexpr ValueOrResult<u32> result = parseAddress(address.value);
-            static_assert(Result(result).getDescription() == 0);
+            static_assert(__builtin_strlen(Address.value) <= 15, "IPv4 addresses are no longer than 15 characters");
+            constexpr u32 address = parseAddress(Address.value);
 
             return SocketAddrIpv4(
-                port,
-                result.value());
+                port, address);
         }
 
         static ValueOrResult<SocketAddrIpv4> parse(const char* address, u16 port) {

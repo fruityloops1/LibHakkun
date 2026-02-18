@@ -41,7 +41,7 @@ namespace hk::diag::ipclogger {
 
             auto result = initialize();
 
-            sInstance.mSession.store(result.hasValue() ? result.value()
+            sInstance.mSession.store(result.hasValue() ? result.getInnerValue()
                                                        : sInstance.mSession = cInvalidSession,
                 std::memory_order_release);
         }
