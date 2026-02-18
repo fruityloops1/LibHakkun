@@ -4,6 +4,7 @@
 #include "hk/ro/RoUtil.h"
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
+#include "hk/util/Context.h"
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -17,6 +18,46 @@ namespace hk::diag {
         thread->threadNamePtr = thread->threadName;
         std::strncpy(thread->threadName, name, sizeof(thread->threadName));
         return ResultSuccess();
+    }
+
+    ValueOrResult<const char*> getCurrentThreadName() {
+        auto* tls = svc::getTLS();
+        auto* thread = tls->nnsdkThread;
+        HK_UNLESS(thread != nullptr, ResultNotAnNnsdkThread());
+        return thread->threadNamePtr == nullptr ? thread->threadName : thread->threadNamePtr;
+    }
+
+    void dumpStackTrace() {
+        ptr address = -1;
+        int level = 1;
+        if (getCurrentThreadName()
+                .map([](const char* threadName) {
+                    logLine("Stack Trace on Thread[%s]:", threadName);
+                })
+                .failed())
+            logLine("Stack Trace:");
+
+        while ((address = util::getReturnAddress(level++)) != 0) {
+            auto* module = ro::getModuleContaining(address);
+            if (module != nullptr) {
+                const ptr offset = address - module->range().start();
+                if (module->getModuleName())
+                    logLine("\tReturn[%02d]: %016zX (%s + 0x%zx)", level - 1, address, module->getModuleName(), offset);
+
+                else {
+                    const u8* d = module->getBuildId();
+
+                    static_assert(ro::cBuildIdSize == 0x10);
+                    logLine("\tReturn[%02d]: %016zX ([%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x] + 0x%zx)", level - 1, address, module->getBuildId(),
+                        d[0], d[1], d[2], d[3],
+                        d[4], d[5], d[6], d[7],
+                        d[8], d[9], d[10], d[11],
+                        d[12], d[13], d[14], d[15],
+                        offset);
+                }
+            } else
+                logLine("\tReturn[%02d]: %016zX", level - 1, address);
+        }
     }
 
     static void* setAbortMsg(const ro::RoModule* module, const char* msg, int idx) {
@@ -63,6 +104,8 @@ File: %s:%d
 
         logLine(headerMsgBuf);
         logLine(userMsgBuf);
+
+        dumpStackTrace();
 
         auto* module = ro::getSelfModule();
         if (module) {

@@ -7,6 +7,9 @@
 namespace hk::diag {
 
     Result setCurrentThreadName(const char* name);
+    ValueOrResult<const char*> getCurrentThreadName();
+
+    void dumpStackTrace();
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     const char* getResultName(hk::Result result);
