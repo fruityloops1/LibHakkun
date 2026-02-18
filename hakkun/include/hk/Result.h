@@ -122,9 +122,9 @@ namespace hk {
  * If expression is pointer, return ResultNoValue() if it is nullptr.
  * Function must return Result.
  */
-#define HK_TRY(VALUE)                                                                                                   \
+#define HK_TRY(VALUE, ...)                                                                                              \
     {                                                                                                                   \
-        auto&& _value_temp = VALUE;                                                                                     \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                          \
         using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                 \
                                                                                                                         \
         const ::hk::Result _result_temp = ::hk::detail::ResultChecker<_ValueT>::check(::forward<_ValueT>(_value_temp)); \

@@ -325,11 +325,11 @@ namespace hk {
  *        When VALUE is a pointer, abort if it is nullptr.
  *
  */
-#define HK_UNWRAP(VALUE)                                                                                           \
-    ({                                                                                                             \
-        auto&& _hk_unwrap_v = VALUE;                                                                               \
-        using _ValueT = std::remove_reference_t<decltype(_hk_unwrap_v)>;                                           \
-        ::hk::detail::UnwrapChecker<_ValueT, #VALUE, __FILE__, __LINE__>::check(::forward<_ValueT>(_hk_unwrap_v)); \
+#define HK_UNWRAP(VALUE, ...)                                                                                                                   \
+    ({                                                                                                                                          \
+        auto&& _hk_unwrap_v = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                 \
+        using _ValueT = std::remove_reference_t<decltype(_hk_unwrap_v)>;                                                                        \
+        ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_hk_unwrap_v)); \
     })
 
         template <typename T>
@@ -352,9 +352,9 @@ namespace hk {
  * Function must return Result.
  */
 #undef HK_TRY
-#define HK_TRY(VALUE)                                                                                                   \
+#define HK_TRY(VALUE, ...)                                                                                              \
     ({                                                                                                                  \
-        auto&& _value_temp = VALUE;                                                                                     \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                          \
         using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                 \
                                                                                                                         \
         const ::hk::Result _result_temp = ::hk::detail::ResultChecker<_ValueT>::check(::forward<_ValueT>(_value_temp)); \
