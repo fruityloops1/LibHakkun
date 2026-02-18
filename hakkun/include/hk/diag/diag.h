@@ -20,30 +20,12 @@ namespace hk::diag {
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 
-    constexpr char cAssertionFailFormat[] =
-        R"(
-AssertionFailed: %s
-)";
-    constexpr char cAbortUnlessResultFormat[] =
-        R"(
-ResultAbort (%04d-%04d/0x%x) [from %s]
-)";
-    constexpr char cAbortUnlessResultFormatWithName[] =
-        R"(
-ResultAbort (%04d-%04d/%s) [from %s]
-)";
-    constexpr char cUnwrapResultFormat[] =
-        R"(
-Unwrap (%04d-%04d/0x%x) [from %s]
-)";
-    constexpr char cUnwrapResultFormatWithName[] =
-        R"(
-Unwrap (%04d-%04d/%s) [from %s]
-)";
-    constexpr char cNullptrUnwrapFormat[] =
-        R"(
-Unwrap (nullptr) [from %s]
-)";
+    constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
+    constexpr char cAbortUnlessResultFormat[] = "ResultAbort (%04d-%04d/0x%x) [from %s]";
+    constexpr char cAbortUnlessResultFormatWithName[] = "ResultAbort (%04d-%04d/%s) [from %s]";
+    constexpr char cUnwrapResultFormat[] = "Unwrap (%04d-%04d/0x%x) [from %s]";
+    constexpr char cUnwrapResultFormatWithName[] = "Unwrap (%04d-%04d/%s) [from %s]";
+    constexpr char cNullptrUnwrapFormat[] = "Unwrap (nullptr) [from %s]";
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 

@@ -96,14 +96,16 @@ File: %s:%d
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-        char userMsgBuf[0x80];
-        vsnprintf(userMsgBuf, sizeof(userMsgBuf), msgFmt, arg);
+        constexpr size cMsgBufSize = 0x80;
+        char userMsgBuf[cMsgBufSize + 1] { '\0' };
+        userMsgBuf[0] = '\n';
+        userMsgBuf[vsnprintf(userMsgBuf + 1, cMsgBufSize - 1, msgFmt, arg)] = '\n';
 
-        char headerMsgBuf[0x80];
-        snprintf(headerMsgBuf, sizeof(headerMsgBuf), cAbortFormat, file, line);
+        char headerMsgBuf[cMsgBufSize] { '\0' };
+        snprintf(headerMsgBuf, cMsgBufSize, cAbortFormat, file, line);
 
-        logLine(headerMsgBuf);
-        logLine(userMsgBuf);
+        log(headerMsgBuf);
+        log(userMsgBuf);
 
         dumpStackTrace();
 
