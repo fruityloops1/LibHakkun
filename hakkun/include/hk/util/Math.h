@@ -141,6 +141,120 @@ namespace hk::util {
     using Vector2f64 = Vector2<f64>;
     using Vector2i = Vector2<int>;
 
+    template <typename T>
+    struct Vector3 {
+        T x = 0, y = 0, z = 0;
+
+        Vector3() = default;
+        Vector3(T x, T y, T z)
+            : x(x)
+            , y(y)
+            , z(z) { }
+
+        Vector3 operator+(const Vector3& rhs) const {
+            return { x + rhs.x, y + rhs.y, z + rhs.z };
+        }
+        Vector3 operator-(const Vector3& rhs) const {
+            return { x - rhs.x, y - rhs.y, z - rhs.z };
+        }
+        Vector3 operator*(const Vector3& rhs) const {
+            return { x * rhs.x, y * rhs.y, z * rhs.z };
+        }
+        Vector3 operator/(const Vector3& rhs) const {
+            return { x / rhs.x, y / rhs.y, z / rhs.z };
+        }
+
+        Vector3& operator+=(const Vector3& rhs) {
+            x += rhs.x;
+            y += rhs.y;
+            z += rhs.z;
+            return *this;
+        }
+        Vector3& operator-=(const Vector3& rhs) {
+            x -= rhs.x;
+            y -= rhs.y;
+            z -= rhs.z;
+            return *this;
+        }
+        Vector3& operator*=(const Vector3& rhs) {
+            x *= rhs.x;
+            y *= rhs.y;
+            z *= rhs.z;
+            return *this;
+        }
+        Vector3& operator/=(const Vector3& rhs) {
+            x /= rhs.x;
+            y /= rhs.y;
+            z /= rhs.z;
+            return *this;
+        }
+
+        Vector3 operator+(T v) {
+            return { x + v, y + v, z + v };
+        }
+        Vector3 operator-(T v) {
+            return { x - v, y - v, z - v };
+        }
+        Vector3 operator*(T v) {
+            return { x * v, y * v, z * v };
+        }
+        Vector3 operator/(T v) {
+            return { x / v, y / v, z / v };
+        }
+
+        Vector3& operator+=(T v) {
+            x += v;
+            y += v;
+            z += v;
+            return *this;
+        }
+        Vector3& operator-=(T v) {
+            x -= v;
+            y -= v;
+            z -= v;
+            return *this;
+        }
+        Vector3& operator*=(T v) {
+            x *= v;
+            y *= v;
+            z *= v;
+            return *this;
+        }
+        Vector3& operator/=(T v) {
+            x /= v;
+            y /= v;
+            z /= v;
+        }
+
+        T length() {
+            return std::sqrt(x * x + y * y + z * z);
+        }
+
+        Vector3& normalize() {
+            const T len = length();
+            if (len > 0) {
+                const T invLen = 1 / len;
+                *this *= invLen;
+            }
+
+            return *this;
+        }
+
+        operator Vector3<f32>() const {
+            return Vector3<f32>(f32(x), f32(y), f32(z));
+        }
+        operator Vector3<f64>() const {
+            return Vector3<f64>(f64(x), f64(y), f64(z));
+        }
+        operator Vector3<int>() const {
+            return Vector3<int>(int(x), int(y), int(z));
+        }
+    };
+
+    using Vector3f = Vector3<f32>;
+    using Vector3f64 = Vector3<f64>;
+    using Vector3i = Vector3<int>;
+
     // Bit math
 
     template <typename T>
