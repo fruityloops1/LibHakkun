@@ -29,12 +29,12 @@ namespace hk::diag {
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
-#define HK_ASSERT(CONDITION)                      \
-    do {                                          \
-        const bool _condition_temp = (CONDITION); \
-        if (_condition_temp == false) {           \
-            __builtin_trap();                     \
-        }                                         \
+#define HK_ASSERT(CONDITION, ...)                                            \
+    do {                                                                     \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__); \
+        if (_condition_temp == false) {                                      \
+            __builtin_trap();                                                \
+        }                                                                    \
     } while (0)
 
 #define HK_ABORT(FMT, ...) \
@@ -50,30 +50,30 @@ namespace hk::diag {
         }                                         \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT)                 \
-    do {                                          \
-        const ::hk::Result _result_temp = RESULT; \
-        if (_result_temp.failed()) {              \
-            __builtin_trap();                     \
-        }                                         \
+#define HK_ABORT_UNLESS_R(RESULT, ...)                                       \
+    do {                                                                     \
+        const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__; \
+        if (_result_temp.failed()) {                                         \
+            __builtin_trap();                                                \
+        }                                                                    \
     } while (0)
 
 #define HK_TODO(...) __builtin_trap();
 
 #else
 
-#define HK_ASSERT(CONDITION)                          \
-    do {                                              \
-        const bool _condition_temp = (CONDITION);     \
-        if (_condition_temp == false) {               \
-            ::hk::diag::abortImpl(                    \
-                ::hk::svc::BreakReason_Assert,        \
-                ::hk::diag::ResultAssertionFailure(), \
-                __FILE__,                             \
-                __LINE__,                             \
-                ::hk::diag::cAssertionFailFormat,     \
-                #CONDITION);                          \
-        }                                             \
+#define HK_ASSERT(CONDITION, ...)                                            \
+    do {                                                                     \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__); \
+        if (_condition_temp == false) {                                      \
+            ::hk::diag::abortImpl(                                           \
+                ::hk::svc::BreakReason_Assert,                               \
+                ::hk::diag::ResultAssertionFailure(),                        \
+                __FILE__,                                                    \
+                __LINE__,                                                    \
+                ::hk::diag::cAssertionFailFormat,                            \
+                #CONDITION);                                                 \
+        }                                                                    \
     } while (0)
 
 #define HK_ABORT(FMT, ...)                             \
@@ -100,9 +100,9 @@ namespace hk::diag {
         }                                                  \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT)                                                    \
+#define HK_ABORT_UNLESS_R(RESULT, ...)                                               \
     do {                                                                             \
-        const ::hk::Result _result_temp = RESULT;                                    \
+        const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;         \
         if (_result_temp.failed()) {                                                 \
             const char* _result_temp_name = ::hk::diag::getResultName(_result_temp); \
             if (_result_temp_name != nullptr) {                                      \
