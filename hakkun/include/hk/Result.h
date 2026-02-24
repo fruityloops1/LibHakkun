@@ -33,6 +33,7 @@ namespace hk {
         constexpr operator bool() const { return failed(); }
         template <typename T>
         constexpr operator ValueOrResult<T>() const;
+        constexpr hk::Result operator and(const Result& rhs) const { return failed() ? *this : rhs; }
 
         constexpr int getModule() const { return value & 0b0111111111; }
         constexpr int getDescription() const { return ((value) >> 9) & 0b01111111111111; }
