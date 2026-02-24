@@ -159,7 +159,7 @@ namespace hk::sf {
         constexpr void setDomainClose() {
             mDomainTag = cmif::DomainTag::Close;
         }
-            
+
         constexpr void enableDebug(bool before = true, bool after = true) {
             mPrintRequest = before;
             mPrintResponse = after;
@@ -216,7 +216,7 @@ namespace hk::sf {
             }
         }
 
-        template<typename T>
+        template <typename T>
         void addInAutoselect(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInAutoselect(span.data(), span.size_bytes(), mode);
         }
@@ -237,7 +237,7 @@ namespace hk::sf {
             }
         }
 
-        template<typename T>
+        template <typename T>
         void addOutAutoselect(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutAutoselect(span.data(), span.size_bytes(), mode);
         }
@@ -397,11 +397,11 @@ namespace hk::sf {
         static Response readFromTls(Service* service, bool printResponse) {
             util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
 
-            auto header = reader.read<hipc::Header>();
+            auto header = HK_UNWRAP(reader.read<hipc::Header>());
 
             Response response;
             if (header.hasSpecialHeader) {
-                auto specialHeader = reader.read<hipc::SpecialHeader>();
+                auto specialHeader = HK_UNWRAP(reader.read<hipc::SpecialHeader>());
 
                 if (specialHeader.sendPid)
                     response.pid = reader.read<u64>();
@@ -419,13 +419,13 @@ namespace hk::sf {
             size dataWordsLeft = header.dataWords - 4;
 
             if (service->isDomain()) {
-                auto domainOut = reader.read<cmif::DomainOutHeader>();
+                auto domainOut = HK_UNWRAP(reader.read<cmif::DomainOutHeader>());
                 for (u8 i = 0; i < domainOut.objectCount; i++)
                     response.objects.add(reader.read<u32>());
                 dataWordsLeft -= sizeof(cmif::DomainOutHeader) / 4 + response.objects.size();
             }
 
-            auto outHeader = reader.read<cmif::OutHeader>();
+            auto outHeader = HK_UNWRAP(reader.read<cmif::OutHeader>());
             dataWordsLeft -= sizeof(cmif::OutHeader) / 4;
             response.result = outHeader.result;
             response.data = std::span(svc::getTLS()->ipcMessageBuffer + reader.tell(), dataWordsLeft * 4);

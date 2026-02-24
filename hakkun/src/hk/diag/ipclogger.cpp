@@ -19,11 +19,11 @@ namespace hk::diag::ipclogger {
             svc::Break(svc::BreakReason_User, nullptr, res.getValue());
 
         stream.seek(0);
-        auto header = stream.read<sf::hipc::Header>();
+        auto header = HK_UNWRAP(stream.read<sf::hipc::Header>());
         if (header.tag == 1)
             return ResultSessionMoveFailed();
-        auto special = stream.read<sf::hipc::SpecialHeader>();
-        auto sessionHandle = stream.read<Handle>();
+        auto special = HK_UNWRAP(stream.read<sf::hipc::SpecialHeader>());
+        auto sessionHandle = HK_UNWRAP(stream.read<Handle>());
 
         // application processes are only permitted to have one port open at a time
         svc::CloseHandle(handle);
