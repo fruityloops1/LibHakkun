@@ -55,7 +55,7 @@ namespace hk::util {
             memcpy(cast<void*>(mBuffer + mCursor), data, dataSize);
             mCursor += dataSize;
 
-            return true;
+            return hk::ResultSuccess();
         }
 
         void write(const void* data, size dataSize) {
