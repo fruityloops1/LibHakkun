@@ -123,7 +123,7 @@ namespace hk {
  * Function must return Result.
  */
 #define HK_TRY(VALUE, ...)                                                                                              \
-    {                                                                                                                   \
+    ({                                                                                                                  \
         auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                          \
         using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                 \
                                                                                                                         \
@@ -131,7 +131,7 @@ namespace hk {
         if (_result_temp.failed())                                                                                      \
             return _result_temp;                                                                                        \
         ::move(_value_temp);                                                                                            \
-    }
+    })
 
 /**
  * @brief Return a Result expression if CONDITION is false.
