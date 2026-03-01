@@ -2,6 +2,8 @@
 
 #include "hk/diag/results.h" // IWYU pragma: keep
 #include "hk/svc/types.h"
+#include "hk/types.h"
+#include "hk/util/TemplateString.h"
 #include <cstdarg>
 
 namespace hk::diag {
@@ -13,12 +15,15 @@ namespace hk::diag {
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     const char* getResultName(hk::Result result);
-#else
-    hk_alwaysinline inline const char* getResultName(hk::Result result) { return nullptr; }
-#endif
 
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
+#else
+    hk_alwaysinline inline const char* getResultName(hk::Result result) { return nullptr; }
+
+    template <util::TemplateString File, int Line>
+    hk_noreturn hk_noinline void abortReleaseImpl(Result result, ...) { __builtin_trap(); }
+#endif
 
     constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
     constexpr char cAbortUnlessResultFormat[] = "ResultAbort (%04d-%04d/0x%x) [from %s]";
@@ -29,36 +34,36 @@ namespace hk::diag {
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
-#define HK_ASSERT(CONDITION, ...)                                            \
-    do {                                                                     \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__); \
-        if (_condition_temp == false) {                                      \
-            __builtin_trap();                                                \
-        }                                                                    \
+#define HK_ASSERT(CONDITION, ...)                                                                   \
+    do {                                                                                            \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                        \
+        if (_condition_temp == false) {                                                             \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAssertionFailure()); \
+        }                                                                                           \
     } while (0)
 
-#define HK_ABORT(FMT, ...) \
-    do {                   \
-        __builtin_trap();  \
+#define HK_ABORT(FMT, ...)                                                                                      \
+    do {                                                                                                        \
+        ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
     } while (0)
 
-#define HK_ABORT_UNLESS(CONDITION, FMT, ...)      \
-    do {                                          \
-        const bool _condition_temp = (CONDITION); \
-        if (_condition_temp == false) {           \
-            __builtin_trap();                     \
-        }                                         \
+#define HK_ABORT_UNLESS(CONDITION, FMT, ...)                                                                        \
+    do {                                                                                                            \
+        const bool _condition_temp = (CONDITION);                                                                   \
+        if (_condition_temp == false) {                                                                             \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
+        }                                                                                                           \
     } while (0)
 
 #define HK_ABORT_UNLESS_R(RESULT, ...)                                       \
     do {                                                                     \
         const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__; \
         if (_result_temp.failed()) {                                         \
-            __builtin_trap();                                                \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(_result_temp);  \
         }                                                                    \
     } while (0)
 
-#define HK_TODO(...) __builtin_trap();
+#define HK_TODO(...) HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
 
 #else
 

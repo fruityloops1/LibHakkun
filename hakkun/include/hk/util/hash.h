@@ -123,6 +123,11 @@ namespace hk::util {
                 }
             }
 
+            template <typename V>
+            void feed(const V& value) {
+                feed(cast<const T*>(&value), sizeof(V));
+            }
+
             constexpr void feedNullTerminated(const T* str) {
                 size len = 0;
                 {
@@ -187,6 +192,7 @@ namespace hk::util {
 
         template <typename T, class Read>
         using HashMurmurImpl = HashMurmur32Impl<T, Read>;
+        using HashMurmur = HashMurmur32Impl<char, ReadDefault<char>>;
 
         /**
          * @brief HashMurmur3 64-bit implementation. Allows partial and full feeding.
@@ -228,6 +234,11 @@ namespace hk::util {
                     u64 value = getBlock64<T, ReadDefault<T>>(fedData, i, nullptr);
                     mHashValue = (((((value * cMurmur64Constant) ^ ((value * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ mHashValue) * cMurmur64Constant;
                 }
+            }
+
+            template <typename V>
+            void feed(const V& value) {
+                feed(cast<const T*>(&value), sizeof(V));
             }
 
             constexpr void feedNullTerminated(const T* str) {
@@ -286,6 +297,8 @@ namespace hk::util {
                 return finalMix64(h1);
             }
         };
+
+        using HashMurmur64 = HashMurmur64Impl<char, ReadDefault<char>>;
 
         template <typename T, class Read>
         constexpr u32 hashMurmurImpl(const T* data, const fu32 len, const u32 seed = 0, void* userData = nullptr) {

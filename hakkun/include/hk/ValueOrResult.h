@@ -239,7 +239,11 @@ namespace hk {
         template <typename T, util::TemplateString AbortMsg, util::TemplateString File, int Line>
         struct UnwrapChecker<T*, AbortMsg, File, Line> {
             static hk_alwaysinline T* check(T* value) {
+
                 if (value == nullptr) {
+#if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
+                    diag::abortReleaseImpl<File, Line>(ResultNoValue());
+#else
                     diag::abortImpl(
                         svc::BreakReason_User,
                         ResultNoValue(),
@@ -247,6 +251,7 @@ namespace hk {
                         Line,
                         diag::cNullptrUnwrapFormat,
                         AbortMsg.value);
+#endif
                 }
                 return value;
             }
@@ -257,6 +262,9 @@ namespace hk {
             static hk_alwaysinline T check(ValueOrResult<T>&& value) {
                 const Result _result_temp = value;
                 if (_result_temp.failed()) {
+#if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
+                    diag::abortReleaseImpl<File, Line>(_result_temp);
+#else
                     const char* _result_temp_name = diag::getResultName(_result_temp);
                     if (_result_temp_name != nullptr) {
                         diag::abortImpl(
@@ -281,6 +289,7 @@ namespace hk {
                             _result_temp.getValue(),
                             AbortMsg.value);
                     }
+#endif
                 }
                 return move((T)value);
             }
@@ -291,6 +300,9 @@ namespace hk {
             static hk_alwaysinline ValueOrResult<T&> check(ValueOrResult<T&>&& value) {
                 const Result _result_temp = value;
                 if (_result_temp.failed()) {
+#if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
+                    diag::abortReleaseImpl<File, Line>(_result_temp);
+#else
                     const char* _result_temp_name = diag::getResultName(_result_temp);
                     if (_result_temp_name != nullptr) {
                         diag::abortImpl(
@@ -315,6 +327,7 @@ namespace hk {
                             _result_temp.getValue(),
                             AbortMsg.value);
                     }
+#endif
                 }
                 return move(value);
             }
