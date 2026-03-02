@@ -44,6 +44,13 @@ namespace hk::util {
             mCursor = cursor;
         }
 
+        Result trySeek(size cursor) {
+            if (hasSize())
+                HK_UNLESS(cursor <= mSize, hk::ResultOutOfRange());
+            mCursor = cursor;
+            return hk::ResultSuccess();
+        }
+
         size tell() const { return mCursor; }
 
         hk::Result tryWrite(const void* data, size dataSize) {
