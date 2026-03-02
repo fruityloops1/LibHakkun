@@ -18,6 +18,19 @@ namespace hk {
     template <typename T>
     constexpr Result::operator ValueOrResult<T>() const { return ValueOrResult<T>(*this); }
 
+    template <typename T>
+    struct ValueOrResultMapTraits;
+
+    template <typename T>
+    struct ValueOrResultMapTraits<ValueOrResult<T>> {
+        using Return = ValueOrResult<T>;
+    };
+
+    template <Derived<hk::Result> T>
+    struct ValueOrResultMapTraits<ValueOrResult<T>> {
+        using Return = Result;
+    };
+
     /**
      * @brief Holds a Result and a value of type T, when the Result is ResultSuccess().
      *
@@ -65,10 +78,10 @@ namespace hk {
          *
          * @tparam L
          * @param func
-         * @return ValueOrResult<typename util::FunctionTraits<L>::ReturnType>
+         * @return ValueOrResult<ReturnType of L>
          */
         template <typename L>
-        constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
+        constexpr ValueOrResultMapTraits<ValueOrResult<typename util::FunctionTraits<L>::ReturnType>>::Return map(L func) {
             using Return = typename util::FunctionTraits<L>::ReturnType;
 
             if (hasValue()) {
@@ -167,10 +180,10 @@ namespace hk {
          *
          * @tparam L
          * @param func
-         * @return ValueOrResult<typename util::FunctionTraits<L>::ReturnType>
+         * @return ValueOrResult<ReturnType of L>
          */
         template <typename L>
-        constexpr ValueOrResult<typename util::FunctionTraits<L>::ReturnType> map(L func) {
+        constexpr ValueOrResultMapTraits<ValueOrResult<typename util::FunctionTraits<L>::ReturnType>>::Return map(L func) {
             using Return = typename util::FunctionTraits<L>::ReturnType;
 
             if (hasValue()) {
