@@ -172,11 +172,9 @@ namespace hk::rtld {
         ptr moduleBase = HK_UNWRAP(([]() hk_alwaysinline -> ValueOrResult<ptr> {
             ptr addr;
             __asm("adr %[result], ." : [result] "=r"(addr));
-            hk::svc::MemoryInfo info;
-            u32 page;
 
             // us
-            HK_TRY(hk::svc::QueryMemory(&info, &page, addr));
+            auto [info, page] = HK_TRY(hk::svc::QueryMemory(addr));
             return ptr(info.base_address);
         })());
 
