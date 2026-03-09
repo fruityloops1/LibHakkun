@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/util/Algorithm.h"
+#include "hk/util/Allocator.h"
 #include "hk/util/Tuple.h"
 #include "hk/util/Vec.h"
 #include "hk/util/hash.h"
@@ -15,7 +16,7 @@ namespace hk::util {
      * @tparam HashFunc Class containing hash function for key; HashMurmur by default, must be supplied with a custom function for
      * @tparam ReserveSize Amount of elements to reserve by default or when pushing elements past the current capacity
      */
-    template <typename K, typename V, typename HashFunc = MurmurHash3<K>, size ReserveSize = 16, AllocatorType Allocator = MallocAllocator>
+    template <typename K, typename V, typename HashFunc = MurmurHash3<K>, size ReserveSize = 16, AllocatorType Allocator = DefaultAllocator>
     class Map : Vec<Tuple<K, V>, ReserveSize, Allocator> {
         using Pair = Tuple<K, V>;
         using VecType = Vec<Pair, ReserveSize, Allocator>;
