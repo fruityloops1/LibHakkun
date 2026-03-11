@@ -62,6 +62,10 @@ namespace hk {
             HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
         }
 
+        constexpr ValueOrResult(const T& value) {
+            std::construct_at(&mValue, value);
+        }
+
         constexpr ValueOrResult(T&& value) {
             std::construct_at(&mValue, std::forward<T>(value));
         }
@@ -129,6 +133,14 @@ namespace hk {
 
         constexpr T operator or(const T& defaultValue) {
             return hasValue() ? move(disown()) : defaultValue;
+        }
+
+        constexpr T orElse(T&& defaultValue) {
+            return *this or defaultValue;
+        }
+
+        constexpr T orElse(const T& defaultValue) {
+            return *this or defaultValue;
         }
 
         constexpr operator Result() const { return mResult; }
@@ -227,6 +239,10 @@ namespace hk {
 
         constexpr T& operator or(T& defaultValue) const {
             return hasValue() ? get() : defaultValue;
+        }
+
+        constexpr T orElse(T& defaultValue) {
+            return *this or defaultValue;
         }
 
         constexpr operator Result() const { return mResult; }
