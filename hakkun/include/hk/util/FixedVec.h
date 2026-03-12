@@ -45,6 +45,15 @@ namespace hk::util {
             }
             other.mSize = 0;
         }
+        
+        FixedVec& operator=(FixedVec&& other) {
+            for (::size i = 0; i < other.mSize; i++) {
+                new (valueAt(i)) T(::move(*other.valueAt(i)));
+                other.valueAt(i)->~T();
+            }
+            other.mSize = 0;
+            return *this;
+        }
 
         ~FixedVec() {
             clear();

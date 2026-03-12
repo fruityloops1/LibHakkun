@@ -18,11 +18,7 @@
 
 /*
 Untested:
-- buffers
-- statics
 - recv statics
-- domains
-    - subservices
 */
 
 namespace hk::sf {
@@ -91,15 +87,19 @@ namespace hk::sf {
             }
         }
 
-        Handle handle() {
+        Handle handle() const {
             return mSession;
         }
 
-        bool isDomain() {
+        std::optional<u32> objectId() const {
+            return mObject;
+        }
+
+        bool isDomain() const {
             return mObject.has_value();
         }
 
-        bool isDomainSubservice() {
+        bool isDomainSubservice() const {
             return !mOwnedHandle;
         }
 
@@ -140,7 +140,7 @@ namespace hk::sf {
         util::FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
         util::FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
         util::FixedVec<u16, 8> mHipcOutPointerSizes;
-        std::span<const u8> mData = {};
+        util::Span<const u8> mData = {};
 
         friend class Service;
         // dedicated constructor for cmif::QueryPointerSize
@@ -157,7 +157,7 @@ namespace hk::sf {
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data), sizeof(T)) { }
         template <typename T>
-        Request(Service* service, u32 command, const std::span<T>& data)
+        Request(Service* service, u32 command, const util::Span<T>& data)
             : mCommandId(command)
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
@@ -204,6 +204,11 @@ namespace hk::sf {
             mServerPointerSize -= size;
         }
 
+        template <typename T>
+        void addInPointer(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addInPointer(span.data(), span.size_bytes(), mode);
+        }
+
         void addOutFixedSizePointer(void* data, u16 size) {
             mHipcReceiveStatics.add(hipc::ReceiveStatic(
                 u64(data),
@@ -211,9 +216,19 @@ namespace hk::sf {
             mServerPointerSize -= size;
         }
 
+        template <typename T>
+        void addOutFixedSizePointer(util::Span<const T> span) {
+            addOutFixedSizePointer(span.data(), span.size_bytes());
+        }
+
         void addOutPointer(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutFixedSizePointer(data, size);
             mHipcOutPointerSizes.add(size);
+        }
+
+        template <typename T>
+        void addOutPointer(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addOutPointer(span.data(), span.size_bytes(), mode);
         }
 
         void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
@@ -227,7 +242,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInAutoselect(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInAutoselect(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInAutoselect(span.data(), span.size_bytes(), mode);
         }
 
@@ -248,7 +263,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutAutoselect(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addOutAutoselect(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutAutoselect(span.data(), span.size_bytes(), mode);
         }
 
@@ -260,7 +275,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInMapAlias(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInMapAlias(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -272,7 +287,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutMapAlias(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addOutMapAlias(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -284,7 +299,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInOutMapAlias(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInOutMapAlias(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInOutMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -325,6 +340,7 @@ namespace hk::sf {
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
                 .dataWords = u16(alignUp(sizes.hipcDataSize, 4) / 4),
+                .recv_static_mode = 2u + u8(mHipcReceiveStatics.size()),
                 .hasSpecialHeader = hasSpecialHeader,
             });
 
@@ -400,7 +416,7 @@ namespace hk::sf {
         util::FixedVec<Handle, 8> hipcMoveHandles;
         util::FixedVec<hipc::Static, 8> hipcSendStatics;
         std::optional<u64> pid;
-        std::span<u8> data;
+        util::Span<u8> data;
 
         Service nextSubservice(Service* service) {
             if (service->isDomain())
@@ -452,7 +468,7 @@ namespace hk::sf {
             auto outHeader = HK_UNWRAP(reader.read<cmif::OutHeader>());
             dataWordsLeft -= sizeof(cmif::OutHeader) / 4;
             response.result = outHeader.result;
-            response.data = std::span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
+            response.data = util::Span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
             reader.seek(reader.tell() + response.data.size_bytes());
             for (u8 i = 0; i < objectCount; i++)
                 response.objects.add(HK_UNWRAP(reader.read<u32>()));
