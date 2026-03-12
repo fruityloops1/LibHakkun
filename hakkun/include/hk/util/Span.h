@@ -27,6 +27,7 @@ namespace hk::util {
         T* data() { return mPtr; }
         const T* data() const { return mPtr; }
         size size() const { return mSize; }
+        bool empty() const { return mSize == 0; }
 
         T& operator[](::size index) {
             HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", index, mSize);

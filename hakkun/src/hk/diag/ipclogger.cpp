@@ -12,6 +12,9 @@ namespace hk::diag::ipclogger {
 
         auto handle = HK_TRY(svc::ConnectToNamedPort("hklog"));
 
+        // application processes are only permitted to have one port open at a time
+        defer { svc::CloseHandle(handle); };
+
         util::Stream stream(messageBuffer.data(), messageBuffer.size());
         stream.write(sf::hipc::Header { .tag = 2, .dataWords = 4 });
         auto res = svc::SendSyncRequestWithUserBuffer(messageBuffer, handle);
@@ -22,11 +25,10 @@ namespace hk::diag::ipclogger {
         auto header = HK_UNWRAP(stream.read<sf::hipc::Header>());
         if (header.tag == 1)
             return ResultSessionMoveFailed();
-        auto special = HK_UNWRAP(stream.read<sf::hipc::SpecialHeader>());
-        auto sessionHandle = HK_UNWRAP(stream.read<Handle>());
 
-        // application processes are only permitted to have one port open at a time
-        svc::CloseHandle(handle);
+        auto special = HK_UNWRAP(stream.read<sf::hipc::SpecialHeader>());
+        HK_ASSERT(special.moveHandleCount == 1);
+        auto sessionHandle = HK_UNWRAP(stream.read<Handle>());
 
         return sessionHandle;
     }

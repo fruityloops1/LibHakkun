@@ -22,12 +22,14 @@ set(SOURCES
 
     src/hk/services/am.cpp
     src/hk/services/apm.cpp
+    src/hk/services/fsp.cpp
     src/hk/services/socket.cpp
     src/hk/services/sm.cpp
     src/hk/services/pm.cpp
     src/hk/services/nv.cpp
     src/hk/services/vi.cpp
     src/hk/services/lm.cpp
+    src/hk/services/ldr.cpp
 
     src/hk/sf/sf.cpp
 

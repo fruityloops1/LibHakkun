@@ -18,11 +18,7 @@
 
 /*
 Untested:
-- buffers
-- statics
 - recv statics
-- domains
-    - subservices
 */
 
 namespace hk::sf {
@@ -91,15 +87,19 @@ namespace hk::sf {
             }
         }
 
-        Handle handle() {
+        Handle handle() const {
             return mSession;
         }
 
-        bool isDomain() {
+        std::optional<u32> objectId() const {
+            return mObject;
+        }
+
+        bool isDomain() const {
             return mObject.has_value();
         }
 
-        bool isDomainSubservice() {
+        bool isDomainSubservice() const {
             return !mOwnedHandle;
         }
 
@@ -204,16 +204,30 @@ namespace hk::sf {
             mServerPointerSize -= size;
         }
 
+        template <typename T>
+        void addInPointer(std::span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addInPointer(span.data(), span.size_bytes(), mode);
+        }
+
         void addOutFixedSizePointer(void* data, u16 size) {
             mHipcReceiveStatics.add(hipc::ReceiveStatic(
                 u64(data),
                 size));
             mServerPointerSize -= size;
         }
+        template <typename T>
+        void addOutFixedSizePointer(std::span<const T> span) {
+            addOutFixedSizePointer(span.data(), span.size_bytes());
+        }
 
         void addOutPointer(void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutFixedSizePointer(data, size);
             mHipcOutPointerSizes.add(size);
+        }
+
+        template <typename T>
+        void addOutPointer(std::span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+            addOutPointer(span.data(), span.size_bytes(), mode);
         }
 
         void addInAutoselect(const void* data, u64 size, hipc::BufferMode mode = hipc::BufferMode::Normal) {
@@ -325,6 +339,7 @@ namespace hk::sf {
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
                 .dataWords = u16(alignUp(sizes.hipcDataSize, 4) / 4),
+                .recv_static_mode = 2u + u8(mHipcReceiveStatics.size()),
                 .hasSpecialHeader = hasSpecialHeader,
             });
 
