@@ -1,3 +1,5 @@
+#pragma once
+
 #include "hk/types.h"
 
 namespace hk::socket {
