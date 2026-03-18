@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Span.h"
 #include "hk/util/TypeName.h"
 #include <algorithm>
 #include <type_traits>
@@ -188,6 +189,8 @@ namespace hk::util {
         T* end() { return valueAt(mSize); }
         const T* begin() const { return valueAt(0); }
         const T* end() const { return valueAt(mSize); }
+
+        operator Span<T>() const { return { mStorage, mSize }; }
     };
 
 } // namespace hk::util

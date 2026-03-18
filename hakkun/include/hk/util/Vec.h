@@ -4,6 +4,7 @@
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
 #include "hk/util/Allocator.h"
+#include "hk/util/Span.h"
 #include "hk/util/TypeName.h"
 #include <algorithm>
 #include <cstdlib>
@@ -18,81 +19,78 @@ namespace hk::util {
      * @tparam ReserveSize Amount of elements to reserve by default or when pushing elements past the current capacity
      */
     template <typename T, size ReserveSize = 16, AllocatorType Allocator = DefaultAllocator>
-    class Vec {
-        T* mData = nullptr;
+    class Vec : Span<T> {
         size mSize = 0;
-        size mCapacity = 0;
+
+        using Span<T>::mPtr;
 
         T* valueAt(size index) {
-            return &cast<T*>(mData)[index];
+            return &cast<T*>(mPtr)[index];
         }
 
         const T* valueAt(size index) const {
-            return &cast<const T*>(mData)[index];
+            return &cast<const T*>(mPtr)[index];
         }
 
     public:
         Vec() {
-            mData = cast<T*>(Allocator::allocate(ReserveSize * sizeof(T), alignof(T)));
-            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(): allocation failed (ReserveSize = %zu)", getTypeName<T>(), ReserveSize);
+            mPtr = cast<T*>(Allocator::allocate(ReserveSize * sizeof(T), alignof(T)));
+            HK_ABORT_UNLESS(mPtr != nullptr, "hk::util::Vec<%s>::Vec(): allocation failed (ReserveSize = %zu)", getTypeName<T>(), ReserveSize);
         }
 
         Vec(const Vec& other)
-            : mData(cast<T*>(Allocator::allocate(other.mCapacity * sizeof(T), alignof(T))))
-            , mSize(other.mSize)
-            , mCapacity(other.mCapacity) {
-            HK_ABORT_UNLESS(mData != nullptr, "hk::util::Vec<%s>::Vec(const Vec&): allocation failed (Capacity = %zu)", getTypeName<T>(), mCapacity);
+            : Span<T>(mData(cast<T*>(Allocator::allocate(other.mCapacity * sizeof(T), alignof(T)))), other.capacity())
+            , mSize(other.mSize) {
+            HK_ABORT_UNLESS(mPtr != nullptr, "hk::util::Vec<%s>::Vec(const Vec&): allocation failed (Capacity = %zu)", getTypeName<T>(), capacity());
             for (::size i = 0; i < other.mSize; i++)
                 new (valueAt(i)) T(*other.valueAt(i));
         }
 
         Vec(Vec&& other)
-            : mData(other.mData)
-            , mSize(other.mSize)
-            , mCapacity(other.mCapacity) {
-            other.mData = nullptr;
-            other.mSize = 0;
-            other.mCapacity = 0;
+            : Span<T>(other.mPtr, other.capacity())
+            , mSize(other.mSize) {
+            other.mPtr = nullptr;
+            other.set(nullptr, 0);
         }
 
         ~Vec() {
-            if (mData != nullptr) {
+            if (mPtr != nullptr) {
                 clear();
 
-                Allocator::free(mData);
+                Allocator::free(mPtr);
             }
         }
 
-        void reserve(size capacity) {
-            if (mCapacity >= capacity)
+        void reserve(size newCapacity) {
+            if (capacity() >= newCapacity)
                 return;
 
-            T* newData = cast<T*>(Allocator::allocate(capacity * sizeof(T), alignof(T)));
+            T* newData = cast<T*>(Allocator::allocate(newCapacity * sizeof(T), alignof(T)));
             for (::size i = 0; i < mSize; i++) {
                 new (&newData[i]) T(::move(*valueAt(i)));
                 valueAt(i)->~T();
             }
 
-            Allocator::free(mData);
-            mData = newData;
-            mCapacity = capacity;
+            Allocator::free(mPtr);
+            mPtr = newData;
+            newCapacity = newCapacity;
         }
 
         void add(const T& value) {
-            if (mSize >= mCapacity)
-                reserve(mCapacity + ReserveSize);
+            if (mSize >= capacity())
+                reserve(capacity() + ReserveSize);
             new (valueAt(mSize++)) T(value);
         }
 
         void add(T&& value) {
-            if (mSize >= mCapacity)
-                reserve(mCapacity + ReserveSize);
+            if (mSize >= capacity())
+                reserve(capacity() + ReserveSize);
             new (valueAt(mSize++)) T(::move(value));
         }
 
         T& insert(const T& value, size index = 0) {
-            if (mSize >= mCapacity)
-                reserve(mCapacity + ReserveSize);
+            if (mSize >= capacity())
+                reserve(capacity() + ReserveSize);
 
             HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
             move(index + 1, index, mSize++ - index);
@@ -100,8 +98,8 @@ namespace hk::util {
         }
 
         T& insert(T&& value, size index = 0) {
-            if (mSize >= mCapacity)
-                reserve(mCapacity + ReserveSize);
+            if (mSize >= capacity())
+                reserve(capacity() + ReserveSize);
 
             HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
             move(index + 1, index, mSize++ - index);
@@ -217,7 +215,7 @@ namespace hk::util {
         }
 
         ::size size() const { return mSize; }
-        ::size capacity() const { return mCapacity; }
+        ::size capacity() const { return Span<T>::size(); }
 
         T* begin() { return valueAt(0); }
         T* end() { return valueAt(mSize); }
