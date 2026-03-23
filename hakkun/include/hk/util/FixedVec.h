@@ -3,9 +3,11 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Array.h"
 #include "hk/util/Span.h"
 #include "hk/util/TypeName.h"
 #include <algorithm>
+#include <initializer_list>
 #include <type_traits>
 
 namespace hk::util {
@@ -46,13 +48,24 @@ namespace hk::util {
             other.mSize = 0;
         }
 
-        FixedVec& operator=(const FixedVec& other)
-        {
+        FixedVec(std::initializer_list<T> list)
+            : mSize(std::min(list.size(), Capacity)) {
+            std::move(list.begin(), list.end(), begin());
+        }
+
+        FixedVec(util::Array<T, Capacity> array, size filled)
+            : mSize(filled) {
+            for (::size i = 0; i < filled; i++) {
+                new (valueAt(i)) T(::move(array[i]));
+            }
+        }
+
+        FixedVec& operator=(const FixedVec& other) {
             this->~FixedVec();
             new (this) FixedVec(other);
             return *this;
         }
-        
+
         FixedVec& operator=(FixedVec&& other) {
             this->~FixedVec();
             new (this) FixedVec(move(other));
@@ -123,6 +136,29 @@ namespace hk::util {
             mSize--;
 
             return ::move(removedValue);
+        }
+
+        void extend(size newSize, const T& extendValue = T()) {
+            HK_ABORT_UNLESS(newSize >= mSize && newSize <= Capacity, "hk::util::FixedVec<%s>::extend(%zu): out of range (size: %zu)", Capacity, newSize, mSize);
+            std::fill(valueAt(mSize), valueAt(newSize), extendValue);
+            mSize = newSize;
+        }
+
+        void truncate(size newSize) {
+            HK_ABORT_UNLESS(newSize <= mSize, "hk::util::FixedVec<%s>::truncate(%zu): out of range (size: %zu)", Capacity, newSize, mSize);
+            for (::size i = newSize; i < mSize; i++)
+                valueAt(i)->~T();
+            mSize = newSize;
+        }
+
+        void resize(size newSize, const T& extendValue = T()) {
+            if (mSize == newSize)
+                return;
+
+            if (mSize > newSize)
+                truncate(newSize);
+            else
+                extend(newSize, extendValue);
         }
 
         T& operator[](size index) {

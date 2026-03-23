@@ -24,7 +24,7 @@ namespace hk::vi::parcel {
     };
 
     struct OutParcel {
-        std::array<u8, 0x400> data;
+        util::Array<u8, 0x400> data;
 
         util::Stream<u8> reader() {
             return util::Stream<u8>(data.data(), data.size());
