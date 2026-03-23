@@ -1,11 +1,8 @@
 #pragma once
 
-#include "hk/Result.h"
 #include "hk/diag/diag.h"
 #include "hk/types.h"
-#include "hk/util/Allocator.h"
 #include <span>
-#include <type_traits>
 
 namespace hk::util {
 
@@ -76,7 +73,7 @@ namespace hk::util {
             : detail::SpanBase<const T>(ptr, size) { }
 
         Span(const Span<T>& other)
-            : detail::SpanBase<const T>(other.mPtr, other.mSize) { }
+            : detail::SpanBase<const T>(other.data(), other.size()) { }
         Span(const Span& other)
             : detail::SpanBase<const T>(other.mPtr, other.mSize) { }
 

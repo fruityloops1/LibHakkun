@@ -37,6 +37,10 @@ namespace hk::util {
             : mBuffer(ptr(buffer))
             , mSize(maxSize) { }
 
+        Stream(util::Span<BufferType> span)
+            : mBuffer(span.data())
+            , mSize(span.size()) { }
+
         void seek(size cursor) {
             if (hasSize())
                 HK_ABORT_UNLESS(cursor <= mSize, "hk::util::Stream::seek: out of range (%zu/%zu)", cursor, mSize);

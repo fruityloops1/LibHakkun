@@ -2,9 +2,8 @@
 
 #include "hk/types.h"
 #include "hk/util/Stream.h"
-#include <array>
 #include "hk/util/Span.h"
-#include <string_view>
+#include "hk/util/StringView.h"
 
 namespace hk::vi::parcel {
 
@@ -24,7 +23,7 @@ namespace hk::vi::parcel {
     };
 
     struct OutParcel {
-        std::array<u8, 0x400> data;
+        util::Array<u8, 0x400> data;
 
         util::Stream<u8> reader() {
             return util::Stream<u8>(data.data(), data.size());
@@ -32,8 +31,8 @@ namespace hk::vi::parcel {
     };
 
     inline void writeString(util::Stream<u8>& stream, const char* text) {
-        std::string_view view(text);
-        stream.write(u32(view.length()));
+        util::StringView view(text);
+        stream.write(u32(view.size()));
         for (char c : view)
             stream.write(u16(c));
         stream.align(4);
@@ -53,7 +52,7 @@ namespace hk::vi::parcel {
     template <size size>
     class InParcel {
         ParcelHeader header;
-        std::array<u8, size> data;
+        util::Array<u8, size> data;
 
     public:
         template <typename P, typename O>

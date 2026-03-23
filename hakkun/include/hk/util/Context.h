@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hk/ro/RoUtil.h"
-#include "hk/sail/detail.h"
+#include "hk/sail/detail.h" // IWYU pragma: keep
 #include "hk/types.h"
 #include "hk/util/TemplateString.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "hk/Result.h"
-#include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/Allocator.h"
 #include "hk/util/Span.h"

@@ -1,5 +1,6 @@
 BasedOnStyle: WebKit
 QualifierAlignment: Left
+FixNamespaceComments: true
 NamespaceIndentation: All
 BreakBeforeBraces: Custom
 BraceWrapping:
@@ -7,3 +8,4 @@ BraceWrapping:
   AfterFunction: false
   AfterClass: false
   SplitEmptyFunction: false
+  

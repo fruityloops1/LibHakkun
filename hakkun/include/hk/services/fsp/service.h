@@ -2,13 +2,11 @@
 
 #include "hk/ValueOrResult.h"
 #include "hk/services/fsp/fileSystem.h"
-#include "hk/services/fsp/util.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
-#include <string_view>
 
 namespace hk::fsp {
     class FileSystemProxy : public sf::Service {
