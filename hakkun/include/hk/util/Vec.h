@@ -53,6 +53,16 @@ namespace hk::util {
             other.set(nullptr, 0);
         }
 
+        Vec& operator=(Vec&& other) {
+            set(other.mPtr, other.capacity());
+            mSize = other.mSize;
+
+            other.mPtr = nullptr;
+            other.set(nullptr, 0);
+
+            return *this;
+        }
+
         ~Vec() {
             if (mPtr != nullptr) {
                 clear();
