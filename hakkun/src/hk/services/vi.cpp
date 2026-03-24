@@ -15,7 +15,7 @@ namespace hk::vi {
         return ApplicationDisplayService::instance()->openDefaultDisplay();
     }
 
-    size listDisplays(std::span<DisplayInfo> displays) {
+    size listDisplays(util::Span<DisplayInfo> displays) {
         return ApplicationDisplayService::instance()->listDisplays(displays);
     }
 

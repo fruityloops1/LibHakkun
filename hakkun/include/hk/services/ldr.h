@@ -30,7 +30,7 @@ namespace hk::ldr {
 
         Result setProgramArgument(u64 programId, std::string_view args) {
             auto request = sf::Request(this, 0, &programId);
-            request.addInPointer<char>(args);
+            request.addInPointer<char>(std::span<const char>(args));
             return invokeRequest(move(request));
         }
 

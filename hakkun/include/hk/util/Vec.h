@@ -53,13 +53,15 @@ namespace hk::util {
             other.set(nullptr, 0);
         }
 
+        Vec& operator=(const Vec& other) {
+            this->~Vec();
+            new (this) Vec(other);
+            return *this;
+        }
+
         Vec& operator=(Vec&& other) {
-            set(other.mPtr, other.capacity());
-            mSize = other.mSize;
-
-            other.mPtr = nullptr;
-            other.set(nullptr, 0);
-
+            this->~Vec();
+            new (this) Vec(move(other));
             return *this;
         }
 
@@ -68,6 +70,7 @@ namespace hk::util {
                 clear();
 
                 Allocator::free(mPtr);
+                mPtr = nullptr;
             }
         }
 

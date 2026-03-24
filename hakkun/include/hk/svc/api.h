@@ -5,7 +5,7 @@
 #include "hk/util/Tuple.h"
 
 #include "hk/svc/cpu.h"
-#include <span>
+#include "hk/util/Span.h"
 
 namespace hk::svc {
 
@@ -95,7 +95,7 @@ namespace hk::svc {
         return outHandle;
     }
 
-    inline hk_alwaysinline Result SendSyncRequestWithUserBuffer(std::span<u8> userBuffer, Handle sessionHandle) {
+    inline hk_alwaysinline Result SendSyncRequestWithUserBuffer(util::Span<u8> userBuffer, Handle sessionHandle) {
         return SendSyncRequestWithUserBuffer(ptr(userBuffer.data()), userBuffer.size_bytes(), sessionHandle);
     }
 

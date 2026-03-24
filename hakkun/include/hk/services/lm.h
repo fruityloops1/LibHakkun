@@ -64,7 +64,7 @@ namespace hk::lm {
             // chunk key text log
             stream.write(u8(2));
             stream.writeIterator<u8>(sizeBytes);
-            stream.writeIterator<char>(std::span<const char>(text, len));
+            stream.writeIterator<char>(util::Span<const char>(text, len));
 
             auto request = sf::Request(this, 0);
             request.addInAutoselect(logData, stream.tell());

@@ -20,7 +20,7 @@ namespace hk::pm {
             return instance();
         }
 
-        ValueOrResult<size> getJitDebugProcessIdList(std::span<u64> debugProcesses) {
+        ValueOrResult<size> getJitDebugProcessIdList(util::Span<u64> debugProcesses) {
             auto request = sf::Request(this, 1);
             request.addOutMapAlias(debugProcesses.data(), debugProcesses.size_bytes());
             HK_TRY(invokeRequest(move(request)));

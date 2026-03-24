@@ -82,7 +82,7 @@ namespace hk::nvdrv {
         }
 
         template <typename A, typename I = u8>
-        Result ioctl(u32 fd, Ioctl ioCode, std::span<A> argument, std::optional<std::span<I>> secondInput = std::nullopt) {
+        Result ioctl(u32 fd, Ioctl ioCode, util::Span<A> argument, std::optional<util::Span<I>> secondInput = std::nullopt) {
             static_assert(ioCode.encoding.argumentSize == sizeof(A));
 
             auto input = sf::packInput(fd, ioCode);
