@@ -14,6 +14,7 @@
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
 #include "hk/util/Tuple.h"
+#include "hk/util/Span.h"
 #include <type_traits>
 #include <utility>
 
@@ -29,7 +30,7 @@ namespace hk::socket {
             , mMonitorService(std::forward<sf::Service>(monitor)) { }
 
         template <util::TemplateString Name = "bsd:u">
-        static ValueOrResult<Socket*> initialize(const ServiceConfig& config, const std::span<u8> socketBuffer) {
+        static ValueOrResult<Socket*> initialize(const ServiceConfig& config, const util::Span<u8> socketBuffer) {
             sf::Service mainService = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<Name>()),
                         monitorService = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<Name>());
             createInstance(move(mainService), move(monitorService));
@@ -45,7 +46,7 @@ namespace hk::socket {
             return mMonitorService.invokeRequest(move(request));
         }
 
-        Result registerClient(const ServiceConfig& config, const std::span<u8> socketBuffer) {
+        Result registerClient(const ServiceConfig& config, const util::Span<u8> socketBuffer) {
             Handle handle;
             HK_TRY(svc::CreateTransferMemory(&handle, ptr(socketBuffer.data()), socketBuffer.size_bytes(), svc::MemoryPermission_None));
             std::array<u8, 0x30> input = sf::packInput(config, u64(0), u64(socketBuffer.size_bytes()));
@@ -84,7 +85,7 @@ namespace hk::socket {
             return invokeRequest(sf::Request(this, 2, &input), sf::inlineDataExtractor<Ret>());
         }
 
-        ValueOrResult<Ret> poll(std::span<PollFd> fds, s32 timeout) {
+        ValueOrResult<Ret> poll(util::Span<PollFd> fds, s32 timeout) {
             auto input = sf::packInput(u32(fds.size()), timeout);
             static_assert(sizeof(input) == 8);
             
@@ -94,7 +95,7 @@ namespace hk::socket {
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
-        ValueOrResult<Ret> recv(s32 fd, std::span<u8> buffer, s32 flags) {
+        ValueOrResult<Ret> recv(s32 fd, util::Span<u8> buffer, s32 flags) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 8, &input);
 
@@ -104,7 +105,7 @@ namespace hk::socket {
 
         template <typename A, typename T>
             requires(std::is_convertible<A*, SocketAddr*>::value)
-        ValueOrResult<Ret> recvFrom(s32 fd, std::span<u8> buffer, s32 flags, const A& address) {
+        ValueOrResult<Ret> recvFrom(s32 fd, util::Span<u8> buffer, s32 flags, const A& address) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 9, &input);
 
@@ -114,7 +115,7 @@ namespace hk::socket {
         }
 
         template <typename T>
-        ValueOrResult<Ret> send(s32 fd, std::span<const T> data, s32 flags) {
+        ValueOrResult<Ret> send(s32 fd, util::Span<const T> data, s32 flags) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 10, &input);
 
@@ -125,7 +126,7 @@ namespace hk::socket {
 
         template <typename A, typename T>
             requires(std::is_convertible<A*, SocketAddr*>::value)
-        ValueOrResult<Ret> sendTo(s32 fd, std::span<const T> data, s32 flags, const A& address) {
+        ValueOrResult<Ret> sendTo(s32 fd, util::Span<const T> data, s32 flags, const A& address) {
             auto input = sf::packInput(fd, flags);
             auto request = sf::Request(this, 11, &input);
             request.addInAutoselect(data);
@@ -167,7 +168,7 @@ namespace hk::socket {
             return inFdOutAddress<16>(fd, address);
         }
 
-        ValueOrResult<Ret> getSockOpt(s32 fd, s32 level, s32 optName, std::span<u8> opt) {
+        ValueOrResult<Ret> getSockOpt(s32 fd, s32 level, s32 optName, util::Span<u8> opt) {
             auto input = sf::packInput(fd, level, optName);
             auto request = sf::Request(this, 17, &input);
 
@@ -187,7 +188,7 @@ namespace hk::socket {
             return sf::invokeSimple<Ret>(this, 20, fd, cmd, flags);
         }
 
-        ValueOrResult<Ret> setSockOpt(s32 fd, s32 level, s32 optName, std::span<const u8> opt) {
+        ValueOrResult<Ret> setSockOpt(s32 fd, s32 level, s32 optName, util::Span<const u8> opt) {
             auto input = sf::packInput(fd, level, optName);
             auto request = sf::Request(this, 21, &input);
 
@@ -198,7 +199,7 @@ namespace hk::socket {
 
         template <typename T>
         hk_alwaysinline inline ValueOrResult<Ret> setSockOpt(s32 fd, s32 level, s32 optName, const T& opt) {
-            return setSockOpt(fd, level, optName, std::span<const u8>(&opt, sizeof(T)));
+            return setSockOpt(fd, level, optName, util::Span<const u8>(&opt, sizeof(T)));
         }
 
         ValueOrResult<Ret> shutdown(s32 fd, s32 how) {
@@ -209,7 +210,7 @@ namespace hk::socket {
             return sf::invokeSimple<Ret>(this, 23, how);
         }
 
-        ValueOrResult<Ret> write(s32 fd, std::span<const u8> data) {
+        ValueOrResult<Ret> write(s32 fd, util::Span<const u8> data) {
             auto request = sf::Request(this, 24, &fd);
 
             request.addInAutoselect(data);
@@ -217,7 +218,7 @@ namespace hk::socket {
             return invokeRequest(move(request), sf::inlineDataExtractor<Ret>());
         }
 
-        ValueOrResult<Ret> read(s32 fd, std::span<u8> buffer) {
+        ValueOrResult<Ret> read(s32 fd, util::Span<u8> buffer) {
             auto request = sf::Request(this, 25, &fd);
 
             request.addOutAutoselect(buffer);
@@ -233,7 +234,7 @@ namespace hk::socket {
             return sf::invokeSimple<Ret>(this, 27, fd);
         }
 
-        // Ret recvMMsg(s32 fd, std::span<u8> buffer, u32 n, s32 flags, /* timespec */);
+        // Ret recvMMsg(s32 fd, util::Span<u8> buffer, u32 n, s32 flags, /* timespec */);
     };
 
 } // namespace hk::socket

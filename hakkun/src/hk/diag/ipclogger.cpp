@@ -17,7 +17,7 @@ namespace hk::diag::ipclogger {
 
         util::Stream stream(messageBuffer.data(), messageBuffer.size());
         stream.write(sf::hipc::Header { .tag = 2, .dataWords = 4 });
-        auto res = svc::SendSyncRequestWithUserBuffer(messageBuffer, handle);
+        auto res = svc::SendSyncRequestWithUserBuffer(std::span<u8>(messageBuffer), handle);
         if (res.failed())
             svc::Break(svc::BreakReason_User, nullptr, res.getValue());
 

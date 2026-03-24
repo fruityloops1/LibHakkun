@@ -3,7 +3,7 @@
 #include "hk/types.h"
 #include "hk/util/Stream.h"
 #include <array>
-#include <span>
+#include "hk/util/Span.h"
 #include <string_view>
 
 namespace hk::vi::parcel {
@@ -14,12 +14,12 @@ namespace hk::vi::parcel {
         u32 objectsOffset = sizeof(ParcelHeader);
         u32 objectsSize = 0;
 
-        std::span<const u8> payload() const {
-            return std::span(cast<const u8*>(this) + payloadOffset, payloadSize);
+        util::Span<const u8> payload() const {
+            return util::Span(cast<const u8*>(this) + payloadOffset, payloadSize);
         }
 
-        std::span<const u8> objects() const {
-            return std::span(cast<const u8*>(this) + objectsOffset, objectsSize);
+        util::Span<const u8> objects() const {
+            return util::Span(cast<const u8*>(this) + objectsOffset, objectsSize);
         }
     };
 
@@ -44,7 +44,7 @@ namespace hk::vi::parcel {
         writeString(stream, text);
     }
 
-    inline void writeFlattenedObject(util::Stream<u8>& stream, std::span<const u8> data) {
+    inline void writeFlattenedObject(util::Stream<u8>& stream, util::Span<const u8> data) {
         stream.write(u32(data.size()));
         stream.write(u32(0));
         stream.writeIterator<const u8>(data);

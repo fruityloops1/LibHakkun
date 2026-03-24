@@ -3,7 +3,7 @@
 #include "hk/ValueOrResult.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
-#include <span>
+#include "hk/util/Span.h"
 
 namespace hk::am::detail {
 
@@ -17,14 +17,14 @@ namespace hk::am::detail {
         }
 
         template <typename T>
-        Result write(u64 offset, std::span<const T> data) {
+        Result write(u64 offset, util::Span<const T> data) {
             auto request = sf::Request(this, 10, &offset);
             request.addInAutoselect(data.data(), data.size_bytes());
             return invokeRequest(move(request));
         }
 
         template <typename T>
-        Result read(u64 offset, std::span<T> data) {
+        Result read(u64 offset, util::Span<T> data) {
             auto request = sf::Request(this, 11, &offset);
             request.addOutAutoselect(data.data(), data.size_bytes());
             return invokeRequest(move(request));
