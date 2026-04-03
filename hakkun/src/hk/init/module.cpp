@@ -22,7 +22,7 @@ namespace hk::init {
 
     extern "C" void hkMain();
 
-    extern "C" void __module_entry__(void* x0, void* x1) {
+    extern "C" __attribute__((weak)) void __module_entry__(void* x0, void* x1) {
         diag::logLine("Hakkun __module_entry__");
 
         ro::RoUtil::initModuleList();

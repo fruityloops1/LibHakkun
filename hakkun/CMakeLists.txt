@@ -49,13 +49,20 @@ else()
 endif()
 
 add_library(LibHakkun ${SOURCES})
-add_library(LibHakkunForModule OBJECT
+
+set(SOURCES
     src/hk/diag/diag.cpp
     src/hk/diag/ipclogger.cpp
     src/hk/diag/ResultName.cpp
-    
-    src/hk/init/module.cpp
-)
+    )
+
+if (NOT HAKKUN_CUSTOM_ENTRY)
+    set(SOURCES ${SOURCES}
+        src/hk/init/module.cpp
+        )
+endif()
+
+add_library(LibHakkunForModule OBJECT ${SOURCES})
 
 apply_config(LibHakkun)
 apply_config(LibHakkunForModule)
