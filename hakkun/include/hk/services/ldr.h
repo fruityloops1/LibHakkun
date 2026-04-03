@@ -38,4 +38,23 @@ namespace hk::ldr {
             return sf::invokeSimple(this, 1);
         }
     };
+
+    class LoaderProcessManagerInfo : public sf::Service {
+        HK_SINGLETON(LoaderProcessManagerInfo);
+
+    public:
+        LoaderProcessManagerInfo(sf::Service&& service)
+            : sf::Service(forward<sf::Service>(service)) { }
+
+        static ValueOrResult<LoaderProcessManagerInfo*> initialize() {
+            sf::Service service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"ldr:pm">());
+            createInstance(move(service));
+            return instance();
+        }
+
+        ValueOrResult<bool> amsHasLaunchedBootProgram(u64 programId) {
+            return sf::invokeSimple<bool>(this, 65000, programId);
+        }
+    };
+
 } // namespace hk::ldr

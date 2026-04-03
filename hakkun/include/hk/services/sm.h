@@ -3,32 +3,37 @@
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
 #include "hk/sf/sf.h"
+#include "hk/sf/tipc.h"
 #include "hk/svc/api.h"
+#include "hk/types.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/TemplateString.h"
 #include <cstring>
 
 namespace hk::sm {
 
-    class ServiceManager : sf::Service {
+    class ServiceManager : Handle {
         HK_SINGLETON(ServiceManager);
 
     public:
         ServiceManager(Handle session)
-            : sf::Service(session) { }
+            : Handle(session) { }
+
+        ~ServiceManager() {
+            svc::CloseHandle(*this);
+        }
+
         static ValueOrResult<ServiceManager*> initialize() {
             Handle outHandle = HK_TRY(svc::ConnectToNamedPort("sm:"));
-
             createInstance(outHandle);
+            HK_TRY(instance()->registerClient());
             return instance();
         }
 
         Result registerClient() {
-            u64 placeholderPid = 0;
-
-            auto request = sf::Request(this, 0, &placeholderPid);
+            auto request = tipc::Request(0);
             request.setSendPid();
-            return invokeRequest(move(request));
+            return request.invoke(*this);
         }
 
         template <util::TemplateString Name>
@@ -37,9 +42,18 @@ namespace hk::sm {
 
             char nameBuf[9] = {};
             std::memcpy(nameBuf, Name.value, sizeof(Name));
-            return invokeRequest(sf::Request(this, 1, util::Span(nameBuf, 8)), [](sf::Response& response) {
-                return sf::Service::fromHandle(response.hipcMoveHandles[0]);
-            });
+            auto request = tipc::Request(1, std::span(nameBuf, 8));
+
+            return sf::Service::fromHandle(HK_TRY(request.invoke(*this)).takeNextHandle());
+        }
+
+        template <util::TemplateString Name>
+        Result amsWaitService() {
+            char nameBuf[9] = {};
+            std::memcpy(nameBuf, Name.value, sizeof(Name));
+            auto request = tipc::Request(65101, std::span(nameBuf, 8));
+
+            return Result(request.invoke(*this));
         }
     };
 

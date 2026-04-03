@@ -12,7 +12,7 @@ namespace hk::sf::hipc {
         u32 recvBufferCount : 4 = 0;
         u32 exchBufferCount : 4 = 0;
         u32 dataWords : 10 = 0;
-        u32 recv_static_mode : 4 = 0;
+        u32 recvStaticMode : 4 = 0;
         u32 : 17;
         bool hasSpecialHeader : 1 = false;
     };

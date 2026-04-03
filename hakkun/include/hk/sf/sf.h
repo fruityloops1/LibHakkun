@@ -82,7 +82,7 @@ namespace hk::sf {
         ~Service() {
             if (mOwnedHandle) {
                 svc::CloseHandle(mSession);
-            } else if (mSession != 0) {
+            } else if (isDomain()) {
                 HK_ABORT_UNLESS_R(release());
             }
         }
@@ -157,7 +157,7 @@ namespace hk::sf {
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data), sizeof(T)) { }
         template <typename T>
-        Request(Service* service, u32 command, const util::Span<T>& data)
+        Request(Service* service, u32 command, const util::Span<T> data)
             : mCommandId(command)
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
@@ -340,7 +340,7 @@ namespace hk::sf {
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
                 .dataWords = u16(alignUp(sizes.hipcDataSize, 4) / 4),
-                .recv_static_mode = 2u + u8(mHipcReceiveStatics.size()),
+                .recvStaticMode = 2u + u8(mHipcReceiveStatics.size()),
                 .hasSpecialHeader = hasSpecialHeader,
             });
 

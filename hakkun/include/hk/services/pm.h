@@ -78,7 +78,7 @@ namespace hk::pm {
             createInstance(move(service));
             return instance();
         }
-        
+
         Result terminateProcess(u64 processId) {
             return sf::invokeSimple(this, 1, processId);
         }
@@ -89,6 +89,34 @@ namespace hk::pm {
 
         ValueOrResult<u64> launchProgram(LaunchFlags launchFlags, ncm::ProgramLocation location) {
             return sf::invokeSimple<u64>(this, 0, launchFlags, location);
+        }
+    };
+
+    enum class BootMode {
+        Normal = 0,
+        Maintenance = 1,
+        SafeMode = 2,
+    };
+
+    class ProcessManagerBootMode : public sf::Service {
+        HK_SINGLETON(ProcessManagerBootMode);
+
+    public:
+        ProcessManagerBootMode(sf::Service&& service)
+            : sf::Service(forward<sf::Service>(service)) { }
+
+        static ValueOrResult<ProcessManagerBootMode*> initialize() {
+            sf::Service service = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<"pm:bm">());
+            createInstance(move(service));
+            return instance();
+        }
+
+        ValueOrResult<BootMode> getBootMode() {
+            return sf::invokeSimple<BootMode>(this, 0);
+        }
+
+        Result setMaintenanceMode() {
+            return sf::invokeSimple(this, 1);
         }
     };
 

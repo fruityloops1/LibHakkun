@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-include(../../config/config.cmake)
-include(../cmake/apply_config.cmake)
+include(${PROJECT_SOURCE_DIR}/config/config.cmake)
+include(${CMAKE_SOURCE_DIR}/sys/cmake/apply_config.cmake)
 
 include_directories(include)
 set(SOURCES
@@ -23,15 +23,17 @@ set(SOURCES
     src/hk/services/am.cpp
     src/hk/services/apm.cpp
     src/hk/services/fsp.cpp
+    src/hk/services/ldr.cpp
+    src/hk/services/lm.cpp
+    src/hk/services/nv.cpp
+    src/hk/services/pm.cpp
+    src/hk/services/settings.cpp
     src/hk/services/socket.cpp
     src/hk/services/sm.cpp
-    src/hk/services/pm.cpp
-    src/hk/services/nv.cpp
     src/hk/services/vi.cpp
-    src/hk/services/lm.cpp
-    src/hk/services/ldr.cpp
 
     src/hk/sf/sf.cpp
+    src/hk/sf/tipc.cpp
 
     src/hk/util/Context.cpp
 
@@ -49,13 +51,20 @@ else()
 endif()
 
 add_library(LibHakkun ${SOURCES})
-add_library(LibHakkunForModule OBJECT
+
+set(SOURCES
     src/hk/diag/diag.cpp
     src/hk/diag/ipclogger.cpp
     src/hk/diag/ResultName.cpp
-    
-    src/hk/init/module.cpp
-)
+    )
+
+if (NOT HAKKUN_CUSTOM_ENTRY)
+    set(SOURCES ${SOURCES}
+        src/hk/init/module.cpp
+        )
+endif()
+
+add_library(LibHakkunForModule OBJECT ${SOURCES})
 
 apply_config(LibHakkun)
 apply_config(LibHakkunForModule)
