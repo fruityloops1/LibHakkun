@@ -5,7 +5,7 @@
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/util/Singleton.h"
-#include <string_view>
+#include "hk/util/StringView.h"
 
 namespace hk::ldr {
     struct ProgramArgumentHeader {
@@ -28,9 +28,9 @@ namespace hk::ldr {
             return instance();
         }
 
-        Result setProgramArgument(u64 programId, std::string_view args) {
+        Result setProgramArgument(u64 programId, util::StringView args) {
             auto request = sf::Request(this, 0, &programId);
-            request.addInPointer<char>(std::span<const char>(args));
+            request.addInPointer<char>(args);
             return invokeRequest(move(request));
         }
 

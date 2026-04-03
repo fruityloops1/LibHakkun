@@ -11,8 +11,8 @@
 #include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
+#include "hk/util/StringView.h"
 #include <optional>
-#include <string_view>
 
 namespace hk::nvdrv {
 
@@ -69,7 +69,7 @@ namespace hk::nvdrv {
                 .mapToResult(ResultMapNvidia::toResult);
         }
 
-        ValueOrResult<u32> open(std::string_view view) {
+        ValueOrResult<u32> open(util::StringView view) {
             auto request = sf::Request(this, 0);
             request.addInAutoselect(view.data(), view.size());
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())

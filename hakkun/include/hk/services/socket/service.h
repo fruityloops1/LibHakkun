@@ -49,7 +49,7 @@ namespace hk::socket {
         Result registerClient(const ServiceConfig& config, const util::Span<u8> socketBuffer) {
             Handle handle;
             HK_TRY(svc::CreateTransferMemory(&handle, ptr(socketBuffer.data()), socketBuffer.size_bytes(), svc::MemoryPermission_None));
-            std::array<u8, 0x30> input = sf::packInput(config, u64(0), u64(socketBuffer.size_bytes()));
+            auto input = sf::packInput(config, u64(0), u64(socketBuffer.size_bytes()));
             auto request = sf::Request(this, 0, &input);
             request.addCopyHandle(handle);
             request.setSendPid();
@@ -81,7 +81,7 @@ namespace hk::socket {
 
     public:
         ValueOrResult<Ret> socket(AddressFamily domain, Type type, Protocol protocol) {
-            std::array<u8, 12> input = sf::packInput(u32(domain), u32(type), u32(protocol));
+            auto input = sf::packInput(u32(domain), u32(type), u32(protocol));
             return invokeRequest(sf::Request(this, 2, &input), sf::inlineDataExtractor<Ret>());
         }
 

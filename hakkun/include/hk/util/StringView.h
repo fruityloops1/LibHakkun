@@ -5,22 +5,26 @@
 
 namespace hk::util {
 
-    // light
     template <typename T>
     class StringViewBase : public Span<const T> {
     public:
         StringViewBase(const T* data)
-            : Span<T>(data, std::char_traits<T>::length(data)) {
+            : Span<const T>(data, std::char_traits<T>::length(data)) {
             size index = 0;
         }
 
         template <size N>
         StringViewBase(const T data[N])
-            : Span<T>(data, N) { }
+            : Span<const T>(data, N) { }
 
-        const T* cstr() const { return Span<T>::data(); }
+        StringViewBase(const Span<const T>& span)
+            : Span<const T>(span.data(), std::char_traits<T>::length(span.data())) { }
+
+        ::size length() const { return Span<const T>::size(); }
     };
 
     using StringView = StringViewBase<char>;
+    using WideStringView = StringViewBase<wchar_t>;
+    using StringView16 = StringViewBase<char16_t>;
 
-}
+} // namespace hk::util
