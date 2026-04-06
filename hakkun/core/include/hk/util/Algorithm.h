@@ -17,7 +17,7 @@ namespace hk::util {
      * @return s32
      */
     template <typename T, typename GetFunc>
-    size binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue, bool findBetween = false) {
+    constexpr size binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue, bool findBetween = false) {
         while (low <= high) {
             fs32 mid = (low + high) / 2;
             if (get(mid) == searchValue)

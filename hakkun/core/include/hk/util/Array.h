@@ -18,28 +18,28 @@ namespace hk::util {
         constexpr Array(std::initializer_list<T> list)
             : mItems(list) { }
 
-        T* data() { return mItems; }
-        const T* data() const { return mItems; }
-        size size_bytes() const { return Length * sizeof(T); }
-        size size() const { return Length; }
+        constexpr T* data() { return mItems; }
+        constexpr const T* data() const { return mItems; }
+        constexpr size size_bytes() const { return Length * sizeof(T); }
+        constexpr size size() const { return Length; }
 
-        T& operator[](::size index) {
+        constexpr T& operator[](::size index) {
             HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", index, Length);
             return mItems[index];
         }
 
-        const T& operator[](::size index) const {
+        constexpr const T& operator[](::size index) const {
             HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", index, Length);
             return mItems[index];
         }
 
-        T* begin() { return &mItems[0]; }
-        T* end() { return &mItems[Length]; }
-        const T* begin() const { return &mItems[0]; }
-        const T* end() const { return &mItems[Length]; }
+        constexpr T* begin() { return &mItems[0]; }
+        constexpr T* end() { return &mItems[Length]; }
+        constexpr const T* begin() const { return &mItems[0]; }
+        constexpr const T* end() const { return &mItems[Length]; }
 
-        operator Span<T>() const { return { data(), size() }; }
-        operator Span<const T>() const { return { data(), size() }; }
+        constexpr operator Span<T>() { return { data(), size() }; }
+        constexpr operator Span<const T>() const { return { data(), size() }; }
     };
 
 } // namespace hk::util
