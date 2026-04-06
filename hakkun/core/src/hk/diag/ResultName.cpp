@@ -1,11 +1,14 @@
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
 #define INCLUDE_HK_DETAIL_DEFAULTRESULTS
 #include "hk/Result.h"
-#include "hk/svc/types.h"
 #include "hk/util/TypeName.h"
 
+#if NNSDK
+#include "hk/svc/types.h"
+#endif
+
 namespace hk::diag {
-    hk_noreturn void abortImpl(hk::svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
+    hk_noreturn void abortImpl(HAS_NNSDK(hk::svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
 } // namespace hk::diag
 
 struct ResultNameEntry {
@@ -21,7 +24,7 @@ template <hk::Derived<hk::Result> Result>
 struct AddResultName {
     AddResultName() {
         if (cNumResultNames >= cMaxNames)
-            hk::diag::abortImpl(hk::svc::BreakReason_Assert, 0, __FILE__, __LINE__, "ResultName buffer is full (size: 0x%zx)", cMaxNames);
+            hk::diag::abortImpl(HAS_NNSDK(hk::svc::BreakReason_Assert, ) 0, __FILE__, __LINE__, "ResultName buffer is full (size: 0x%zx)", cMaxNames);
         cResultNames[cNumResultNames++] = { Result(), hk::util::getTypeName<Result>() };
     }
 };

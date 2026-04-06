@@ -1,16 +1,17 @@
 #include "hk/diag/diag.h"
-#include "hk/Result.h"
-#include "hk/diag/ipclogger.h"
-#include "hk/ro/RoUtil.h"
-#include "hk/svc/api.h"
-#include "hk/svc/types.h"
-#include "hk/util/Context.h"
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
 
+#if NNSDK
+#include "hk/diag/ipclogger.h"
+#include "hk/ro/RoUtil.h"
+#include "hk/util/Context.h"
+#endif
+
 namespace hk::diag {
 
+#if NNSDK
     Result setCurrentThreadName(const char* name) {
         auto* tls = svc::getTLS();
         auto* thread = tls->nnsdkThread;
@@ -81,19 +82,21 @@ namespace hk::diag {
 
         return (void*)(module->range().start() + arbitraryOffset);
     }
+#endif
 
     constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~
 File: %s:%d
 )";
 
-    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...) {
+    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...) {
         va_list arg;
         va_start(arg, msgFmt);
-        abortImpl(reason, result, file, line, msgFmt, arg);
+        abortImpl(HAS_NNSDK(reason, ) result, file, line, msgFmt, arg);
         va_end(arg);
     }
 
+#if NNSDK
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
         constexpr size cMsgBufSize = 0x80;
@@ -118,14 +121,27 @@ File: %s:%d
 #endif
             svc::Break(reason, &result, sizeof(result));
     }
+#else
+    hk_noreturn void abortImpl(Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+        log(cAbortFormat, file, line);
+        logLineImpl(msgFmt, arg);
+#endif
+        abort();
+    }
+#endif
 
     extern "C" void __attribute__((weak)) hkLogSink(const char* msg, size len) {
+#if NNSDK
         svc::OutputDebugString(msg, len);
+#else
+        puts(msg);
+#endif
     }
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void logBuffer(const char* buf, size length) {
-        ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length });
+        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length }));
         hkLogSink(buf, length);
     }
 
@@ -136,7 +152,8 @@ File: %s:%d
         char buf[len + 1];
         vsnprintf(buf, len + 1, fmt, listCopy);
 
-        ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len });
+        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len }));
+        buf[len] = '\0';
         hkLogSink(buf, len);
     }
 
@@ -153,9 +170,10 @@ File: %s:%d
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 2];
         vsnprintf(buf, len + 2, fmt, listCopy);
-        ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len });
+        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len }));
 
         buf[len] = '\n';
+        buf[len + 1] = '\0';
         hkLogSink(buf, len + 1);
     }
 

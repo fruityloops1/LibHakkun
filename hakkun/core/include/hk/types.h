@@ -5,6 +5,9 @@
 #include <cstring>
 #include <type_traits>
 
+#define INCLUDE_HK_DETAIL_PLATFORM
+#include "hk/detail/platform.h"
+
 #define hk_alwaysinline __attribute__((always_inline))
 #define hk_noinline __attribute__((noinline))
 #define hk_noreturn __attribute__((noreturn))
@@ -77,17 +80,17 @@ constexpr u64 operator""_ms(unsigned long long val) { return val * 1e6; }
 constexpr u64 operator""_sec(unsigned long long val) { return val * 1e9; }
 
 template <typename T>
-inline hk_alwaysinline constexpr std::__libcpp_remove_reference_t<T>&& move([[clang::lifetimebound]] T&& v) noexcept {
-    return static_cast<std::__libcpp_remove_reference_t<T>&&>(v);
+inline hk_alwaysinline constexpr std::remove_reference_t<T>&& move([[clang::lifetimebound]] T&& v) noexcept {
+    return static_cast<std::remove_reference_t<T>&&>(v);
 }
 
 template <class T>
-inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::__libcpp_remove_reference_t<T>& __t) noexcept {
+inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::remove_reference_t<T>& __t) noexcept {
     return static_cast<T&&>(__t);
 }
 
 template <class T>
-inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::__libcpp_remove_reference_t<T>&& __t) _NOEXCEPT {
+inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::remove_reference_t<T>&& __t) noexcept {
     static_assert(!std::is_lvalue_reference<T>::value, "cannot forward an rvalue as an lvalue");
     return static_cast<T&&>(__t);
 }

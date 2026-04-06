@@ -274,8 +274,8 @@ namespace hk {
                     diag::abortReleaseImpl<File, Line>(ResultNoValue());
 #else
                     diag::abortImpl(
-                        svc::BreakReason_User,
-                        ResultNoValue(),
+                        HAS_NNSDK(svc::BreakReason_User, )
+                            ResultNoValue(),
                         File.value,
                         Line,
                         diag::cNullptrUnwrapFormat,
@@ -297,8 +297,8 @@ namespace hk {
                     const char* _result_temp_name = diag::getResultName(_result_temp);
                     if (_result_temp_name != nullptr) {
                         diag::abortImpl(
-                            svc::BreakReason_User,
-                            _result_temp,
+                            HAS_NNSDK(svc::BreakReason_User, )
+                                _result_temp,
                             File.value,
                             Line,
                             diag::cUnwrapResultFormatWithName,
@@ -308,8 +308,8 @@ namespace hk {
                             AbortMsg.value);
                     } else {
                         diag::abortImpl(
-                            svc::BreakReason_User,
-                            _result_temp,
+                            HAS_NNSDK(svc::BreakReason_User, )
+                                _result_temp,
                             File.value,
                             Line,
                             diag::cUnwrapResultFormat,
@@ -335,8 +335,8 @@ namespace hk {
                     const char* _result_temp_name = diag::getResultName(_result_temp);
                     if (_result_temp_name != nullptr) {
                         diag::abortImpl(
-                            svc::BreakReason_User,
-                            _result_temp,
+                            HAS_NNSDK(svc::BreakReason_User, )
+                                _result_temp,
                             File.value,
                             Line,
                             diag::cUnwrapResultFormatWithName,
@@ -346,8 +346,8 @@ namespace hk {
                             AbortMsg.value);
                     } else {
                         diag::abortImpl(
-                            svc::BreakReason_User,
-                            _result_temp,
+                            HAS_NNSDK(svc::BreakReason_User, )
+                                _result_temp,
                             File.value,
                             Line,
                             diag::cUnwrapResultFormat,
