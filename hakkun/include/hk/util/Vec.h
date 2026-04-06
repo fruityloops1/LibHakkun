@@ -38,7 +38,7 @@ namespace hk::util {
 
             T* data = cast<T*>(Allocator::allocate(capacity * sizeof(T), alignof(T)));
 
-            HK_ABORT_UNLESS(mPtr != nullptr, "hk::util::Vec<%s>::allocate(): allocation failed (Capacity = %zu)", getTypeName<T>(), capacity);
+            HK_ABORT_UNLESS(data != nullptr, "hk::util::Vec<%s>::allocate(): allocation failed (Capacity = %zu)", getTypeName<T>(), capacity);
 
             return Span<T>(data, capacity);
         }

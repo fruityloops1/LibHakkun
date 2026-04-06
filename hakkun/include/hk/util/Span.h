@@ -14,6 +14,25 @@ namespace hk::util {
             T* mPtr = nullptr;
             size mSize = 0;
 
+            template <bool IsVoid = std::is_void_v<T>>
+            struct IndexOperator;
+
+            template <>
+            struct IndexOperator<true> {
+                using ReturnType = T*;
+
+                static ReturnType index(const SpanBase* thiz, ::size idx) { return const_cast<ReturnType>(&thiz->mPtr[idx]); }
+            };
+
+            template <>
+            struct IndexOperator<false> {
+                using ReturnType = T;
+
+                static ReturnType index(const SpanBase* thiz, ::size idx) { return const_cast<ReturnType>(thiz->mPtr[idx]); }
+            };
+
+            friend struct IndexOperator<>;
+
         public:
             SpanBase() = default;
             SpanBase(T* ptr, size size)
@@ -31,14 +50,14 @@ namespace hk::util {
             size size() const { return mSize; }
             bool empty() const { return mSize == 0; }
 
-            T& operator[](::size index) {
+            IndexOperator<>::ReturnType& operator[](::size index) {
                 HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", index, mSize);
-                return mPtr[index];
+                return IndexOperator<>::index(this, index);
             }
 
-            const T& operator[](::size index) const {
+            const IndexOperator<>::ReturnType& operator[](::size index) const {
                 HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", index, mSize);
-                return mPtr[index];
+                return IndexOperator<>::index(this, index);
             }
 
             T* begin() { return &mPtr[0]; }
