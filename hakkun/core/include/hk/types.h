@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
+#include <utility>
 
 #define INCLUDE_HK_DETAIL_PLATFORM
 #include "hk/detail/platform.h"
@@ -79,21 +80,8 @@ constexpr u64 operator""_ns(unsigned long long val) { return val; }
 constexpr u64 operator""_ms(unsigned long long val) { return val * 1e6; }
 constexpr u64 operator""_sec(unsigned long long val) { return val * 1e9; }
 
-template <typename T>
-inline hk_alwaysinline constexpr std::remove_reference_t<T>&& move([[clang::lifetimebound]] T&& v) noexcept {
-    return static_cast<std::remove_reference_t<T>&&>(v);
-}
-
-template <class T>
-inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::remove_reference_t<T>& __t) noexcept {
-    return static_cast<T&&>(__t);
-}
-
-template <class T>
-inline hk_alwaysinline constexpr T&& forward([[clang::lifetimebound]] std::remove_reference_t<T>&& __t) noexcept {
-    static_assert(!std::is_lvalue_reference<T>::value, "cannot forward an rvalue as an lvalue");
-    return static_cast<T&&>(__t);
-}
+using std::forward;
+using std::move;
 
 namespace hk {
 
