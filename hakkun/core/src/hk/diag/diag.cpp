@@ -135,7 +135,7 @@ File: %s:%d
 #if NNSDK
         svc::OutputDebugString(msg, len);
 #else
-        puts(msg);
+        fputs(msg, stdout);
 #endif
     }
 
