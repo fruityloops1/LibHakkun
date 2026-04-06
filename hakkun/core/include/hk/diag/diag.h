@@ -38,16 +38,20 @@ namespace hk::diag {
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
-#define HK_ASSERT(CONDITION, ...)                                                                   \
-    do {                                                                                            \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                        \
-        if (_condition_temp == false) {                                                             \
-            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAssertionFailure()); \
-        }                                                                                           \
+#define HK_ASSERT(CONDITION, ...)                                                                       \
+    do {                                                                                                \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                            \
+        if (_condition_temp == false) {                                                                 \
+            if (__builtin_is_constant_evaluated())                                                      \
+                ::hk::diag::detail::abortConstexpr("AssertionFailed: " FMT __VA_OPT__(, ) __VA_ARGS__); \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAssertionFailure());     \
+        }                                                                                               \
     } while (0)
 
 #define HK_ABORT(FMT, ...)                                                                                      \
     do {                                                                                                        \
+        if (__builtin_is_constant_evaluated())                                                                  \
+            ::hk::diag::detail::abortConstexpr("ResultAbort: " FMT __VA_OPT__(, ) __VA_ARGS__);                 \
         ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
     } while (0)
 
@@ -55,6 +59,8 @@ namespace hk::diag {
     do {                                                                                                            \
         const bool _condition_temp = (CONDITION);                                                                   \
         if (_condition_temp == false) {                                                                             \
+            if (__builtin_is_constant_evaluated())                                                                  \
+                ::hk::diag::detail::abortConstexpr("ResultAbort: " FMT __VA_OPT__(, ) __VA_ARGS__);                 \
             ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
         }                                                                                                           \
     } while (0)
@@ -63,6 +69,12 @@ namespace hk::diag {
     do {                                                                     \
         const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__; \
         if (_result_temp.failed()) {                                         \
+            if (__builtin_is_constant_evaluated())                           \
+                ::hk::diag::detail::abortConstexpr(                          \
+                    "ResultAbort",                                           \
+                    _result_temp.getModule() + 2000,                         \
+                    _result_temp.getDescription(),                           \
+                    _result_temp.getValue());                                \
             ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(_result_temp);  \
         }                                                                    \
     } while (0)
@@ -71,48 +83,60 @@ namespace hk::diag {
 
 #else
     // clang-format off
-#define HK_ASSERT(CONDITION, ...)                                            \
-    do {                                                                     \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__); \
-        if (_condition_temp == false) {                                      \
-            ::hk::diag::abortImpl(                                           \
-                HAS_NNSDK(::hk::svc::BreakReason_Assert,)                    \
-                ::hk::diag::ResultAssertionFailure(),                        \
-                __FILE__,                                                    \
-                __LINE__,                                                    \
-                ::hk::diag::cAssertionFailFormat,                            \
-                #CONDITION);                                                 \
-        }                                                                    \
+#define HK_ASSERT(CONDITION, ...)                                                         \
+    do {                                                                                  \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);              \
+        if (_condition_temp == false) {                                                   \
+            if (__builtin_is_constant_evaluated())                                        \
+                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION);       \
+            ::hk::diag::abortImpl(                                                        \
+                HAS_NNSDK(::hk::svc::BreakReason_Assert,)                                 \
+                ::hk::diag::ResultAssertionFailure(),                                     \
+                __FILE__,                                                                 \
+                __LINE__,                                                                 \
+                ::hk::diag::cAssertionFailFormat,                                         \
+                #CONDITION);                                                              \
+        }                                                                                 \
     } while (0)
 
-#define HK_ABORT(FMT, ...)                             \
-    do {                                               \
-        ::hk::diag::abortImpl(                         \
-            HAS_NNSDK(::hk::svc::BreakReason_User,)    \
-            ::hk::diag::ResultAbort(),                 \
-            __FILE__,                                  \
-            __LINE__,                                  \
-            "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__); \
+#define HK_ABORT(FMT, ...)                                                      \
+    do {                                                                        \
+        if (__builtin_is_constant_evaluated())                                  \
+            ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
+        ::hk::diag::abortImpl(                                                  \
+            HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
+            ::hk::diag::ResultAbort(),                                          \
+            __FILE__,                                                           \
+            __LINE__,                                                           \
+            "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
     } while (0)
 
-#define HK_ABORT_UNLESS(CONDITION, FMT, ...)               \
-    do {                                                   \
-        const bool _condition_temp = (CONDITION);          \
-        const char* _fmt = FMT;                            \
-        if (_condition_temp == false) {                    \
-            ::hk::diag::abortImpl(                         \
-                HAS_NNSDK(::hk::svc::BreakReason_User,)    \
-                ::hk::diag::ResultAbort(),                 \
-                __FILE__,                                  \
-                __LINE__,                                  \
-                "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__); \
-        }                                                  \
+#define HK_ABORT_UNLESS(CONDITION, FMT, ...)                                        \
+    do {                                                                            \
+        const bool _condition_temp = (CONDITION);                                   \
+        const char* _fmt = FMT;                                                     \
+        if (_condition_temp == false) {                                             \
+            if (__builtin_is_constant_evaluated())                                  \
+                ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
+            ::hk::diag::abortImpl(                                                  \
+                HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
+                ::hk::diag::ResultAbort(),                                          \
+                __FILE__,                                                           \
+                __LINE__,                                                           \
+                "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
+        }                                                                           \
     } while (0)
 
 #define HK_ABORT_UNLESS_R(RESULT, ...)                                               \
     do {                                                                             \
         const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;         \
         if (_result_temp.failed()) {                                                 \
+            if (__builtin_is_constant_evaluated())                                   \
+                ::hk::diag::detail::abortConstexpr(                                  \
+                    "ResultAbort",                                                   \
+                    _result_temp.getModule() + 2000,                                 \
+                    _result_temp.getDescription(),                                   \
+                    _result_temp.getValue());                                        \
             const char* _result_temp_name = ::hk::diag::getResultName(_result_temp); \
             if (_result_temp_name != nullptr) {                                      \
                 ::hk::diag::abortImpl(                                               \
@@ -142,12 +166,11 @@ namespace hk::diag {
 
 #define HK_TODO(...) \
     HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
-
+    // clang-format on
 #endif
 
     /**
      * @brief Weak sink function that will be logged to from hk::diag::log
-     *
      */
     extern "C" void hkLogSink(const char* msg, size len);
 
@@ -166,5 +189,14 @@ namespace hk::diag {
     void logLine(const char* fmt, ...);
     [[deprecated("use hk::debug::logLine instead")]] void debugLog(const char* fmt, ...);
 #endif
+
+    namespace detail {
+
+        template <size N, typename... Args>
+        constexpr hk_noreturn void abortConstexpr(const char (&str)[N], Args...) {
+            __builtin_unreachable();
+        }
+
+    } // namespace detail
 
 } // namespace hk::diag
