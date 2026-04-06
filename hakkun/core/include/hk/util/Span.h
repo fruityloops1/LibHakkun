@@ -33,13 +33,37 @@ namespace hk::util {
             size size() const { return mSize; }
             bool empty() const { return mSize == 0; }
 
+            class ConstIterator {
+                const T* mCur;
+
+            public:
+                ConstIterator(const T* cur)
+                    : mCur(cur) { }
+
+                ConstIterator& operator++() {
+                    mCur++;
+                    return *this;
+                }
+
+                bool operator==(const ConstIterator& other) const { return mCur == other.mCur; }
+                bool operator!=(const ConstIterator& other) const { return !(*this == other); }
+
+                const T& operator*() const { return *mCur; }
+                const T* operator->() const { return mCur; }
+            };
+
+            ConstIterator begin() const { return { mData }; }
+            ConstIterator end() const { return { mData + mSize }; }
+
             const T& operator[](::size index) const {
                 HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), index, mSize);
                 return mData[index];
             }
 
-            const T* begin() const { return &mData[0]; }
-            const T* end() const { return &mData[mSize]; }
+            const T& at(::size index) const {
+                HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::at(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+                return mData[index];
+            }
 
             template <typename ST, typename GetFunc>
             ::size binarySearch(GetFunc getValue, ST searchValue, bool findBetween = false) const {
@@ -79,10 +103,11 @@ namespace hk::util {
         using detail::SpanBase<T>::empty;
 
         using detail::SpanBase<T>::operator[];
-        using detail::SpanBase<T>::begin;
-        using detail::SpanBase<T>::end;
+        using detail::SpanBase<T>::at;
         using detail::SpanBase<T>::first;
         using detail::SpanBase<T>::last;
+        using detail::SpanBase<T>::begin;
+        using detail::SpanBase<T>::end;
 
         Span() = default;
         Span(T* data, size size)
@@ -101,13 +126,48 @@ namespace hk::util {
             return mData[index];
         }
 
-        T* begin() { return &mData[0]; }
-        T* end() { return &mData[mSize]; }
+        T& at(::size index) {
+            HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::at(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            return mData[index];
+        }
+
+        void set(::size index, const T& value) {
+            HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::set(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            mData[index] = value;
+        }
+
+        void set(::size index, T&& value) {
+            HK_ABORT_UNLESS(index < mSize, "hk::util::Span<%s>::set(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            new (&mData[index]) T(value);
+        }
+
+        class Iterator {
+            T* mCur;
+
+        public:
+            Iterator(T* cur)
+                : mCur(cur) { }
+
+            Iterator& operator++() {
+                mCur++;
+                return *this;
+            }
+
+            bool operator==(const Iterator& other) const { return mCur == other.mCur; }
+            bool operator!=(const Iterator& other) const { return !(*this == other); }
+
+            T& operator*() const { return *mCur; }
+            T* operator->() const { return mCur; }
+        };
+
+        Iterator begin() { return { mData }; }
+        Iterator end() { return { mData + mSize }; }
 
         T& first() {
             HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::first(): empty", getTypeName<T>());
             return mData[0];
         }
+
         T& last() {
             HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::last(): empty", getTypeName<T>());
             return mData[mSize - 1];
