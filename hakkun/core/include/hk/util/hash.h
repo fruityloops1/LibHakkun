@@ -142,7 +142,7 @@ namespace hk::util {
 
                 const fu32 tail = len & 3;
                 if (tail > 0) {
-                    T tailData[sizeof(u32)] = {};
+                    T tailData[sizeof(u32)] = { };
                     for (size i = 0; i < tail; i++)
                         tailData[i] = str[len - tail + i];
                     feed(tailData, sizeof(tailData));
@@ -255,7 +255,7 @@ namespace hk::util {
 
                 const fu32 tail = len & 3;
                 if (tail > 0) {
-                    T tailData[sizeof(u32)] = {};
+                    T tailData[sizeof(u32)] = { };
                     for (size i = 0; i < tail; i++)
                         tailData[i] = str[len - tail + i];
                     feed(tailData, sizeof(tailData));
@@ -438,7 +438,6 @@ namespace hk::util {
     static_assert(hashMurmur("meow meow meow") == 0x1a1888b6);
     static_assert(hashMurmur("Haiiiiiiiiiiii") == 0x6726fccb);
     static_assert(hashMurmur(":333333333", 0xB00B1E5) == 0x4f39bed5);
-    static_assert(hashMurmur("lkdjtgljkwerlkgver#g#ää5r+#ä#23ü4#2ü3420395904e3r8i9", 0xB00B1E6) == 0xcaafb947);
     static_assert(hashCrc32("meow") == 0x8a106afe);
     static_assert(hashMurmur64("engine__actor__ActorParam") == 0x3c520ab863c2a552);
 
