@@ -4,6 +4,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/FixedVec.h"
+#include "hk/util/StringView.h"
 #include <type_traits>
 #ifdef HK_ADDON_Sead
 #include <sead/prim/seadSafeString.h>
@@ -94,6 +95,10 @@ namespace hk::util {
             write(static_cast<const void*>(value), length);
         }
 
+        void writeString(StringView value) {
+            writeString(value.data(), value.length());
+        }
+
         void writeString(const char* value) {
             writeString(value, __builtin_strlen(value));
         }
@@ -101,6 +106,10 @@ namespace hk::util {
         hk::Result tryWriteString(const char* value, size length) {
             HK_TRY(tryWrite(length));
             return tryWrite(static_cast<const void*>(value), length);
+        }
+
+        hk::Result tryWriteString(StringView value) {
+            return tryWriteString(value.data(), value.length());
         }
 
         hk::Result tryWriteString(const char* value) {
