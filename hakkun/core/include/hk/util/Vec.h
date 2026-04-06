@@ -20,58 +20,63 @@ namespace hk::util {
      * @tparam ReserveSize Amount of elements to reserve by default or when pushing elements past the current capacity
      */
     template <typename T, size ReserveSize = 16, AllocatorType Allocator = DefaultAllocator>
-    class Vec : Span<T> {
-        size mSize = 0;
+    class Vec : public Span<T> {
+        size mCapacity = 0;
 
-        using Span<T>::mPtr;
+        using Span<T>::mData;
+        using Span<T>::mSize;
 
         T* valueAt(size index) {
-            return &cast<T*>(mPtr)[index];
+            return &cast<T*>(mData)[index];
         }
 
         const T* valueAt(size index) const {
-            return &cast<const T*>(mPtr)[index];
+            return &cast<const T*>(mData)[index];
         }
 
-        static Span<T> allocate(size capacity) {
+        static Span<T> allocate(size size, ::size capacity) {
             capacity = std::min(capacity, ReserveSize);
 
             T* data = cast<T*>(Allocator::allocate(capacity * sizeof(T), alignof(T)));
 
             HK_ABORT_UNLESS(data != nullptr, "hk::util::Vec<%s>::allocate(): allocation failed (Capacity = %zu)", getTypeName<T>(), capacity);
 
-            return Span<T>(data, capacity);
+            return Span<T>(data, size);
         }
 
     public:
+        using Span<T>::empty;
+        using Span<T>::begin;
+        using Span<T>::move;
+        using Span<T>::forEach;
+
         Vec()
-            : Span<T>(allocate(ReserveSize)) { }
+            : Span<T>(allocate(0, ReserveSize)) { }
 
         Vec(const Vec& other)
-            : Span<T>(allocate(other.capacity()))
-            , mSize(other.mSize) {
+            : Span<T>(allocate(other.size(), other.capacity()))
+            , mCapacity(other.mCapacity) {
             for (::size i = 0; i < other.mSize; i++)
                 new (valueAt(i)) T(*other.valueAt(i));
         }
 
         Vec(Vec&& other)
-            : Span<T>(other.mPtr, other.capacity())
-            , mSize(other.mSize) {
-            other.mPtr = nullptr;
+            : Span<T>(other.mData, other.size())
+            , mCapacity(other.mCapacity) {
+            other.mCapacity = 0;
             other.set(nullptr, 0);
         }
 
         Vec(std::initializer_list<T> list)
-            : Span<T>(allocate(list.size()))
-            , mSize(list.size()) {
+            : Span<T>(allocate(list.size(), list.size()))
+            , mCapacity(list.size()) {
             std::move(list.begin(), list.end(), begin());
         }
 
         template <size Capacity>
         Vec(const util::Array<T, Capacity>& array)
-            : Span<T>(allocate(Capacity))
-            , mSize(Capacity) {
-            reserve(mSize);
+            : Span<T>(allocate(Capacity, Capacity))
+            , mCapacity(Capacity) {
             for (::size i = 0; i < Capacity; i++) {
                 new (valueAt(i)) T(array[i]);
             }
@@ -79,9 +84,8 @@ namespace hk::util {
 
         template <size Capacity>
         Vec(util::Array<T, Capacity>&& array)
-            : Span<T>(allocate(Capacity))
-            , mSize(Capacity) {
-            reserve(mSize);
+            : Span<T>(allocate(Capacity, Capacity))
+            , mCapacity(Capacity) {
             for (::size i = 0; i < Capacity; i++) {
                 new (valueAt(i)) T(::move(array[i]));
             }
@@ -100,16 +104,16 @@ namespace hk::util {
         }
 
         ~Vec() {
-            if (mPtr != nullptr) {
+            if (mData != nullptr) {
                 clear();
 
-                Allocator::free(mPtr);
-                mPtr = nullptr;
+                Allocator::free(mData);
+                mData = nullptr;
             }
         }
 
         void reserve(size newCapacity) {
-            if (capacity() >= newCapacity)
+            if (mCapacity >= newCapacity)
                 return;
 
             T* newData = cast<T*>(Allocator::allocate(newCapacity * sizeof(T), alignof(T)));
@@ -118,26 +122,26 @@ namespace hk::util {
                 valueAt(i)->~T();
             }
 
-            Allocator::free(mPtr);
-            mPtr = newData;
+            Allocator::free(mData);
+            mData = newData;
             newCapacity = newCapacity;
         }
 
         void add(const T& value) {
-            if (mSize >= capacity())
-                reserve(capacity() + ReserveSize);
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
             new (valueAt(mSize++)) T(value);
         }
 
         void add(T&& value) {
-            if (mSize >= capacity())
-                reserve(capacity() + ReserveSize);
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
             new (valueAt(mSize++)) T(::move(value));
         }
 
         T& insert(const T& value, size index = 0) {
-            if (mSize >= capacity())
-                reserve(capacity() + ReserveSize);
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
 
             HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
             move(index + 1, index, mSize++ - index);
@@ -145,36 +149,12 @@ namespace hk::util {
         }
 
         T& insert(T&& value, size index = 0) {
-            if (mSize >= capacity())
-                reserve(capacity() + ReserveSize);
+            if (mSize >= mCapacity)
+                reserve(mCapacity + ReserveSize);
 
             HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
             move(index + 1, index, mSize++ - index);
             return *new (valueAt(index)) T(::move(value));
-        }
-
-        void move(size dstIdx, size srcIdx, size toMove) {
-            if (dstIdx == srcIdx or toMove == 0)
-                return;
-
-            if constexpr (std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
-                std::memmove(valueAt(dstIdx), valueAt(srcIdx), toMove * sizeof(T));
-            else {
-                if (dstIdx < srcIdx)
-                    for (::size i = 0; i < toMove; i++) {
-                        T* to = valueAt(dstIdx + i);
-                        T* from = valueAt(srcIdx + i);
-                        new (to) T(::move(*from));
-                        from->~T();
-                    }
-                else
-                    for (::size i = toMove; i != 0; i--) {
-                        T* to = valueAt(dstIdx + i - 1);
-                        T* from = valueAt(srcIdx + i - 1);
-                        new (to) T(::move(*from));
-                        from->~T();
-                    }
-            }
         }
 
         T remove(size index) {
@@ -215,49 +195,6 @@ namespace hk::util {
                 extend(newSize, extendValue);
         }
 
-        T& operator[](size index) {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::Vec<%s>::operator[](%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
-            return *valueAt(index);
-        }
-
-        const T& operator[](size index) const {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::Vec<%s>::operator[](%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
-
-            return *valueAt(index);
-        }
-
-        T& first() {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::first(): empty", getTypeName<T>());
-            return *valueAt(0);
-        }
-
-        const T& first() const {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::first(): empty", getTypeName<T>());
-            return *valueAt(0);
-        }
-
-        T& last() {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::last(): empty", getTypeName<T>());
-            return *valueAt(mSize - 1);
-        }
-
-        const T& last() const {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Vec<%s>::last(): empty", getTypeName<T>());
-            return *valueAt(mSize - 1);
-        }
-
-        template <typename Callback>
-        void forEach(Callback func) {
-            for (::size i = 0; i < mSize; i++)
-                func((*this)[i]);
-        }
-
-        template <typename Callback>
-        void forEach(Callback func) const {
-            for (::size i = 0; i < mSize; i++)
-                func((*this)[i]);
-        }
-
         void clear() {
             forEach([](T& data) -> void {
                 data.~T();
@@ -265,33 +202,7 @@ namespace hk::util {
             mSize = 0;
         }
 
-        bool empty() const { return mSize == 0; }
-
-        void sort() {
-            std::sort(valueAt(0), valueAt(mSize));
-        }
-
-        template <typename Compare>
-        void sort(Compare comp) {
-            std::sort(valueAt(0), valueAt(mSize), comp);
-        }
-
-        template <typename ST, typename GetFunc>
-        size binarySearch(GetFunc getValue, ST searchValue, bool findBetween = false) const {
-            return util::binarySearch([this, getValue](s32 index) {
-                const T* value = valueAt(index);
-                return getValue(*value);
-            },
-                0, mSize - 1, searchValue, findBetween);
-        }
-
-        ::size size() const { return mSize; }
-        ::size capacity() const { return Span<T>::size(); }
-
-        T* begin() { return valueAt(0); }
-        T* end() { return valueAt(mSize); }
-        const T* begin() const { return valueAt(0); }
-        const T* end() const { return valueAt(mSize); }
+        ::size capacity() const { return mCapacity; }
     };
 
 } // namespace hk::util

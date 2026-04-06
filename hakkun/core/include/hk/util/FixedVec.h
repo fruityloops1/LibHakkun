@@ -108,27 +108,7 @@ namespace hk::util {
         }
 
         void move(size dstIdx, size srcIdx, size toMove) {
-            if (dstIdx == srcIdx or toMove == 0)
-                return;
-
-            if constexpr (std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
-                std::memmove(valueAt(dstIdx), valueAt(srcIdx), toMove * sizeof(T));
-            else {
-                if (dstIdx < srcIdx)
-                    for (::size i = 0; i < toMove; i++) {
-                        T* to = valueAt(dstIdx + i);
-                        T* from = valueAt(srcIdx + i);
-                        new (to) T(::move(*from));
-                        from->~T();
-                    }
-                else
-                    for (::size i = toMove; i != 0; i--) {
-                        T* to = valueAt(dstIdx + i - 1);
-                        T* from = valueAt(srcIdx + i - 1);
-                        new (to) T(::move(*from));
-                        from->~T();
-                    }
-            }
+            Span<T>(*this).move(dstIdx, srcIdx, toMove);
         }
 
         T remove(size index) {
@@ -201,14 +181,12 @@ namespace hk::util {
 
         template <typename Callback>
         void forEach(Callback func) {
-            for (::size i = 0; i < mSize; i++)
-                func((*this)[i]);
+            Span<T>(*this).forEach(func);
         }
 
         template <typename Callback>
         void forEach(Callback func) const {
-            for (::size i = 0; i < mSize; i++)
-                func((*this)[i]);
+            Span<T>(*this).forEach(func);
         }
 
         void clear() {
@@ -221,21 +199,17 @@ namespace hk::util {
         bool empty() const { return mSize == 0; }
 
         void sort() {
-            std::sort(valueAt(0), valueAt(mSize));
+            Span<T>(*this).sort();
         }
 
         template <typename Compare>
         void sort(Compare comp) {
-            std::sort(valueAt(0), valueAt(mSize), comp);
+            Span<T>(*this).sort(comp);
         }
 
         template <bool FindBetweenIdx = false, typename ST, typename GetFunc>
-        s32 binarySearch(GetFunc getValue, ST searchValue) const {
-            return util::binarySearch<FindBetweenIdx>([this, getValue](s32 index) {
-                const T* value = valueAt(index);
-                return getValue(*value);
-            },
-                0, mSize - 1, searchValue);
+        s32 binarySearch(GetFunc getValue, ST searchValue, bool findBetween = false) const {
+            return Span<T>(*this).binarySearch(getValue, searchValue, findBetween);
         }
 
         ::size size() const { return mSize; }
@@ -246,7 +220,8 @@ namespace hk::util {
         const T* begin() const { return valueAt(0); }
         const T* end() const { return valueAt(mSize); }
 
-        operator Span<T>() const { return { mStorage, mSize }; }
+        operator Span<T>() { return { valueAt(0), mSize }; }
+        operator Span<const T>() const { return { valueAt(0), mSize }; }
     };
 
 } // namespace hk::util

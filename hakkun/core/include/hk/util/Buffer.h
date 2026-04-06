@@ -37,8 +37,8 @@ namespace hk::util {
         }
 
         Result freeBuffer() {
-            if (static_cast<Span<T>*>(this)->mPtr != nullptr) {
-                Allocator::free(static_cast<Span<T>*>(this)->mPtr);
+            if (static_cast<Span<T>*>(this)->mData != nullptr) {
+                Allocator::free(static_cast<Span<T>*>(this)->mData);
                 Span<T>::set(nullptr, 0);
                 return ResultSuccess();
             }
