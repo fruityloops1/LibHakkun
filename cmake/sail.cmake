@@ -1,4 +1,4 @@
-set(SAIL_BIN ${CMAKE_CURRENT_SOURCE_DIR}/sys/hakkun/sail/build/sail)
+set(SAIL_BIN ${CMAKE_CURRENT_SOURCE_DIR}/sys/sail/build/sail)
 set(SAIL_LIBS
     ${CMAKE_CURRENT_BINARY_DIR}/symboldb.o
     ${CMAKE_CURRENT_BINARY_DIR}/datablocks.o

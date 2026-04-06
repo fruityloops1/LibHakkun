@@ -6,7 +6,7 @@ import multiprocessing
 import subprocess
 
 root_dir = os.getcwd()
-project_dir = f'{root_dir}/sys/hakkun/sail'
+project_dir = f'{root_dir}/sys/sail'
 build_dir = f'{project_dir}/build'
 
 def compileSail():
