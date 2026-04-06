@@ -31,6 +31,8 @@ namespace hk {
         using Return = Result;
     };
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
     /**
      * @brief Holds a Result and a value of type T, when the Result is ResultSuccess().
      *
@@ -146,6 +148,7 @@ namespace hk {
         constexpr operator Result() const { return mResult; }
         constexpr operator T() { return move(disown()); }
     };
+#pragma clang diagnostic pop
 
     /**
      * @brief Holds a Result and a reference to a value of type T, when the Result is ResultSuccess().
