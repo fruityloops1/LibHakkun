@@ -27,11 +27,11 @@ namespace hk::util {
         using Span<T>::mSize;
 
         T* valueAt(size index) {
-            return &cast<T*>(mData)[index];
+            return &mData[index];
         }
 
         const T* valueAt(size index) const {
-            return &cast<const T*>(mData)[index];
+            return &mData[index];
         }
 
         static Span<T> allocate(size size, ::size capacity) {
