@@ -50,6 +50,7 @@ namespace hk::util {
 
                 const T& operator*() const { return *mCur; }
                 const T* operator->() const { return mCur; }
+                operator const T*() const { return mCur; }
             };
 
             ConstIterator begin() const { return { mData }; }
@@ -108,6 +109,7 @@ namespace hk::util {
         using detail::SpanBase<T>::last;
         using detail::SpanBase<T>::begin;
         using detail::SpanBase<T>::end;
+        using detail::SpanBase<T>::set;
 
         Span() = default;
         Span(T* data, size size)
@@ -158,6 +160,7 @@ namespace hk::util {
 
             T& operator*() const { return *mCur; }
             T* operator->() const { return mCur; }
+            operator T*() const { return mCur; }
         };
 
         Iterator begin() { return { mData }; }
