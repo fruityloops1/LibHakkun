@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.5)
 
 include(../../config/config.cmake)
 include(../cmake/apply_config.cmake)
 
-include_directories(include)
+add_subdirectory(core)
+
 set(SOURCES
     src/hk/hook/MapUtil.cpp
     src/hk/hook/Trampoline.cpp
@@ -50,12 +51,16 @@ endif()
 
 add_library(LibHakkun ${SOURCES})
 add_library(LibHakkunForModule OBJECT
-    src/hk/diag/diag.cpp
     src/hk/diag/ipclogger.cpp
-    src/hk/diag/ResultName.cpp
     
     src/hk/init/module.cpp
 )
+
+target_include_directories(LibHakkunCore PUBLIC include)
+target_include_directories(LibHakkun PUBLIC include)
+target_include_directories(LibHakkunForModule PUBLIC include)
+target_link_libraries(LibHakkun PUBLIC LibHakkunCore)
+target_link_libraries(LibHakkunForModule PUBLIC LibHakkunCore)
 
 apply_config(LibHakkun)
 apply_config(LibHakkunForModule)

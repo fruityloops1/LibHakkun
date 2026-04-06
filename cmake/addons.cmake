@@ -6,14 +6,17 @@ function(enable_addons project)
         endif()
 
         add_subdirectory(${ADDON_DIR})
+        target_include_directories(LibHakkunCore PRIVATE ${ADDON_DIR}/include)
         target_include_directories(LibHakkun PRIVATE ${ADDON_DIR}/include)
         target_include_directories(LibHakkunForModule PRIVATE ${ADDON_DIR}/include)
         target_include_directories(${project} PRIVATE ${ADDON_DIR}/include)
         target_include_directories(${addon} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sys/hakkun/include)
+        target_include_directories(${addon} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sys/hakkun/core/include)
         target_link_libraries(${project} PRIVATE ${addon})
 
         target_compile_definitions(${project} PRIVATE HK_ADDON_${addon})
         target_compile_definitions(${addon} PRIVATE HK_ADDON_${addon})
+        target_compile_definitions(LibHakkunCore PRIVATE HK_ADDON_${addon})
         target_compile_definitions(LibHakkun PRIVATE HK_ADDON_${addon})
         target_compile_definitions(LibHakkunForModule PRIVATE HK_ADDON_${addon})
         

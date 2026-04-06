@@ -1,4 +1,3 @@
-#include "hk/diag/results.h"
 #include "hk/hook/results.h"
 #include "hk/ro/results.h"
 #include "hk/services/nv/results.h"

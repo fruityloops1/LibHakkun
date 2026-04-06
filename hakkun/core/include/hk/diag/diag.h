@@ -1,25 +1,29 @@
 #pragma once
 
 #include "hk/diag/results.h" // IWYU pragma: keep
-#include "hk/svc/types.h"
-#include "hk/types.h"
 #include "hk/util/TemplateString.h"
 #include <cstdarg>
 
+#if NNSDK
+#include "hk/svc/types.h"
+#endif
+
 namespace hk::diag {
 
+#if NNSDK
     Result setCurrentThreadName(const char* name);
     ValueOrResult<const char*> getCurrentThreadName();
 
     void dumpStackTrace();
+#endif
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     const char* getResultName(hk::Result result);
 
-    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, ...);
-    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
+    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
+    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 #else
-    hk_alwaysinline inline const char* getResultName(hk::Result result) { return nullptr; }
+    const hk_alwaysinline inline char* getResultName(hk::Result result) { return nullptr; }
 
     template <util::TemplateString File, int Line>
     hk_noreturn hk_noinline void abortReleaseImpl(Result result, ...) { __builtin_trap(); }
@@ -66,13 +70,13 @@ namespace hk::diag {
 #define HK_TODO(...) HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
 
 #else
-
+    // clang-format off
 #define HK_ASSERT(CONDITION, ...)                                            \
     do {                                                                     \
         const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__); \
         if (_condition_temp == false) {                                      \
             ::hk::diag::abortImpl(                                           \
-                ::hk::svc::BreakReason_Assert,                               \
+                HAS_NNSDK(::hk::svc::BreakReason_Assert,)                    \
                 ::hk::diag::ResultAssertionFailure(),                        \
                 __FILE__,                                                    \
                 __LINE__,                                                    \
@@ -84,7 +88,7 @@ namespace hk::diag {
 #define HK_ABORT(FMT, ...)                             \
     do {                                               \
         ::hk::diag::abortImpl(                         \
-            ::hk::svc::BreakReason_User,               \
+            HAS_NNSDK(::hk::svc::BreakReason_User,)    \
             ::hk::diag::ResultAbort(),                 \
             __FILE__,                                  \
             __LINE__,                                  \
@@ -97,7 +101,7 @@ namespace hk::diag {
         const char* _fmt = FMT;                            \
         if (_condition_temp == false) {                    \
             ::hk::diag::abortImpl(                         \
-                ::hk::svc::BreakReason_User,               \
+                HAS_NNSDK(::hk::svc::BreakReason_User,)    \
                 ::hk::diag::ResultAbort(),                 \
                 __FILE__,                                  \
                 __LINE__,                                  \
@@ -112,7 +116,7 @@ namespace hk::diag {
             const char* _result_temp_name = ::hk::diag::getResultName(_result_temp); \
             if (_result_temp_name != nullptr) {                                      \
                 ::hk::diag::abortImpl(                                               \
-                    ::hk::svc::BreakReason_User,                                     \
+                    HAS_NNSDK(::hk::svc::BreakReason_User,)                          \
                     _result_temp,                                                    \
                     __FILE__,                                                        \
                     __LINE__,                                                        \
@@ -123,7 +127,7 @@ namespace hk::diag {
                     #RESULT);                                                        \
             } else {                                                                 \
                 ::hk::diag::abortImpl(                                               \
-                    ::hk::svc::BreakReason_User,                                     \
+                    HAS_NNSDK(::hk::svc::BreakReason_User,)                          \
                     _result_temp,                                                    \
                     __FILE__,                                                        \
                     __LINE__,                                                        \
