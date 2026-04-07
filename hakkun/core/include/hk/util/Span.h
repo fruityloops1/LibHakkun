@@ -4,6 +4,7 @@
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
 #include "hk/util/TypeName.h"
+#include <iterator>
 #include <span>
 #include <type_traits>
 
@@ -35,23 +36,32 @@ namespace hk::util {
             constexpr bool empty() const { return mSize == 0; }
 
             class ConstIterator {
-                const T* mCur;
+            public:
+                using iterator_category = std::forward_iterator_tag;
+                using difference_type = ptrdiff;
+                using value_type = T;
+                using pointer = const T*;
+                using reference = const T&;
+
+            private:
+                pointer mCur;
 
             public:
-                constexpr ConstIterator(const T* cur)
+                constexpr ConstIterator(pointer cur)
                     : mCur(cur) { }
 
                 constexpr ConstIterator& operator++() {
                     mCur++;
                     return *this;
                 }
+                constexpr ConstIterator operator++(s32) { ++*this; }
 
                 constexpr bool operator==(const ConstIterator& other) const { return mCur == other.mCur; }
                 constexpr bool operator!=(const ConstIterator& other) const { return !(*this == other); }
 
-                constexpr const T& operator*() const { return *mCur; }
-                constexpr const T* operator->() const { return mCur; }
-                constexpr operator const T*() const { return mCur; }
+                constexpr reference operator*() const { return *mCur; }
+                constexpr pointer operator->() const { return mCur; }
+                constexpr operator pointer() const { return mCur; }
             };
 
             constexpr ConstIterator begin() const { return { mData }; }
@@ -145,10 +155,16 @@ namespace hk::util {
         }
 
         class Iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = ptrdiff;
+            using value_type = T;
+            using pointer = T*;
+            using reference = T&;
+
             T* mCur;
 
         public:
-            constexpr Iterator(T* cur)
+            constexpr Iterator(pointer cur)
                 : mCur(cur) { }
 
             constexpr Iterator& operator++() {
@@ -159,9 +175,9 @@ namespace hk::util {
             constexpr bool operator==(const Iterator& other) const { return mCur == other.mCur; }
             constexpr bool operator!=(const Iterator& other) const { return !(*this == other); }
 
-            constexpr T& operator*() const { return *mCur; }
-            constexpr T* operator->() const { return mCur; }
-            constexpr operator T*() const { return mCur; }
+            constexpr reference operator*() const { return *mCur; }
+            constexpr pointer operator->() const { return mCur; }
+            constexpr operator pointer() const { return mCur; }
         };
 
         constexpr Iterator begin() { return { mData }; }
