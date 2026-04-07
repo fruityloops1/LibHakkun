@@ -24,6 +24,10 @@ namespace hk::util {
             setCopy(buffer);
         }
 
+        Buffer(const Span<const T>& buffer) {
+            setCopy(buffer);
+        }
+
         ~Buffer() {
             freeBuffer();
         }
@@ -45,17 +49,17 @@ namespace hk::util {
             return ResultNoValue();
         }
 
-        Result setCopy(const Span<T>& buffer) {
+        Result setCopy(const Span<const T>& buffer) {
             return setCopy(buffer.data(), buffer.size());
         }
 
-        Result setCopy(T* ptr, size size) {
+        Result setCopy(const T* ptr, size size) {
             T* newPtr = cast<T*>(Allocator::allocate(size * sizeof(T), alignof(T)));
             HK_UNLESS(newPtr != nullptr, ResultOutOfResource());
             for (::size i = 0; i < size; i++)
                 newPtr[i] = ptr[i];
 
-            set(ptr, size);
+            set(newPtr, size);
             return ResultSuccess();
         }
 
