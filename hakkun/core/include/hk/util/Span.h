@@ -196,7 +196,7 @@ namespace hk::util {
             if (dstIdx == srcIdx or toMove == 0)
                 return;
 
-            if constexpr (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+            if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
                 std::memmove(&mData[dstIdx], &mData[srcIdx], toMove * sizeof(T));
             else {
                 if (dstIdx < srcIdx)
