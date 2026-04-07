@@ -10,16 +10,14 @@ namespace hk::util {
      *
      * @tparam N
      */
-    template <size N>
+    template <size N, typename Char = char>
     struct TemplateString {
-        char value[N];
+        using CharType = Char;
+        constexpr static size length = N;
+        Char value[N];
 
-        constexpr TemplateString(const char (&str)[N]) {
+        constexpr TemplateString(const Char (&str)[N]) {
             std::copy_n(str, N, value);
-        }
-
-        constexpr TemplateString(const std::array<char, N>& str) {
-            std::copy_n(str.data(), N, value);
         }
     };
 

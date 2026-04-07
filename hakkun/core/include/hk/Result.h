@@ -135,6 +135,20 @@ namespace hk {
     })
 
 /**
+ * @brief Return if Result within expression is unsuccessful.
+ * Function must return Result.
+ */
+#define HK_CHECK(VALUE, ...)                                                                                            \
+    {                                                                                                                   \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                          \
+        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                 \
+                                                                                                                        \
+        const ::hk::Result _result_temp = ::hk::detail::ResultChecker<_ValueT>::check(::forward<_ValueT>(_value_temp)); \
+        if (_result_temp.failed())                                                                                      \
+            return _result_temp;                                                                                        \
+    }
+
+/**
  * @brief Return a Result expression if CONDITION is false.
  * Function must return Result.
  */

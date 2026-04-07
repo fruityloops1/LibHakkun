@@ -35,24 +35,28 @@ namespace hk::util {
             append(src);
         }
 
-        template <typename... Args>
-        constexpr FixedStringBase(std::format_string<Args...> fmt, Args&&... args) {
-            auto result = std::format_to_n(mData.begin(), Capacity, fmt, forward<Args>(args)...);
-            mLength = std::min<::size>(result.size, Capacity - 1);
-            mData[mLength] = '\0';
-        }
-
         constexpr void truncate(size newSize) {
             HK_ABORT_UNLESS(newSize <= mLength, "hk::util::FixedStringBase<%s>::truncate(%zu): new size is too high (size: %zu)", Capacity, newSize, mLength);
             mLength = newSize;
-            mData[mLength] = '\0';
+            mData[mLength] = T('\0');
         }
 
-        constexpr void append(const StringViewBase<T> other) {
-            auto newSize = std::min(mLength + other.size(), Capacity - 1);
+        constexpr bool append(const StringViewBase<T> other) {
+            auto desiredSize = mLength + other.size();
+            auto newSize = std::min(desiredSize, Capacity - 1);
             std::copy(other.begin(), other.end(), end());
-            mData[newSize] = '\0';
+            mData[newSize] = T('\0');
             mLength = newSize;
+            return desiredSize == newSize;
+        }
+
+        constexpr bool append(T value) {
+            if (mLength == Capacity - 1)
+                return false;
+
+            mData[mLength++] = value;
+            mData[mLength] = T('\0');
+            return true;
         }
 
         constexpr FixedStringBase operator+(const StringViewBase<T> other) {
