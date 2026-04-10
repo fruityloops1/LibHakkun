@@ -10,6 +10,8 @@ namespace hk::util {
         T mItems[Length] = {};
 
     public:
+        static constexpr size cLength = Length;
+
         constexpr Array() = default;
 
         constexpr Array(const T values[Length])

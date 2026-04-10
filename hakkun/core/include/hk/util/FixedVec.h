@@ -32,6 +32,8 @@ namespace hk::util {
         }
 
     public:
+        static constexpr size cCapacity = Capacity;
+
         constexpr FixedVec() = default;
         constexpr FixedVec(const FixedVec& other)
             : mSize(other.mSize) {
