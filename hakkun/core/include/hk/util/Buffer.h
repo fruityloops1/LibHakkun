@@ -32,16 +32,22 @@ namespace hk::util {
             freeBuffer();
         }
 
-        Result allocBuffer(size size, ::size align = alignof(T)) {
+        Result allocBuffer(size size, const T& value = T(), ::size align = alignof(T)) {
             T* ptr = cast<T*>(Allocator::allocate(size * sizeof(T), align));
             HK_UNLESS(ptr != nullptr, ResultOutOfResource());
 
             Span<T>::set(ptr, size);
+            for (::size i = 0; i < mSize; i++)
+                new (&mData[i]) T(value);
+
             return ResultSuccess();
         }
 
         Result freeBuffer() {
             if (mData != nullptr) {
+                for (size i = 0; i < mSize; i++)
+                    mData[i].~T();
+
                 Allocator::free(mData);
                 Span<T>::set(nullptr, 0);
                 return ResultSuccess();
@@ -66,6 +72,7 @@ namespace hk::util {
     private:
         using Span<T>::set;
         using Span<T>::mData;
+        using Span<T>::mSize;
     };
 
 } // namespace hk::util
