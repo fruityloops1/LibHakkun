@@ -41,8 +41,8 @@ namespace hk::util {
         }
 
         Result freeBuffer() {
-            if (static_cast<Span<T>*>(this)->mData != nullptr) {
-                Allocator::free(static_cast<Span<T>*>(this)->mData);
+            if (mData != nullptr) {
+                Allocator::free(mData);
                 Span<T>::set(nullptr, 0);
                 return ResultSuccess();
             }
@@ -65,6 +65,7 @@ namespace hk::util {
 
     private:
         using Span<T>::set;
+        using Span<T>::mData;
     };
 
 } // namespace hk::util
