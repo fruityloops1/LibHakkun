@@ -7,8 +7,6 @@ namespace hk::util {
 
     template <typename T>
     class StringViewBase : public Span<const T> {
-        static constexpr const T cNullChar = 0;
-
         static StringViewBase getEmpty() { return { &cNullChar }; }
 
         using Span<const T>::empty;
@@ -23,8 +21,8 @@ namespace hk::util {
             : Span<const T>(data, length) {
         }
 
-        constexpr StringViewBase(const T* data)
-            : StringViewBase(data, std::char_traits<T>::length(data)) {
+        constexpr StringViewBase(const T* str)
+            : StringViewBase(str, str != nullptr ? std::char_traits<T>::length(str) : 0) {
         }
 
         template <size N>
@@ -32,7 +30,10 @@ namespace hk::util {
             : Span<const T>(data, N) { }
 
         constexpr StringViewBase(const Span<const T>& data)
-            : Span<const T>(data.data(), std::char_traits<T>::length(data.data())) { }
+            : Span<const T>(data.data(), data.size()) { }
+
+        StringViewBase(const Span<const u8>& data)
+            : StringViewBase(cast<const T>(data)) { }
 
         constexpr ::size length() const { return Span<const T>::size(); }
         constexpr bool empty() const { return length() == 0; }
@@ -63,6 +64,8 @@ namespace hk::util {
 
             return -1;
         }
+
+        static constexpr const T cNullChar = 0;
     };
 
     using StringView = StringViewBase<char>;

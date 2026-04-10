@@ -16,9 +16,7 @@ namespace hk::util {
         Array<T, Capacity> mData;
 
     public:
-        constexpr FixedStringBase() {
-            mData[0] = '\0';
-        };
+        constexpr FixedStringBase() = default;
 
         constexpr FixedStringBase(const T* data)
             : mLength(std::min(std::char_traits<T>::length(data), Capacity - 1)) {
@@ -59,10 +57,15 @@ namespace hk::util {
             return true;
         }
 
-        constexpr FixedStringBase operator+(const StringViewBase<T> other) {
+        constexpr FixedStringBase operator+(const StringViewBase<T> other) const {
             FixedStringBase newString = *this;
             newString.append(other);
             return newString;
+        }
+
+        constexpr FixedStringBase& operator+=(const StringViewBase<T> other) {
+            append(other);
+            return *this;
         }
 
         constexpr T* data() { return mData.data(); }
