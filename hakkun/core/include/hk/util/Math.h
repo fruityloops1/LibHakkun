@@ -14,7 +14,7 @@ namespace hk::util {
 
     template <typename T, typename... Args>
     constexpr T min(T first, Args... args) {
-        T minOfRest = max(args...);
+        T minOfRest = min(args...);
         return (first < minOfRest) ? first : minOfRest;
     }
 
