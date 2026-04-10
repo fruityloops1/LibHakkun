@@ -3,6 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Math.h"
 #include "hk/util/TypeName.h"
 #include <iterator>
 #include <span>
@@ -17,6 +18,8 @@ namespace hk::util {
         protected:
             T* mData = nullptr;
             size mSize = 0;
+
+            using MutableT = std::remove_const_t<T>;
 
         public:
             constexpr SpanBase() = default;
@@ -100,6 +103,16 @@ namespace hk::util {
             constexpr void forEach(Callback func) const {
                 for (::size i = 0; i < mSize; i++)
                     func((*this)[i]);
+            }
+
+            constexpr void copy(MutableT* out, ::size max = -1) const {
+                for (::size i = 0; i < hk::util::min(max, mSize); i++)
+                    out[i] = mData[i];
+            }
+
+            template <::size N>
+            constexpr void copy(MutableT (&out)[N]) const {
+                copy(out, N);
             }
         };
 
@@ -268,3 +281,8 @@ namespace hk::util {
     };
 
 } // namespace hk::util
+
+template <typename To, typename From>
+hk_alwaysinline hk::util::Span<To> cast(hk::util::Span<From> val) {
+    return { cast<To*>(val.data()), val.size_bytes() / sizeof(To) };
+}
