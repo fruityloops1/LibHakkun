@@ -3,6 +3,7 @@
 #include "hk/Result.h"
 #include "hk/diag/diag.h"
 #include "hk/diag/results.h"
+#include "hk/util/Algorithm.h"
 #include "hk/util/Lambda.h"
 #include "hk/util/TemplateString.h"
 #include "hk/util/TypeName.h"
@@ -63,11 +64,11 @@ namespace hk {
         }
 
         constexpr ValueOrResult(const T& value) {
-            std::construct_at(&mValue, value);
+            construct_at(&mValue, value);
         }
 
         constexpr ValueOrResult(T&& value) {
-            std::construct_at(&mValue, std::forward<T>(value));
+            construct_at(&mValue, forward<T>(value));
         }
 
         constexpr ~ValueOrResult() {
