@@ -20,8 +20,8 @@ namespace hk::diag {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     const char* getResultName(hk::Result result);
 
-    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
-    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
+    [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), HAS_NNSDK_TERNARY(6, 5))]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
+    [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), 0)]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 #else
     const hk_alwaysinline inline char* getResultName(hk::Result result) { return nullptr; }
 
@@ -165,7 +165,7 @@ namespace hk::diag {
     } while (0)
 
 #define HK_TODO(...) \
-    HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
+    HK_ABORT("TODO: " __VA_ARGS__)
     // clang-format on
 #endif
 
@@ -183,11 +183,11 @@ namespace hk::diag {
     [[deprecated("use hk::debug::logLine instead")]] inline void debugLog(const char* fmt, ...) { }
 #else
     void logBuffer(const char* buf, size len);
-    void logImpl(const char* fmt, std::va_list list);
-    void log(const char* fmt, ...);
-    void logLineImpl(const char* fmt, std::va_list list);
-    void logLine(const char* fmt, ...);
-    [[deprecated("use hk::debug::logLine instead")]] void debugLog(const char* fmt, ...);
+    [[gnu::format(printf, 1, 0)]] void logImpl(const char* fmt, std::va_list list);
+    [[gnu::format(printf, 1, 2)]] void log(const char* fmt, ...);
+    [[gnu::format(printf, 1, 0)]] void logLineImpl(const char* fmt, std::va_list list);
+    [[gnu::format(printf, 1, 2)]] void logLine(const char* fmt, ...);
+    [[deprecated("use hk::debug::logLine instead")]] [[gnu::format(printf, 1, 2)]] void debugLog(const char* fmt, ...);
 #endif
 
     namespace detail {

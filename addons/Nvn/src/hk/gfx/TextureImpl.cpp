@@ -28,7 +28,7 @@ namespace hk::gfx {
         }
 
         TextureImpl(nvn::Device* device, nvn::SamplerBuilder& samplerBuilder, nvn::TextureBuilder& textureBuilder, size texSize, void* texData, void* memory) {
-            HK_ABORT_UNLESS(alignUpPage(memory) == memory, "Memory must be page (%x) aligned (%p)", cPageSize, memory);
+            HK_ABORT_UNLESS(alignUpPage(memory) == memory, "Memory must be page (%zx) aligned (%p)", cPageSize, memory);
 
             size poolsSize = calcPoolsMemSize(device);
             {

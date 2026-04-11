@@ -6,7 +6,7 @@
 
 namespace hk::gfx {
     Font::Font(void* fontData, void* device, void* memory) {
-        HK_ABORT_UNLESS(alignUpPage(memory) == memory, "Memory must be page (%x) aligned (%p)", cPageSize, memory);
+        HK_ABORT_UNLESS(alignUpPage(memory) == memory, "Memory must be page (%zx) aligned (%p)", cPageSize, memory);
 
         FontHeader* header = reinterpret_cast<FontHeader*>(fontData);
         char16_t* charset = reinterpret_cast<char16_t*>(header->data);

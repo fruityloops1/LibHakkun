@@ -30,7 +30,7 @@ namespace hk::util {
         constexpr static bool cIsReadOnly = std::is_const_v<BufferType>;
 
         void checkReadOnly() const {
-            HK_ABORT_UNLESS(cIsReadOnly == false, "hk::util::Stream: stream is read only", 0);
+            HK_ABORT_UNLESS(cIsReadOnly == false, "hk::util::Stream: stream is read only");
         }
 
     public:

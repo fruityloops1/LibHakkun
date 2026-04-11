@@ -141,13 +141,13 @@ namespace hk::sail {
                 if (IsPreCalc) {
                     HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
                 } else {
-                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (DataBlock)", destSymbol);
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (DataBlock)", cast<const char*>(destSymbol));
                 }
             } else if (address == 0) {
                 if (IsPreCalc) {
                     diag::logLine("hk::sail: UnresolvedSymbol: %08x (DataBlock)", *destSymbol);
                 } else {
-                    diag::logLine("hk::sail: UnresolvedSymbol: %s (DataBlock)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (DataBlock)", cast<const char*>(destSymbol));
                 }
             }
 
@@ -172,13 +172,13 @@ namespace hk::sail {
                 if (IsPreCalc) {
                     HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
                 } else {
-                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (Dynamic)", destSymbol);
+                    HK_ABORT_UNLESS(address != 0, "UnresolvedSymbol: %s (Dynamic)", cast<const char*>(destSymbol));
                 }
             } else if (address == 0) {
                 if (IsPreCalc) {
                     diag::logLine("hk::sail: UnresolvedSymbol: %08x (Dynamic)", *destSymbol);
                 } else {
-                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Dynamic)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Dynamic)", cast<const char*>(destSymbol));
                 }
             }
 
@@ -207,13 +207,13 @@ namespace hk::sail {
                 if (IsPreCalc) {
                     HK_ABORT("UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
                 } else {
-                    HK_ABORT("UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
+                    HK_ABORT("UnresolvedSymbol: %s (Immediate_WrongVersion)", cast<const char*>(destSymbol));
                 }
             } else {
                 if (IsPreCalc) {
                     diag::logLine("hk::sail: UnresolvedSymbol: %08x (Immediate_WrongVersion)", *destSymbol);
                 } else {
-                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Immediate_WrongVersion)", destSymbol);
+                    diag::logLine("hk::sail: UnresolvedSymbol: %s (Immediate_WrongVersion)", cast<const char*>(destSymbol));
                 }
             }
         }
@@ -250,13 +250,13 @@ namespace hk::sail {
                 if (IsPreCalc) {
                     HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %x", *destSymbol);
                 } else {
-                    HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", destSymbol);
+                    HK_ABORT_UNLESS(hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).succeeded(), "ReadADRPGlobal symbol failed %s", cast<const char*>(destSymbol));
                 }
             } else if (hk::hook::readADRPGlobal(out, cast<hook::Instr*>(at), sym->offsetToLoInstr).failed()) {
                 if (IsPreCalc) {
                     diag::logLine("hk::sail: ReadADRPGlobal symbol failed %x", *destSymbol);
                 } else {
-                    diag::logLine("hk::sail: ReadADRPGlobal symbol failed %s", destSymbol);
+                    diag::logLine("hk::sail: ReadADRPGlobal symbol failed %s", cast<const char*>(destSymbol));
                 }
             }
 #else
@@ -314,10 +314,10 @@ namespace hk::sail {
                     return;
             }
 
-            if (IsPreCalc) {
-                HK_ABORT("UnresolvedSymbol: %08x (Multiple out of %d candidates)", *destSymbol, sym->numCandidates);
+            if constexpr (IsPreCalc) {
+                HK_ABORT("UnresolvedSymbol: %08x (Multiple out of %zu candidates)", *destSymbol, sym->numCandidates);
             } else {
-                HK_ABORT("UnresolvedSymbol: %s (Multiple out of %d candidates)", destSymbol, sym->numCandidates);
+                HK_ABORT("UnresolvedSymbol: %s (Multiple out of %zu candidates)", cast<const char*>(destSymbol), sym->numCandidates);
             }
         }
 

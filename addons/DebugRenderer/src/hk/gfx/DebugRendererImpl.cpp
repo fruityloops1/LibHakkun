@@ -113,7 +113,7 @@ namespace hk::gfx {
         }
 
         void checkVtxBuffer(u32 addSize = 0) {
-            HK_ABORT_UNLESS((mVtxOffset + addSize) * sizeof(Vertex) < cVtxBufferSize, "Vertex Buffer full!", 0);
+            HK_ABORT_UNLESS((mVtxOffset + addSize) * sizeof(Vertex) < cVtxBufferSize, "Vertex Buffer full!");
         }
 
         void clear() {
@@ -201,7 +201,7 @@ namespace hk::gfx {
         }
 
         void drawQuadRoundImpl(const Vertex& tl, const Vertex& tr, const Vertex& br, const Vertex& bl, f32 round, u32 numSides) {
-            HK_ABORT_UNLESS(tl.pos.y == tr.pos.y && bl.pos.y == br.pos.y && tl.pos.x == bl.pos.x && tr.pos.x == br.pos.x, "Quads with rounded corners must be axis aligned!", 0);
+            HK_ABORT_UNLESS(tl.pos.y == tr.pos.y && bl.pos.y == br.pos.y && tl.pos.x == bl.pos.x && tr.pos.x == br.pos.x, "Quads with rounded corners must be axis aligned!");
 
             const u32 numVertices = 10 + 4 * numSides;
 

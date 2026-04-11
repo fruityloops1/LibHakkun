@@ -31,6 +31,6 @@ u32 hk_stack_chk_guard = 0xFEFEFEFE;
 }*/
 
 void abort() {
-    HK_ABORT("abort() called", 0);
+    HK_ABORT("abort() called");
 }
 }

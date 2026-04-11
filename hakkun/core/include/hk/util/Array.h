@@ -7,7 +7,7 @@ namespace hk::util {
 
     template <typename T, size Length>
     class Array {
-        T mItems[Length] = {};
+        T mItems[Length] = { };
 
     public:
         static constexpr size cLength = Length;
@@ -26,12 +26,12 @@ namespace hk::util {
         constexpr size size() const { return Length; }
 
         constexpr T& operator[](::size index) {
-            HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", index, Length);
+            HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), index, Length);
             return mItems[index];
         }
 
         constexpr const T& operator[](::size index) const {
-            HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", index, Length);
+            HK_ABORT_UNLESS(index < Length, "hk::util::Array<%s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), index, Length);
             return mItems[index];
         }
 

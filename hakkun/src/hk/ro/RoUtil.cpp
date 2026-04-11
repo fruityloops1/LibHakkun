@@ -15,7 +15,7 @@ using namespace nn::ro::detail;
 
 namespace hk::ro {
 
-    static RoModule sModules[cMaxModuleNum] {};
+    static RoModule sModules[cMaxModuleNum] { };
     static size sNumModules = 0;
     static int sSelfModuleIdx = -1;
 
@@ -26,7 +26,7 @@ namespace hk::ro {
             sModules[sNumModules++].mModule = rtldModule;
         }
 
-        diag::logLine("hk::ro: %d modules collected from g_pAutoLoadList:", sNumModules);
+        diag::logLine("hk::ro: %zu modules collected from g_pAutoLoadList:", sNumModules);
 
         std::sort(sModules, sModules + sNumModules, [](const RoModule& a, const RoModule& b) {
             if (a.getNnModule() == nullptr || a.getNnModule()->m_Base == 0 || b.getNnModule() == nullptr || b.getNnModule()->m_Base == 0)
@@ -70,10 +70,10 @@ namespace hk::ro {
                 } else {
                     diag::logLine("\tBuildId:  NotFound");
                 }
-                diag::logLine("\tRange:    %p-%p", range.start(), range.end() - 1);
-                diag::logLine("\tText:     %p-%p", text.start(), text.end() - 1);
-                diag::logLine("\tRodata:   %p-%p", rodata.start(), rodata.end() - 1);
-                diag::logLine("\tData/Bss: %p-%p", data.start(), data.end() - 1);
+                diag::logLine("\tRange:    0x%zx-0x%zx", range.start(), range.end() - 1);
+                diag::logLine("\tText:     0x%zx-0x%zx", text.start(), text.end() - 1);
+                diag::logLine("\tRodata:   0x%zx-0x%zx", rodata.start(), rodata.end() - 1);
+                diag::logLine("\tData/Bss: 0x%zx-0x%zx", data.start(), data.end() - 1);
                 diag::logLine("\tnn::ro::detail::RoModule*: %p", nnModule);
             }
         }

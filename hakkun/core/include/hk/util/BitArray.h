@@ -49,7 +49,7 @@ namespace hk::util {
         constexpr BitArray() = default;
 
         void set(s32 idx) {
-            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%d)", idx, Size);
+            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%zu)", idx, Size);
             u8& byte = mStorage[getByteIdxByBitIdx(idx)];
             int bitIdx = idx % 8;
 
@@ -57,7 +57,7 @@ namespace hk::util {
         }
 
         void unset(s32 idx) {
-            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%d)", idx, Size);
+            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%zu)", idx, Size);
             u8& byte = mStorage[getByteIdxByBitIdx(idx)];
             int bitIdx = idx % 8;
 
@@ -65,7 +65,7 @@ namespace hk::util {
         }
 
         bool get(s32 idx) const {
-            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%d)", idx, Size);
+            HK_ABORT_UNLESS(idx >= 0 && idx < Size, "BitArray: index out of bounds (%d/%zu)", idx, Size);
             const u8& byte = mStorage[getByteIdxByBitIdx(idx)];
             int bitIdx = idx % 8;
 

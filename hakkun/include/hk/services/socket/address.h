@@ -43,7 +43,7 @@ namespace hk::socket {
     class SocketAddrIpv4 : public SocketAddr {
         u16 mPort = 0;
         u32 mAddress = 0;
-        u64 _8 = {};
+        u64 _8 = { };
 
     public:
         constexpr SocketAddrIpv4()
@@ -63,7 +63,7 @@ namespace hk::socket {
 
             constexpr const auto parseOctet = [](const char*& text, bool lastOctet) -> ValueOrResult<u8> {
                 if (!text)
-                    HK_ABORT("null text", 0);
+                    HK_ABORT("null text");
 
                 u16 value = 0;
                 for (u8 i = 0; i < 4; i++) {
@@ -85,7 +85,7 @@ namespace hk::socket {
             };
 
             u32 value2 = 0;
-            u8 octets[4] = {};
+            u8 octets[4] = { };
             for (u8 i = 0; i < 4; i++) {
                 octets[i] = HK_TRY(parseOctet(text, i == 3));
                 value2 <<= 8;

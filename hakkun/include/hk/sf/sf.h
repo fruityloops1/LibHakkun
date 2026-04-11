@@ -140,7 +140,7 @@ namespace hk::sf {
         util::FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
         util::FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
         util::FixedVec<u16, 8> mHipcOutPointerSizes;
-        util::Span<const u8> mData = {};
+        util::Span<const u8> mData = { };
 
         friend class Service;
         // dedicated constructor for cmif::QueryPointerSize
@@ -391,7 +391,7 @@ namespace hk::sf {
 
 #if !defined(HK_RELEASE)
             if (mPrintRequest) {
-                u8 buf[256] = {};
+                u8 buf[256] = { };
                 memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
                 diag::logLine("");
                 for (int i = 0; i < writer.tell(); i += 16)
@@ -404,7 +404,7 @@ namespace hk::sf {
             }
 
             if (mAbortAfterRequest)
-                HK_ABORT("Aborted after response (debug)", 0);
+                HK_ABORT("Aborted after response (debug)");
 #endif
         }
     };
@@ -483,7 +483,7 @@ namespace hk::sf {
 #if !defined(HK_RELEASE)
         if (printResponse) {
             util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-            u8 buf[256] = {};
+            u8 buf[256] = { };
             memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
             diag::logLine("");
             for (int i = 0; i < wordCount * 4; i += 16)

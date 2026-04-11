@@ -296,7 +296,7 @@ namespace hk::hook::a64 {
                     if (__builtin_is_constant_evaluated()) {
                         return cOpInvalid;
                     } else {
-                        HK_ABORT("AddImm: Immediate out of range (%llx)", immV);
+                        HK_ABORT("AddImm: Immediate out of range (%x)", immV);
                     }
                 }
 
@@ -315,7 +315,7 @@ namespace hk::hook::a64 {
                     if (__builtin_is_constant_evaluated()) {
                         return cOpInvalid;
                     } else {
-                        HK_ABORT("MovImm: Immediate out of range (%llx)", immV);
+                        HK_ABORT("MovImm: Immediate out of range (%zx)", immV);
                     }
                 }
 
@@ -346,7 +346,7 @@ namespace hk::hook::a64 {
                     if (__builtin_is_constant_evaluated()) {
                         return cOpInvalid;
                     } else {
-                        HK_ABORT("Movk: Immediate out of range (%llx)", immV);
+                        HK_ABORT("Movk: Immediate out of range (%zx)", immV);
                     }
                 }
 
@@ -354,7 +354,7 @@ namespace hk::hook::a64 {
                     if (__builtin_is_constant_evaluated()) {
                         return cOpInvalid;
                     } else {
-                        HK_ABORT("Movk: Shift out of range (%llx)", hw);
+                        HK_ABORT("Movk: Shift out of range (%zx)", hw);
                     }
                 }
 
@@ -498,8 +498,8 @@ namespace hk::hook::a64 {
         using Mnemonic = std::tuple<ParseMnemonic, const char*, std::array<u8, cMaxOperands + 1>>;
 
         constexpr static Mnemonic cMnemonics[] {
-            { ParseMnemonic::None, "\0", {} },
-            { ParseMnemonic::Nop, "nop", {} },
+            { ParseMnemonic::None, "\0", { } },
+            { ParseMnemonic::Nop, "nop", { } },
             { ParseMnemonic::Ret, "ret", { Rn | Optional } },
             { ParseMnemonic::Br, "br", { Rn } },
             { ParseMnemonic::Blr, "blr", { Rn } },
@@ -568,7 +568,7 @@ namespace hk::hook::a64 {
                         instr.type = IInstrType::Ret;
                         if (rn & W) {
                             throwErr<Throw>("X register required");
-                            return {};
+                            return { };
                         }
                         instr.rn = rn == IRegType_Max ? LR : rn;
                         break;
@@ -577,7 +577,7 @@ namespace hk::hook::a64 {
                     case ParseMnemonic::Blr: {
                         if (rn & W) {
                             throwErr<Throw>("X register required");
-                            return {};
+                            return { };
                         }
                         instr.type = std::get<0>(*m) == ParseMnemonic::Br ? IInstrType::Br : IInstrType::Blr;
                         instr.rn = rn;
@@ -586,7 +586,7 @@ namespace hk::hook::a64 {
                     case ParseMnemonic::Svc: {
                         if (imm.isImm() && imm.resolve(nullptr) > bits(16)) {
                             throwErr<Throw>("SVC imm16 out of range", imm.resolve(nullptr));
-                            return {};
+                            return { };
                         }
 
                         instr.type = IInstrType::Svc;
@@ -603,7 +603,7 @@ namespace hk::hook::a64 {
                         } else {
                             if ((rd & W) != (rn & W)) {
                                 throwErr<Throw>("Mismatching register widths");
-                                return {};
+                                return { };
                             }
 
                             if (rd == SP || rn == SP) {
@@ -627,14 +627,14 @@ namespace hk::hook::a64 {
 
                         if (shift != IShiftType::LSL) {
                             throwErr<Throw>("Shift type not allowed", shift);
-                            return {};
+                            return { };
                         }
 
                         if (shiftImm.isImm()) {
                             u32 hw = shiftImm.resolve(nullptr);
                             if (!(hw == 0 or hw == 16 or ((rd & W) == 0) and (hw == 32 or hw == 48))) {
                                 throwErr<Throw>("Shift out of range", hw);
-                                return {};
+                                return { };
                             }
                         }
 
@@ -657,7 +657,7 @@ namespace hk::hook::a64 {
 
                             if (shift == IShiftType::ROR) {
                                 throwErr<Throw>("Shift type ROR not allowed");
-                                return {};
+                                return { };
                             }
                             instr.shift = shift;
 
@@ -672,7 +672,7 @@ namespace hk::hook::a64 {
 
                         if ((rd & W) != (rn & W)) {
                             throwErr<Throw>("Mismatching register widths");
-                            return {};
+                            return { };
                         }
 
                         if (imm.isValid()) {
@@ -683,7 +683,7 @@ namespace hk::hook::a64 {
 
                             if ((rd & W) != (rm & W)) {
                                 throwErr<Throw>("Mismatching register widths");
-                                return {};
+                                return { };
                             }
                         }
                         break;
@@ -693,12 +693,12 @@ namespace hk::hook::a64 {
 
                         if ((rd & W) != (rn & W) || (rd & W) != (rm & W)) {
                             throwErr<Throw>("Mismatching register widths");
-                            return {};
+                            return { };
                         }
 
                         if (rd == SP || rn == SP || rm == SP) {
                             throwErr<Throw>("Register SP not allowed");
-                            return {};
+                            return { };
                         }
 
                         instr.type = IInstrType::OrrReg;
@@ -715,7 +715,7 @@ namespace hk::hook::a64 {
                     }
                     default: {
                         throwErr<Throw>("Shouldn't happen");
-                        return {};
+                        return { };
                     }
                     }
 
@@ -963,12 +963,12 @@ namespace hk::hook::a64 {
 
     template <bool Uninstallable, size NumInstrs, size MaxArgs = 16>
     class AsmBlock {
-        std::array<IInstr, NumInstrs> mInstrs {};
-        std::array<u64, MaxArgs> mArgs {};
+        std::array<IInstr, NumInstrs> mInstrs { };
+        std::array<u64, MaxArgs> mArgs { };
         size mNumArgs = 0;
 
         ptr mOffset = 0;
-        Instr mOrigInstrs[NumInstrs] {};
+        Instr mOrigInstrs[NumInstrs] { };
         const ro::RoModule* mModule = nullptr;
 
     public:
@@ -1120,4 +1120,4 @@ namespace hk::hook::a64 {
         return AsmBlock<Uninstallable, N>(result);
     }
 
-} // namespace hk::hook::asm
+} // namespace hk::hook::a64

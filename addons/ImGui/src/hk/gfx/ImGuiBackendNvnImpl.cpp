@@ -66,7 +66,7 @@ namespace hk::gfx {
         bool tryInitialize() {
             if (mInitialized)
                 return false;
-            HK_ABORT_UNLESS(mAllocator.alloc && mAllocator.free, "No allocator set!", 0);
+            HK_ABORT_UNLESS(mAllocator.alloc && mAllocator.free, "No allocator set!");
             initialize();
             mInitialized = true;
             return true;
@@ -239,12 +239,12 @@ namespace hk::gfx {
                     const util::Vector2f size = max - min;
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
-                    
-                    #if IMGUI_VERSION_NUM>=19200
+
+#if IMGUI_VERSION_NUM >= 19200
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
-                    #else
+#else
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
-                    #endif
+#endif
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {

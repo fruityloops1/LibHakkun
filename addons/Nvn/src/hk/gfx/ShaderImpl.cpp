@@ -42,7 +42,7 @@ namespace hk::gfx {
 
     public:
         ShaderImpl(u8* shaderData, size shaderSize, nvn::Device* device, nvn::VertexAttribState* attribStates, int numAttribStates, nvn::VertexStreamState* streamState, const char* shaderName) {
-            HK_ABORT_UNLESS(alignUpPage(shaderData) == shaderData, "Memory must be page (%x) aligned (%p)", cPageSize, shaderData);
+            HK_ABORT_UNLESS(alignUpPage(shaderData) == shaderData, "Memory must be page (%zx) aligned (%p)", cPageSize, shaderData);
 
             const BinaryHeader* header = reinterpret_cast<const BinaryHeader*>(shaderData);
 
