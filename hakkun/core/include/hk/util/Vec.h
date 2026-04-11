@@ -23,15 +23,17 @@ namespace hk::util {
     class Vec : public Span<T> {
         size mCapacity = 0;
 
-        using Span<T>::mData;
-        using Span<T>::mSize;
+        using Span<T>::setData;
+        using Span<T>::getData;
+        using Span<T>::setSize;
+        using Span<T>::getSize;
 
         T* valueAt(size index) {
-            return &mData[index];
+            return getData() + index;
         }
 
         const T* valueAt(size index) const {
-            return &mData[index];
+            return getData() + index;
         }
 
         static Span<T> allocate(size size, ::size capacity) {
@@ -61,7 +63,7 @@ namespace hk::util {
         }
 
         Vec(Vec&& other)
-            : Span<T>(other.mData, other.size())
+            : Span<T>(other.getData(), other.size())
             , mCapacity(other.mCapacity) {
             other.mCapacity = 0;
             other.set(nullptr, 0);
@@ -104,11 +106,11 @@ namespace hk::util {
         }
 
         ~Vec() {
-            if (mData != nullptr) {
+            if (getData() != nullptr) {
                 clear();
 
-                Allocator::free(mData);
-                mData = nullptr;
+                Allocator::free(getData());
+                setData(nullptr);
             }
         }
 
@@ -117,79 +119,80 @@ namespace hk::util {
                 return;
 
             T* newData = cast<T*>(Allocator::allocate(newCapacity * sizeof(T), alignof(T)));
-            for (::size i = 0; i < mSize; i++) {
-                new (&newData[i]) T(::move(*valueAt(i)));
-                valueAt(i)->~T();
-            }
+            util::move(newData, getData(), getSize());
 
-            Allocator::free(mData);
-            mData = newData;
+            Allocator::free(getData());
+            setData(newData);
             newCapacity = newCapacity;
         }
 
         void add(const T& value) {
-            if (mSize >= mCapacity)
+            if (getSize() >= mCapacity)
                 reserve(mCapacity + ReserveSize);
-            new (valueAt(mSize++)) T(value);
+            new (valueAt(getSize())) T(value);
+            setSize(getSize() - 1);
         }
 
         void add(T&& value) {
-            if (mSize >= mCapacity)
+            if (getSize() >= mCapacity)
                 reserve(mCapacity + ReserveSize);
-            new (valueAt(mSize++)) T(::move(value));
+            new (valueAt(getSize())) T(::move(value));
+            setSize(getSize() - 1);
         }
 
         T& insert(const T& value, size index = 0) {
-            if (mSize >= mCapacity)
+            if (getSize() >= mCapacity)
                 reserve(mCapacity + ReserveSize);
 
-            HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
-            move(index + 1, index, mSize++ - index);
+            HK_ABORT_UNLESS(index <= getSize(), "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
+            move(index + 1, index, getSize() - index);
+            setSize(getSize() - 1);
             return *new (valueAt(index)) T(value);
         }
 
         T& insert(T&& value, size index = 0) {
-            if (mSize >= mCapacity)
+            if (getSize() >= mCapacity)
                 reserve(mCapacity + ReserveSize);
 
-            HK_ABORT_UNLESS(index <= mSize, "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
-            move(index + 1, index, mSize++ - index);
+            HK_ABORT_UNLESS(index <= getSize(), "hk::util::Vec<%s>::insert(index: %zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
+            move(index + 1, index, getSize() - index);
+            setSize(getSize() - 1);
             return *new (valueAt(index)) T(::move(value));
         }
 
         T remove(size index) {
-            HK_ABORT_UNLESS(index < mSize, "hk::util::Vec<%s>::remove(%zu): out of range (size: %zu)", getTypeName<T>(), index, mSize);
+            HK_ABORT_UNLESS(index < getSize(), "hk::util::Vec<%s>::remove(%zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
 
             T removedValue = T(::move(*valueAt(index)));
             valueAt(index)->~T();
 
-            if (index < mSize - 1)
-                move(index, index + 1, mSize - index - 1);
+            if (index < getSize() - 1)
+                move(index, index + 1, getSize() - index - 1);
 
-            mSize--;
+            setSize(getSize() - 1);
 
             return ::move(removedValue);
         }
 
         void extend(size newSize, const T& extendValue = T()) {
-            HK_ABORT_UNLESS(newSize >= mSize, "hk::util::Vec<%s>::extend(%zu): out of range (size: %zu)", getTypeName<T>(), newSize, mSize);
+            HK_ABORT_UNLESS(newSize >= getSize(), "hk::util::Vec<%s>::extend(%zu): out of range (size: %zu)", getTypeName<T>(), newSize, getSize());
             reserve(newSize);
-            std::fill(valueAt(mSize), valueAt(newSize), extendValue);
-            mSize = newSize;
+            std::fill(valueAt(getSize()), valueAt(newSize), extendValue);
+            setSize(newSize);
         }
 
         void truncate(size newSize) {
-            HK_ABORT_UNLESS(newSize <= mSize, "hk::util::Vec<%s>::truncate(%zu): out of range (size: %zu)", getTypeName<T>(), newSize, mSize);
-            for (::size i = newSize; i < mSize; i++)
+            HK_ABORT_UNLESS(newSize <= getSize(), "hk::util::Vec<%s>::truncate(%zu): out of range (size: %zu)", getTypeName<T>(), newSize, getSize());
+            for (::size i = newSize; i < getSize(); i++)
                 valueAt(i)->~T();
-            mSize = newSize;
+            setSize(newSize);
         }
 
         void resize(size newSize, const T& extendValue = T()) {
-            if (mSize == newSize)
+            if (getSize() == newSize)
                 return;
 
-            if (mSize > newSize)
+            if (getSize() > newSize)
                 truncate(newSize);
             else
                 extend(newSize, extendValue);
@@ -199,7 +202,7 @@ namespace hk::util {
             forEach([](T& data) -> void {
                 data.~T();
             });
-            mSize = 0;
+            setSize(0);
         }
 
         ::size capacity() const { return mCapacity; }

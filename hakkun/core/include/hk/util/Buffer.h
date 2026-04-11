@@ -36,20 +36,19 @@ namespace hk::util {
             T* ptr = cast<T*>(Allocator::allocate(size * sizeof(T), align));
             HK_UNLESS(ptr != nullptr, ResultOutOfResource());
 
-            Span<T>::set(ptr, size);
-            for (::size i = 0; i < mSize; i++)
-                new (&mData[i]) T(value);
+            set(ptr, size);
+
+            construct(getData(), getSize(), value);
 
             return ResultSuccess();
         }
 
         Result freeBuffer() {
-            if (mData != nullptr) {
-                for (size i = 0; i < mSize; i++)
-                    mData[i].~T();
+            if (getData() != nullptr) {
+                destroy(getData(), getSize());
 
-                Allocator::free(mData);
-                Span<T>::set(nullptr, 0);
+                Allocator::free(getData());
+                set(nullptr, 0);
                 return ResultSuccess();
             }
             return ResultNoValue();
@@ -69,10 +68,12 @@ namespace hk::util {
             return ResultSuccess();
         }
 
+    protected:
+        using Span<T>::getData;
+        using Span<T>::getSize;
+
     private:
         using Span<T>::set;
-        using Span<T>::mData;
-        using Span<T>::mSize;
     };
 
 } // namespace hk::util

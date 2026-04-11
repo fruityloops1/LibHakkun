@@ -2,6 +2,7 @@
 
 #include "hk/types.h"
 #include "hk/util/Array.h"
+#include "hk/util/Lambda.h"
 #include "hk/util/Span.h"
 #include "hk/util/StringView.h"
 #include <algorithm>
@@ -15,83 +16,86 @@ namespace hk::util {
         size mLength = 0; // always less than Capacity, excludes null terminator
         Array<T, Capacity> mData;
 
+        using MutableStringView = MutableStringViewBase<T>;
+        using StringView = StringViewBase<T>;
+
+        constexpr hk_alwaysinline MutableStringView toMutableView() {
+            return MutableStringView({ mData.data(), Capacity }, mLength);
+        }
+
+        template <typename L>
+        constexpr hk_alwaysinline typename FunctionTraits<L>::ReturnType withMutableView(L func) {
+            using Return = typename FunctionTraits<L>::ReturnType;
+
+            MutableStringView view = toMutableView();
+            defer { mLength = view.length(); };
+            return func(view);
+        }
+
     public:
         constexpr FixedStringBase() = default;
 
         constexpr FixedStringBase(const T* data)
             : mLength(std::min(std::char_traits<T>::length(data), Capacity - 1)) {
-            std::copy(data, data + mLength, mData.begin());
+            std::copy(data, data + mLength, mData);
         }
 
         template <size N>
         constexpr FixedStringBase(const T data[N])
             : mLength(std::min(N - 1, Capacity - 1)) {
-            std::copy(data, data + mLength, mData.begin());
+            std::copy(data, data + mLength, mData);
         }
 
-        constexpr FixedStringBase(const StringViewBase<T> src) {
+        constexpr FixedStringBase(const StringView src) {
             append(src);
         }
 
         constexpr void truncate(size newSize) {
-            HK_ABORT_UNLESS(newSize <= mLength, "hk::util::FixedStringBase<%s>::truncate(%zu): new size is too high (size: %zu)", Capacity, newSize, mLength);
-            mLength = newSize;
-            mData[mLength] = T('\0');
+            withMutableView([&](MutableStringView& view) { view.truncate(newSize); });
         }
-
-        constexpr bool append(const StringViewBase<T> other) {
-            auto desiredSize = mLength + other.size();
-            auto newSize = std::min(desiredSize, Capacity - 1);
-            std::copy(other.begin(), other.end(), end());
-            mData[newSize] = T('\0');
-            mLength = newSize;
-            return desiredSize == newSize;
+        constexpr bool append(const StringView other) {
+            return withMutableView([&](MutableStringView& view) -> bool { return view.append(other); });
         }
-
         constexpr bool append(T value) {
-            if (mLength == Capacity - 1)
-                return false;
-
-            mData[mLength++] = value;
-            mData[mLength] = T('\0');
-            return true;
+            return withMutableView([&](MutableStringView& view) -> bool { return view.append(value); });
         }
 
-        constexpr FixedStringBase operator+(const StringViewBase<T> other) const {
+        constexpr FixedStringBase operator+(const StringView other) const {
             FixedStringBase newString = *this;
             newString.append(other);
             return newString;
         }
 
-        constexpr FixedStringBase& operator+=(const StringViewBase<T> other) {
+        constexpr FixedStringBase& operator+=(const StringView other) {
             append(other);
             return *this;
         }
 
         constexpr T* data() { return mData.data(); }
-        constexpr const T* data() const { return mData; }
+        constexpr const T* data() const { return mData.data(); }
         constexpr size size_bytes() const { return mLength * sizeof(T); }
         constexpr size size() const { return mLength; }
         constexpr ::size length() const { return mLength; }
         constexpr static ::size capacity() { return Capacity; }
 
-        constexpr T& operator[](::size index) {
-            HK_ABORT_UNLESS(index < mLength, "hk::util::FixedStringBase<%s, %s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), Capacity, index, mLength);
-            return mData[index];
-        }
+        constexpr T& operator[](::size index) { return StringView(*this)[index]; }
+        constexpr const T& operator[](::size index) const { return StringView(*this)[index]; }
 
-        constexpr const T& operator[](::size index) const {
-            HK_ABORT_UNLESS(index < mLength, "hk::util::FixedStringBase<%s, %s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), Capacity, index, mLength);
-            return mData[index];
-        }
+        using Iterator = MutableStringView::Iterator;
+        using ConstIterator = StringView::ConstIterator;
 
-        constexpr T* begin() { return &mData[0]; }
-        constexpr T* end() { return &mData[mLength]; }
-        constexpr const T* begin() const { return &mData[0]; }
-        constexpr const T* end() const { return &mData[mLength]; }
+        constexpr Iterator begin() { return toMutableView().begin(); }
+        constexpr Iterator end() { return toMutableView().end(); }
+        constexpr ConstIterator begin() const { return StringView(*this).begin(); }
+        constexpr ConstIterator end() const { return StringView(*this).end(); }
 
-        constexpr operator StringViewBase<T>() const { return Span<const T> { data(), size() }; }
+        constexpr operator StringView() const { return Span<const T> { data(), size() }; }
+        constexpr operator MutableStringView() { return toMutableView(); }
         constexpr operator Span<const T>() const { return Span<const T> { data(), size() }; }
+
+        constexpr operator T*() { return data(); }
+        constexpr operator const T*() const { return data(); }
+        constexpr const T* cstr() const { return data(); }
     };
 
     template <size Capacity>

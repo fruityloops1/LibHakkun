@@ -1,5 +1,9 @@
 #pragma once
 
+#if !__GNUC__
+#error ""
+#endif
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -18,13 +22,13 @@
 #define CONCAT_IMPL(x, y) x##y
 #define CONCAT(x, y) CONCAT_IMPL(x, y)
 
-#define NON_COPYABLE(CLASS)       \
-    CLASS(const CLASS&) = delete; \
-    CLASS& operator=(const CLASS&) = delete
+#define NON_COPYABLE(CLASS)                 \
+    constexpr CLASS(const CLASS&) = delete; \
+    constexpr CLASS& operator=(const CLASS&) = delete
 
-#define NON_MOVABLE(CLASS)   \
-    CLASS(CLASS&&) = delete; \
-    CLASS& operator=(CLASS&&) = delete
+#define NON_MOVABLE(CLASS)             \
+    constexpr CLASS(CLASS&&) = delete; \
+    constexpr CLASS& operator=(CLASS&&) = delete
 
 #ifdef HK_RELEASE
 #define ralwaysinline hk_alwaysinline
@@ -57,6 +61,9 @@ using size = size_t;
 using ptrdiff = ptrdiff_t;
 using ptr = uintptr_t;
 
+using std::forward;
+using std::move;
+
 template <typename To, typename From>
 hk_alwaysinline constexpr To cast(From val) {
     return reinterpret_cast<To>(val);
@@ -79,9 +86,6 @@ constexpr size operator""_GB(unsigned long long val) { return val * 1024 * 1024 
 constexpr u64 operator""_ns(unsigned long long val) { return val; }
 constexpr u64 operator""_ms(unsigned long long val) { return val * 1e6; }
 constexpr u64 operator""_sec(unsigned long long val) { return val * 1e9; }
-
-using std::forward;
-using std::move;
 
 namespace hk {
 
