@@ -39,6 +39,8 @@ namespace hk::util {
 #pragma clang diagnostic ignored "-Wnontrivial-memcall"
 
     template <typename T>
+        requires std::is_copy_constructible_v<T>
+        and std::is_destructible_v<T>
     constexpr void copy(T* dest, const T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -51,6 +53,8 @@ namespace hk::util {
     }
 
     template <typename T>
+        requires std::is_copy_constructible_v<T>
+        and std::is_destructible_v<T>
     constexpr void copyOverlapping(T* dest, const T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
@@ -74,6 +78,8 @@ namespace hk::util {
 
     using ::move;
     template <typename T>
+        requires std::is_move_constructible_v<T>
+        and std::is_destructible_v<T>
     constexpr void move(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -85,6 +91,8 @@ namespace hk::util {
     }
 
     template <typename T>
+        requires std::is_move_constructible_v<T>
+        and std::is_destructible_v<T>
     constexpr void moveOverlapping(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
@@ -103,6 +111,54 @@ namespace hk::util {
                     to->~T();
                     construct_at(to, forward<T>(*from));
                 }
+        }
+    }
+
+    template <typename T>
+        requires std::is_move_constructible_v<T>
+    constexpr void constructMove(T* dest, T* src, size amount) {
+        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T>)
+            __builtin_memcpy(dest, src, amount * sizeof(T));
+        else
+            for (size i = 0; i < amount; i++)
+                construct_at(dest + i, forward<T>(src[i]));
+    }
+
+    template <typename T>
+        requires std::is_move_constructible_v<T>
+    constexpr void constructCopy(T* dest, const T* src, size amount) {
+        if (!std::is_constant_evaluated() and std::is_trivially_copy_constructible_v<T>)
+            __builtin_memcpy(dest, src, amount * sizeof(T));
+        else
+            for (size i = 0; i < amount; i++)
+                construct_at(dest + i, src[i]);
+    }
+
+    template <typename T>
+        requires std::is_copy_constructible_v<T>
+        and std::is_destructible_v<T>
+    constexpr void reverseCopy(T* dest, size amount) {
+        for (size i = 0; i < amount / 2; i++) {
+            T temp = dest[i];
+
+            dest[i].~T();
+            construct_at(dest + i, dest[amount - i - 1]);
+            dest[amount - i - 1].~T();
+            construct_at(dest + amount - i - 1, temp);
+        }
+    }
+
+    template <typename T>
+        requires std::is_move_constructible_v<T>
+        and std::is_destructible_v<T>
+    constexpr void reverseMove(T* dest, size amount) {
+        for (size i = 0; i < amount / 2; i++) {
+            T temp = T(forward<T>(dest[i]));
+
+            dest[i].~T();
+            construct_at(dest + i, forward<T>(dest[amount - i - 1]));
+            dest[amount - i - 1].~T();
+            construct_at(dest + forward<T>(amount - i - 1, temp));
         }
     }
 #pragma clang diagnostic pop
@@ -137,9 +193,18 @@ namespace hk::util {
     }
 
     template <typename T>
+        requires std::is_destructible_v<T>
     constexpr void destroy(T* dest, size amount) {
         for (size i = 0; i < amount; i++)
             dest[i].~T();
+    }
+
+    template <typename T>
+    constexpr bool isEqual(const T* a, const T* b, size amount) {
+        for (size i = 0; i < amount; i++)
+            if (*a++ != *b++)
+                return false;
+        return true;
     }
 
 } // namespace hk::util

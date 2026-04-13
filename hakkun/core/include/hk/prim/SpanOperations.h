@@ -1,15 +1,12 @@
 #pragma once
 
 #include "hk/diag/diag.h"
-#include "hk/types.h"
 #include "hk/util/Algorithm.h"
 #include "hk/util/Math.h"
 #include "hk/util/TypeName.h"
-#include <iterator>
 #include <span>
-#include <type_traits>
 
-namespace hk::util {
+namespace hk {
 
     template <typename T, typename Storage>
     struct SpanOperations;
@@ -35,16 +32,16 @@ namespace hk::util {
             using MutableType = std::remove_const_t<T>;
 
             friend SpanOperationsWithBufferPointer<T, Storage>;
-            friend SpanOperationsWithBufferPointerBase<T, Storage>;
             friend SpanOperations<T, Storage>;
 
-            constexpr SpanOperationsBase() { setSize(0); }
+            constexpr SpanOperationsBase() = default;
             NON_COPYABLE(SpanOperationsBase);
             NON_MOVABLE(SpanOperationsBase);
 
             const hk_alwaysinline constexpr T* data() const { return getDataConst(); }
             hk_alwaysinline constexpr size size_bytes() const { return getSize() * sizeof(T); }
             hk_alwaysinline constexpr size size() const { return getSize(); }
+            hk_alwaysinline constexpr ::size length() const { return getSize(); }
             hk_alwaysinline constexpr bool empty() const { return getSize() == 0; }
 
             class ConstIterator {
@@ -82,19 +79,23 @@ namespace hk::util {
             hk_alwaysinline constexpr Span<const T> slice(::size offset, ::size amount = 0) const {
                 if (amount == 0)
                     amount = getSize() - offset;
-                HK_ABORT_UNLESS(amount <= getSize() - offset, "hk::util::Span<%s>::slice(%zu, %zu): out of range (size: %zu)", getTypeName<T>(), offset, amount, getSize());
+                HK_ABORT_UNLESS(amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
                 return Span<const T>(getDataConst() + offset, amount);
+            }
+
+            hk_alwaysinline constexpr Span<const T> operator[](::size offset, ::size amount) const {
+                return slice(offset, amount);
             }
 
             hk_alwaysinline constexpr operator Span<const T>() const { return Span<const T>(getDataConst(), getSize()); }
 
             constexpr const T& operator[](::size index) const {
-                HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), index, getSize());
+                HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 return getDataConst()[index];
             }
 
             constexpr const T& at(::size index) const {
-                HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::at(%zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
+                HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 return getDataConst()[index];
             }
 
@@ -107,12 +108,12 @@ namespace hk::util {
             }
 
             constexpr const T& first() const {
-                HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::first(): empty", getTypeName<T>());
+                HK_ABORT_UNLESS(!empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return getDataConst()[0];
             }
 
             constexpr const T& last() const {
-                HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::last(): empty", getTypeName<T>());
+                HK_ABORT_UNLESS(!empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return getDataConst()[getSize() - 1];
             }
 
@@ -123,7 +124,7 @@ namespace hk::util {
             }
 
             constexpr void copy(MutableType* out, ::size max = -1) const {
-                copy(out, getDataConst(), hk::util::min(max, getSize()));
+                util::copy(out, getDataConst(), util::min(max, getSize()));
             }
 
             template <::size N>
@@ -135,7 +136,6 @@ namespace hk::util {
             using Storage::getData;
             using Storage::getDataConst;
             using Storage::getSize;
-            using Storage::setSize;
         };
 
     } // namespace detail
@@ -150,24 +150,38 @@ namespace hk::util {
 
         using Super::operator[];
         constexpr T& operator[](::size index) {
-            HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::operator[%zu]: out of range (size: %zu)", getTypeName<T>(), index, getSize());
+            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             return getData()[index];
         }
 
         using Super::at;
         constexpr T& at(::size index) {
-            HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::at(%zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
+            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             return getData()[index];
         }
 
-        constexpr void set(::size index, const T& value) {
-            HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::set(%zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
-            getData()[index] = value;
+        constexpr T& set(::size index, const T& value) {
+            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+            T* dest = getData() + index;
+            dest->~T();
+            return *construct_at(dest, value);
         }
 
-        constexpr void set(::size index, T&& value) {
-            HK_ABORT_UNLESS(index < getSize(), "hk::util::Span<%s>::set(%zu): out of range (size: %zu)", getTypeName<T>(), index, getSize());
-            new (&getData()[index]) T(value);
+        constexpr T& set(::size index, T&& value) {
+            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+            T* dest = getData() + index;
+            dest->~T();
+            return *construct_at(dest, forward<T>(value));
+        }
+
+        constexpr void setCopy(Span<const T> data) {
+            size amount = util::min(getSize(), data.size());
+            util::copy(getData(), data.data(), amount);
+        }
+
+        constexpr void setMove(Span<T> data) {
+            size amount = util::min(getSize(), data.size());
+            util::move(getData(), data.data(), amount);
         }
 
         using Super::data;
@@ -206,24 +220,29 @@ namespace hk::util {
         constexpr Iterator begin() { return { getData() }; }
         constexpr Iterator end() { return { getData() + getSize() }; }
 
+        using Super::slice;
         hk_alwaysinline constexpr Span<T> slice(::size offset, ::size amount = 0) {
             if (amount == 0)
                 amount = getSize() - offset;
-            HK_ABORT_UNLESS(amount <= getSize() - offset, "hk::util::Span<%s>::slice(%zu, %zu): out of range (size: %zu)", getTypeName<T>(), offset, amount, getSize());
+            HK_ABORT_UNLESS(amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
             return Span<T>(getData() + offset, amount);
+        }
+
+        hk_alwaysinline constexpr Span<T> operator[](::size offset, ::size amount) {
+            return slice(offset, amount);
         }
 
         using Super::empty;
 
         using Super::first;
         constexpr T& first() {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::first(): empty", getTypeName<T>());
+            HK_ABORT_UNLESS(!empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
             return at(0);
         }
 
         using Super::last;
         constexpr T& last() {
-            HK_ABORT_UNLESS(!empty(), "hk::util::Span<%s>::last(): empty", getTypeName<T>());
+            HK_ABORT_UNLESS(!empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
             return at(getSize() - 1);
         }
 
@@ -242,11 +261,15 @@ namespace hk::util {
             std::sort(getData(), getData() + getSize(), comp);
         }
 
+        constexpr void reverse() {
+            util::reverseMove(getData(), getSize());
+        }
+
         constexpr void fill(size dstIdx, size amount, const T& value = T()) {
             if (amount == 0)
                 return;
-            HK_ABORT_UNLESS(dstIdx < getSize(), "hk::util::Span<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "hk::util::Span<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
 
             util::fill(getData() + dstIdx, amount, value);
         }
@@ -259,24 +282,25 @@ namespace hk::util {
             if (dstIdx == srcIdx or amount == 0)
                 return;
 
-            HK_ABORT_UNLESS(dstIdx < getSize(), "hk::util::Span<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx < getSize(), "hk::util::Span<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "hk::util::Span<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "hk::util::Span<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
 
-            moveOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
+            util::moveOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
         }
 
+        using Super::copy;
         constexpr void copy(size dstIdx, size srcIdx, size amount) {
             if (dstIdx == srcIdx or amount == 0)
                 return;
 
-            HK_ABORT_UNLESS(dstIdx < getSize(), "hk::util::Span<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx < getSize(), "hk::util::Span<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "hk::util::Span<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "hk::util::Span<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
 
-            copyOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
+            util::copyOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
         }
 
     protected:
@@ -306,17 +330,13 @@ namespace hk::util {
 
             constexpr SpanOperationsWithBufferPointerBase(const SpanOperationsWithBufferPointerBase& other)
                 : SpanOperationsWithBufferPointerBase(other.getData(), other.getSize()) { }
+
             constexpr SpanOperationsWithBufferPointerBase& operator=(const SpanOperationsWithBufferPointerBase& other) {
                 set(other.data(), other.size());
                 return *this;
             }
 
-            constexpr SpanOperationsWithBufferPointerBase(SpanOperationsWithBufferPointerBase&& other)
-                : SpanOperationsWithBufferPointerBase(other.data(), other.size()) { }
-            constexpr SpanOperationsWithBufferPointerBase& operator=(SpanOperationsWithBufferPointerBase&& other) {
-                set(other.data(), other.size());
-                return *this;
-            }
+            NON_MOVABLE(SpanOperationsWithBufferPointerBase);
 
             constexpr SpanOperationsWithBufferPointerBase(T* data, size size)
                 : Super() {
@@ -327,15 +347,20 @@ namespace hk::util {
             constexpr SpanOperationsWithBufferPointerBase(T (&data)[N])
                 : SpanOperationsWithBufferPointerBase(data, N) { }
 
-#define HK_UTIL_DETAIL_SPANOPERATIONSWITHBUFFERPOINTERBASE_DEDUCTION_GUIDE(TYPE, DESIRED) \
-    template <typename T>                                                                 \
-    TYPE(T*, size)->DESIRED;                                                              \
-    template <typename T, size N>                                                         \
+#define HK_DETAIL_SPANOPERATIONSWITHBUFFERPOINTERBASE_DEDUCTION_GUIDE(TYPE, DESIRED) \
+    template <typename T>                                                            \
+    TYPE(T*, ::size)->DESIRED;                                                       \
+    template <typename T, ::size N>                                                  \
     TYPE(T(&)[N])->DESIRED
 
             constexpr void set(T* data, size size) {
                 setData(data);
                 setSize(size);
+            }
+
+            constexpr void set(Span<T> data) {
+                setData(data.data());
+                setSize(data.size());
             }
 
         protected:
@@ -379,85 +404,112 @@ namespace hk::util {
             : Super(other.data(), other.size()) { }
     };
 
-#define HK_UTIL_SPANOPERATIONSWITHBUFFERPOINTER_DEDUCTION_GUIDE(TYPE, DESIRED)         \
-    HK_UTIL_DETAIL_SPANOPERATIONSWITHBUFFERPOINTERBASE_DEDUCTION_GUIDE(TYPE, DESIRED); \
-    template <typename T>                                                              \
-    TYPE(const ::std::span<T>&)->DESIRED;                                              \
-    template <typename T>                                                              \
+#define HK_SPANOPERATIONSWITHBUFFERPOINTER_DEDUCTION_GUIDE(TYPE, DESIRED)         \
+    HK_DETAIL_SPANOPERATIONSWITHBUFFERPOINTERBASE_DEDUCTION_GUIDE(TYPE, DESIRED); \
+    template <typename T>                                                         \
+    TYPE(const ::std::span<T>&)->DESIRED;                                         \
+    template <typename T>                                                         \
     TYPE(const ::std::span<const T>&)->DESIRED
 
     namespace detail {
 
-        template <typename T>
-        class SpanStorage {
-            T* mData;
-            size mSize;
+        template <typename T, typename Storage, bool HasBufferPointer>
+        struct SpanOperationsConditionalBufferPointer;
 
-        public:
-            hk_alwaysinline constexpr void setData(T* data) { mData = data; }
-            hk_alwaysinline constexpr T* getData() const { return mData; }
-            const hk_alwaysinline constexpr T* getDataConst() const { return mData; }
-            hk_alwaysinline constexpr void setSize(::size size) { mSize = size; }
-            hk_alwaysinline constexpr ::size getSize() const { return mSize; }
+        template <typename T, typename Storage>
+        struct SpanOperationsConditionalBufferPointer<T, Storage, true> : SpanOperationsWithBufferPointer<T, Storage> {
+            using Super = SpanOperationsWithBufferPointer<T, Storage>;
+
+            using Super::Super;
+        };
+
+        template <typename T, typename Storage>
+        struct SpanOperationsConditionalBufferPointer<T, Storage, false> : SpanOperations<T, Storage> {
+            using Super = SpanOperations<T, Storage>;
+
+            using Super::Super;
         };
 
     } // namespace detail
 
-    template <typename T>
-    class Span : public SpanOperationsWithBufferPointer<T, detail::SpanStorage<T>> {
-
-    public:
-        using Super = SpanOperationsWithBufferPointer<T, detail::SpanStorage<T>>;
+    template <typename T, typename Storage>
+        requires(not std::is_const_v<T>)
+    struct SpanOperationsCopyable : SpanOperations<T, Storage> {
+        using Super = SpanOperations<T, Storage>;
 
         using Super::Super;
 
-        friend Super;
-        friend Super::Super;
-        friend Super::Super::Super;
-        friend Super::Super::Super::Super;
+        constexpr SpanOperationsCopyable(const T* data, size size) {
+            util::constructCopy(getData(), data, util::min(size, getSize()));
+        }
+
+        constexpr SpanOperationsCopyable(T* data, size size)
+            : SpanOperationsCopyable(data, size) {
+        }
+
+        template <size N>
+        constexpr SpanOperationsCopyable(const T (&data)[N])
+            : SpanOperationsCopyable(data, N) { }
+
+        template <size N>
+        constexpr SpanOperationsCopyable(T (&data)[N])
+            : SpanOperationsCopyable(data, N) { }
+
+        constexpr SpanOperationsCopyable(std::initializer_list<T> data)
+            : SpanOperationsCopyable(data.begin(), data.size()) { }
+
+        constexpr SpanOperationsCopyable(const std::span<const T>& other)
+            : SpanOperationsCopyable(other.data(), other.size()) { }
+        constexpr SpanOperationsCopyable(const std::span<T>& other)
+            : SpanOperationsCopyable(other.data(), other.size()) { }
+
+        constexpr SpanOperationsCopyable(Span<const T> other)
+            : SpanOperationsCopyable(other.data(), other.size()) { }
+        constexpr SpanOperationsCopyable(Span<T> other)
+            : SpanOperationsCopyable(other.data(), other.size()) { }
+
+        constexpr SpanOperationsCopyable(const SpanOperationsCopyable& other)
+            : SpanOperationsCopyable(other.getDataConst(), other.getSize()) { }
+
+        constexpr SpanOperationsCopyable& operator=(const SpanOperationsCopyable& other) {
+            setCopy(other);
+            return *this;
+        }
+
+        constexpr SpanOperationsCopyable(SpanOperationsCopyable&& other) {
+            util::constructMove(getData(), other.getData(), util::min(other.getSize(), getSize()));
+        }
+
+        constexpr SpanOperationsCopyable& operator=(SpanOperationsCopyable&& other) {
+            setMove(other);
+            return *this;
+        }
+
+    protected:
+        using Super::getData;
+        using Super::getSize;
+        using Super::setCopy;
+        using Super::setMove;
     };
 
-    HK_UTIL_SPANOPERATIONSWITHBUFFERPOINTER_DEDUCTION_GUIDE(Span, Span<T>);
+#define HK_SPANOPERATIONSCOPYABLE_DEDUCTION_GUIDE(TYPE, DESIRED) \
+    template <typename T>                                        \
+    TYPE(const T*, ::size)->DESIRED;                             \
+    template <typename T>                                        \
+    TYPE(T*, ::size)->DESIRED;                                   \
+    template <typename T, ::size N>                              \
+    TYPE(const T(&data)[N])->DESIRED;                            \
+    template <typename T, ::size N>                              \
+    TYPE(T(&)[N])->DESIRED;                                      \
+    template <typename T>                                        \
+    TYPE(::hk::Span<T>)->DESIRED;                                \
+    template <typename T>                                        \
+    TYPE(::hk::Span<const T>)->DESIRED;                          \
+    template <typename T>                                        \
+    TYPE(const ::std::span<T>&)->DESIRED;                        \
+    template <typename T>                                        \
+    TYPE(const ::std::span<const T>&)->DESIRED;                  \
+    template <typename T>                                        \
+    TYPE(::std::initializer_list<T>)->DESIRED;
 
-    template <>
-    class Span<void> : public Span<u8> {
-    public:
-        constexpr Span() = default;
-        Span(void* data, ::size size)
-            : Span<u8>(cast<u8*>(data), size) { }
-    };
-
-    template <>
-    class Span<const void> : public Span<const u8> {
-    public:
-        constexpr Span() = default;
-        Span(const void* data, ::size size)
-            : Span<const u8>(cast<const u8*>(data), size) { }
-    };
-
-    static_assert(([]() consteval -> bool {
-        u8 arr[128] { 4, 3, 2, 1 };
-
-        std::span<u8> stl(arr);
-        Span<u8> mut(arr);
-        { Span<const u8> view(arr); }
-        { Span<u8> view(stl); }
-        { Span<const u8> view(stl); }
-
-        mut.fill(64, 64, 42);
-        mut.sort();
-
-        HK_ASSERT(mut.first() == 0 && mut.last() == 42);
-
-        Span<const u8> view(mut);
-        mut.fill(132);
-
-        return view[42] == 132;
-    })());
-
-} // namespace hk::util
-
-template <typename To, typename From>
-hk_alwaysinline hk::util::Span<To> cast(hk::util::Span<From> value) {
-    return { cast<To*>(value.data()), value.size_bytes() / sizeof(To) };
-}
+} // namespace hk

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "hk/container/Vec.h"
 #include "hk/util/Allocator.h"
 #include "hk/util/Tuple.h"
 #include "hk/util/TypeName.h"
-#include "hk/util/Vec.h"
 
 namespace hk::util {
 
