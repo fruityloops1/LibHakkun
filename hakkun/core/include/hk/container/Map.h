@@ -22,13 +22,15 @@ namespace hk {
         using VecType = Vec<Pair, ReserveSize, Allocator>;
         using Hash = size;
 
-        size binarySearch(const K& key, bool findBetween = false) const {
+        constexpr size binarySearch(const K& key, bool findBetween = false) const {
             return VecType::binarySearch([](const Pair& pair) -> Hash { return HashFunc::hash(pair.a); }, HashFunc::hash(key), findBetween);
         }
 
         constexpr void checkInsert(const K& key) {
-            HK_ABORT_UNLESS(binarySearch(key) == -1, "hk::Map<%s, %s>::insert: key already exists", getTypeName<K>(), getTypeName<V>());
+            HK_ABORT_UNLESS(binarySearch(key) == -1, "hk::Map<%s, %s>::insert: key already exists", util::getTypeName<K>(), util::getTypeName<V>());
         }
+
+        using VecType::at;
 
     public:
         using VecType::capacity;
@@ -46,7 +48,7 @@ namespace hk {
             if (foundIdx == -1)
                 return nullptr;
 
-            return &at(foundIdx).b;
+            return &VecType::at(foundIdx).b;
         }
 
         constexpr const V* find(const K& key) const {
@@ -54,7 +56,7 @@ namespace hk {
             if (foundIdx == -1)
                 return nullptr;
 
-            return &at(foundIdx).b;
+            return &VecType::at(foundIdx).b;
         }
 
         constexpr Pair& insert(const K& key, const V& value) {
@@ -83,13 +85,13 @@ namespace hk {
 
         constexpr V& at(const K& key) {
             V* value = find(key);
-            HK_ABORT_UNLESS(value != nullptr, "hk::Map<%s, %s>::at(): key not found", getTypeName<K>(), getTypeName<V>());
+            HK_ABORT_UNLESS(value != nullptr, "hk::Map<%s, %s>::at(): key not found", util::getTypeName<K>(), util::getTypeName<V>());
             return *value;
         }
 
         constexpr const V& at(const K& key) const {
             V* value = find(key);
-            HK_ABORT_UNLESS(value != nullptr, "hk::Map<%s, %s>::at(): key not found", getTypeName<K>(), getTypeName<V>());
+            HK_ABORT_UNLESS(value != nullptr, "hk::Map<%s, %s>::at(): key not found", util::getTypeName<K>(), util::getTypeName<V>());
             return *value;
         }
 

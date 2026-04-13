@@ -86,14 +86,29 @@ namespace hk::util {
         else
             for (size i = 0; i < amount; i++) {
                 dest[i].~T();
-                construct_at(dest + i, forward<T>(src[i]));
+                construct_at(dest + i, move(src[i]));
             }
     }
 
-    template <typename T>
+    template <bool DestroyMovedFrom = false, typename T>
+        requires std::is_move_constructible_v<T>
+    constexpr void constructMove(T* dest, T* src, size amount) {
+        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T>)
+            __builtin_memcpy(dest, src, amount * sizeof(T));
+        else
+            for (size i = 0; i < amount; i++) {
+                T* to = dest + i;
+                T* from = src + i;
+                construct_at(dest + i, move(*from));
+                if constexpr (DestroyMovedFrom)
+                    from->~T();
+            }
+    }
+
+    template <bool DestroyMovedFrom = false, typename T>
         requires std::is_move_constructible_v<T>
         and std::is_destructible_v<T>
-    constexpr void moveOverlapping(T* dest, T* src, size amount) {
+    constexpr void constructMoveOverlapping(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
         else {
@@ -101,27 +116,19 @@ namespace hk::util {
                 for (size i = 0; i < amount; i++) {
                     T* to = dest + i;
                     T* from = src + i;
-                    to->~T();
-                    construct_at(to, forward<T>(*from));
+                    construct_at(to, move(*from));
+                    if constexpr (DestroyMovedFrom)
+                        from->~T();
                 }
             else
                 for (size i = amount; i != 0; i--) {
                     T* to = dest + i - 1;
                     T* from = src + i - 1;
-                    to->~T();
-                    construct_at(to, forward<T>(*from));
+                    construct_at(to, move(*from));
+                    if constexpr (DestroyMovedFrom)
+                        from->~T();
                 }
         }
-    }
-
-    template <typename T>
-        requires std::is_move_constructible_v<T>
-    constexpr void constructMove(T* dest, T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T>)
-            __builtin_memcpy(dest, src, amount * sizeof(T));
-        else
-            for (size i = 0; i < amount; i++)
-                construct_at(dest + i, forward<T>(src[i]));
     }
 
     template <typename T>
@@ -171,25 +178,16 @@ namespace hk::util {
         }
     }
 
-    namespace detail {
+    template <typename T>
+    constexpr void construct(T* dest, size amount, const T& data) {
+        for (size i = 0; i < amount; i++)
+            construct_at(dest + i, data);
+    }
 
-        template <typename T>
-        constexpr void construct(T* dest, size amount, const T& value) {
-            for (size i = 0; i < amount; i++)
-                construct_at(dest + i, value);
-        }
-
-        template <typename T, typename... Args>
-        constexpr void construct(T* dest, size amount, Args&&... args) {
-            for (size i = 0; i < amount; i++)
-                construct_at(dest + i, forward<Args>()...);
-        }
-
-    } // namespace detail
-
-    template <class T, class... Args>
+    template <typename T, typename... Args>
     constexpr void construct(T* dest, size amount, Args&&... args) {
-        detail::construct(dest, amount, forward<Args>(args)...);
+        for (size i = 0; i < amount; i++)
+            construct_at(dest + i, forward<Args>()...);
     }
 
     template <typename T>

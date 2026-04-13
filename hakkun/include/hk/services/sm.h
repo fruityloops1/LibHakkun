@@ -35,9 +35,9 @@ namespace hk::sm {
         ValueOrResult<sf::Service> getServiceHandle() {
             static_assert(sizeof(Name) <= 9, "name can only be eight characters or less");
 
-            char nameBuf[9] = {};
+            char nameBuf[9] = { };
             std::memcpy(nameBuf, Name.value, sizeof(Name));
-            return invokeRequest(sf::Request(this, 1, util::Span(nameBuf, 8)), [](sf::Response& response) {
+            return invokeRequest(sf::Request(this, 1, Span(nameBuf, 8)), [](sf::Response& response) {
                 return sf::Service::fromHandle(response.hipcMoveHandles[0]);
             });
         }

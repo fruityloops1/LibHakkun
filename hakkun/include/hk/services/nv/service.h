@@ -2,6 +2,7 @@
 
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
+#include "hk/container/StringView.h"
 #include "hk/services/nv/ioctl.h"
 #include "hk/services/nv/results.h"
 #include "hk/services/sm.h"
@@ -11,7 +12,6 @@
 #include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Singleton.h"
-#include "hk/util/StringView.h"
 #include <optional>
 
 namespace hk::nvdrv {
@@ -69,7 +69,7 @@ namespace hk::nvdrv {
                 .mapToResult(ResultMapNvidia::toResult);
         }
 
-        ValueOrResult<u32> open(util::StringView view) {
+        ValueOrResult<u32> open(StringView view) {
             auto request = sf::Request(this, 0);
             request.addInAutoselect(view.data(), view.size());
             return invokeRequest(move(request), sf::inlineDataExtractor<u32>())
@@ -82,7 +82,7 @@ namespace hk::nvdrv {
         }
 
         template <typename A, typename I = u8>
-        Result ioctl(u32 fd, Ioctl ioCode, util::Span<A> argument, std::optional<util::Span<I>> secondInput = std::nullopt) {
+        Result ioctl(u32 fd, Ioctl ioCode, Span<A> argument, std::optional<Span<I>> secondInput = std::nullopt) {
             static_assert(ioCode.encoding.argumentSize == sizeof(A));
 
             auto input = sf::packInput(fd, ioCode);
@@ -115,4 +115,4 @@ namespace hk::nvdrv {
         }
     };
 
-}
+} // namespace hk::nvdrv

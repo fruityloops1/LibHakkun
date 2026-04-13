@@ -1,11 +1,11 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
+#include "hk/container/StringView.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/util/Singleton.h"
-#include "hk/util/StringView.h"
 
 namespace hk::ldr {
     struct ProgramArgumentHeader {
@@ -28,7 +28,7 @@ namespace hk::ldr {
             return instance();
         }
 
-        Result setProgramArgument(u64 programId, util::StringView args) {
+        Result setProgramArgument(u64 programId, StringView args) {
             auto request = sf::Request(this, 0, &programId);
             request.addInPointer<char>(args);
             return invokeRequest(move(request));

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "hk/Result.h"
+#include "hk/container/FixedVec.h"
+#include "hk/container/StringView.h"
 #include "hk/diag/diag.h"
 #include "hk/types.h"
-#include "hk/util/FixedVec.h"
-#include "hk/util/StringView.h"
 #include <type_traits>
 #ifdef HK_ADDON_Sead
 #include <sead/prim/seadSafeString.h>
@@ -38,7 +38,7 @@ namespace hk::util {
             : mBuffer(ptr(buffer))
             , mSize(maxSize) { }
 
-        Stream(util::Span<BufferType> span)
+        Stream(Span<BufferType> span)
             : mBuffer(span.data())
             , mSize(span.size()) { }
 

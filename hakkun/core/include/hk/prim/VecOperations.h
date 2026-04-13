@@ -47,16 +47,16 @@ namespace hk {
             constexpr T& insert(const T& value, size index = 0) {
                 HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
                 HK_ABORT_UNLESS(index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
-                move(index + 1, index, getSize() - index);
                 setSize(getSize() + 1);
+                move(index + 1, index, getSize() - 1 - index);
                 return *construct_at(getData() + index, value);
             }
 
             constexpr T& insert(T&& value, size index = 0) {
                 HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
                 HK_ABORT_UNLESS(index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
-                move(index + 1, index, getSize() - index);
                 setSize(getSize() + 1);
+                move(index + 1, index, getSize() - 1 - index);
                 return *construct_at(getData() + index, forward<T>(value));
             }
 
@@ -233,7 +233,7 @@ namespace hk {
         constexpr VecOperationsOnHeap(size numElements = 0) {
             set(allocate(numElements, ReserveSize));
             setCapacity(util::max(numElements, ReserveSize));
-            util::construct(getData(), T());
+            util::construct(getData(), numElements);
         }
 
         constexpr ~VecOperationsOnHeap() {

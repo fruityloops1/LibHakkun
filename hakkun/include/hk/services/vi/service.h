@@ -119,7 +119,7 @@ namespace hk::vi {
             return sf::invokeSimple<sf::Service>(this, 103);
         }
 
-        ValueOrResult<size> listDisplays(util::Span<DisplayInfo> displays) {
+        ValueOrResult<size> listDisplays(Span<DisplayInfo> displays) {
             auto request = sf::Request(this, 1000);
             request.addOutMapAlias(displays.data(), displays.size_bytes());
             HK_TRY(invokeRequest(move(request)));
@@ -178,7 +178,7 @@ namespace hk::vi {
             return sf::invokeSimple(this, 2102, &scalingMode);
         }
 
-        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageMap(util::Span<u8> map, s64 width, s64 height, u64 handle, u64 aruid) {
+        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageMap(Span<u8> map, s64 width, s64 height, u64 handle, u64 aruid) {
             auto input = sf::packInput(width, height, handle, aruid);
             auto request = sf::Request(this, 2450, &input);
             request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
@@ -186,7 +186,7 @@ namespace hk::vi {
             return invokeRequest(move(request), sf::inlineDataExtractor<Tuple<u64, u64>>());
         }
 
-        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageCropMap(util::Span<u8> map, f32 f1, f32 f2, f32 f3, f32 f4, u64 u1, u64 u2, u64 u3, u64 aruid) {
+        ValueOrResult<Tuple<u64, u64>> getIndirectLayerImageCropMap(Span<u8> map, f32 f1, f32 f2, f32 f3, f32 f4, u64 u1, u64 u2, u64 u3, u64 aruid) {
             auto input = sf::packInput(f1, f2, f3, f4, u1, u2, u3, aruid);
             auto request = sf::Request(this, 2451, &input);
             request.addOutMapAlias(map.data(), map.size(), sf::hipc::BufferMode::NonSecure);
@@ -271,6 +271,6 @@ namespace hk::vi {
 
     Result initialize();
     Result openDefaultDisplay();
-    size listDisplays(util::Span<DisplayInfo> displays);
+    size listDisplays(Span<DisplayInfo> displays);
 
 } // namespace hk::vi

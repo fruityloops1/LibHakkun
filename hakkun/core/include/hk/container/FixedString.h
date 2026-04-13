@@ -1,16 +1,17 @@
 #pragma once
 
+#include "hk/container/Array.h"
+#include "hk/container/Span.h"
+#include "hk/container/StringView.h"
 #include "hk/types.h"
-#include "hk/util/Array.h"
 #include "hk/util/Lambda.h"
-#include "hk/util/Span.h"
-#include "hk/util/StringView.h"
 #include <algorithm>
 #include <cstdarg>
 #include <format>
 
-namespace hk::util {
+namespace hk {
 
+    // TODO: StringOperations
     template <typename T, size Capacity>
     class FixedStringBase {
         size mLength = 0; // always less than Capacity, excludes null terminator
@@ -24,8 +25,8 @@ namespace hk::util {
         }
 
         template <typename L>
-        constexpr hk_alwaysinline typename FunctionTraits<L>::ReturnType withMutableView(L func) {
-            using Return = typename FunctionTraits<L>::ReturnType;
+        constexpr hk_alwaysinline typename util::FunctionTraits<L>::ReturnType withMutableView(L func) {
+            using Return = typename util::FunctionTraits<L>::ReturnType;
 
             MutableStringView view = toMutableView();
             defer { mLength = view.length(); };
@@ -38,6 +39,11 @@ namespace hk::util {
         constexpr FixedStringBase(const T* data)
             : mLength(std::min(std::char_traits<T>::length(data), Capacity - 1)) {
             std::copy(data, data + mLength, mData);
+        }
+
+        constexpr FixedStringBase(const FixedStringBase& other)
+            : mLength(other.mLength) {
+            mData.setCopy(other);
         }
 
         template <size N>
@@ -105,4 +111,4 @@ namespace hk::util {
     template <size Capacity>
     using FixedString16 = FixedStringBase<char16_t, Capacity>;
 
-} // namespace hk::util
+} // namespace hk

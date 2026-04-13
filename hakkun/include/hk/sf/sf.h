@@ -2,13 +2,13 @@
 
 #include "hk/Result.h"
 #include "hk/ValueOrResult.h"
+#include "hk/container/FixedVec.h"
 #include "hk/diag/diag.h"
 #include "hk/sf/cmif.h"
 #include "hk/sf/hipc.h"
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
-#include "hk/util/FixedVec.h"
 #include "hk/util/Lambda.h"
 #include "hk/util/Stream.h"
 #include <cstddef>
@@ -131,16 +131,16 @@ namespace hk::sf {
         u32 mToken = 0;
         u32 mHardcodedDataSize = 0;
         cmif::DomainTag mDomainTag = cmif::DomainTag::Request;
-        util::FixedVec<u32, 8> mObjects;
-        util::FixedVec<Handle, 8> mHipcCopyHandles;
-        util::FixedVec<Handle, 8> mHipcMoveHandles;
-        util::FixedVec<hipc::Static, 8> mHipcSendStatics;
-        util::FixedVec<hipc::Buffer, 8> mHipcSendBuffers;
-        util::FixedVec<hipc::Buffer, 8> mHipcReceiveBuffers;
-        util::FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
-        util::FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
-        util::FixedVec<u16, 8> mHipcOutPointerSizes;
-        util::Span<const u8> mData = { };
+        FixedVec<u32, 8> mObjects;
+        FixedVec<Handle, 8> mHipcCopyHandles;
+        FixedVec<Handle, 8> mHipcMoveHandles;
+        FixedVec<hipc::Static, 8> mHipcSendStatics;
+        FixedVec<hipc::Buffer, 8> mHipcSendBuffers;
+        FixedVec<hipc::Buffer, 8> mHipcReceiveBuffers;
+        FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
+        FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
+        FixedVec<u16, 8> mHipcOutPointerSizes;
+        Span<const u8> mData = { };
 
         friend class Service;
         // dedicated constructor for cmif::QueryPointerSize
@@ -157,7 +157,7 @@ namespace hk::sf {
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data), sizeof(T)) { }
         template <typename T>
-        Request(Service* service, u32 command, const util::Span<T>& data)
+        Request(Service* service, u32 command, const Span<T>& data)
             : mCommandId(command)
             , mServerPointerSize(service->pointerBufferSize())
             , mData(cast<const u8*>(data.data()), data.size_bytes()) { }
@@ -205,7 +205,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInPointer(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInPointer(Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInPointer(span.data(), span.size_bytes(), mode);
         }
 
@@ -217,7 +217,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutFixedSizePointer(util::Span<const T> span) {
+        void addOutFixedSizePointer(Span<const T> span) {
             addOutFixedSizePointer(span.data(), span.size_bytes());
         }
 
@@ -227,7 +227,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutPointer(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addOutPointer(Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutPointer(span.data(), span.size_bytes(), mode);
         }
 
@@ -242,7 +242,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInAutoselect(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInAutoselect(Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInAutoselect(span.data(), span.size_bytes(), mode);
         }
 
@@ -263,7 +263,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutAutoselect(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addOutAutoselect(Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutAutoselect(span.data(), span.size_bytes(), mode);
         }
 
@@ -275,7 +275,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInMapAlias(util::Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInMapAlias(Span<const T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -287,7 +287,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addOutMapAlias(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addOutMapAlias(Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addOutMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -299,7 +299,7 @@ namespace hk::sf {
         }
 
         template <typename T>
-        void addInOutMapAlias(util::Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
+        void addInOutMapAlias(Span<T> span, hipc::BufferMode mode = hipc::BufferMode::Normal) {
             addInOutMapAlias(span.data(), span.size_bytes(), mode);
         }
 
@@ -411,12 +411,12 @@ namespace hk::sf {
 
     struct Response {
         Result result;
-        util::FixedVec<u32, 8> objects;
-        util::FixedVec<Handle, 8> hipcCopyHandles;
-        util::FixedVec<Handle, 8> hipcMoveHandles;
-        util::FixedVec<hipc::Static, 8> hipcSendStatics;
+        FixedVec<u32, 8> objects;
+        FixedVec<Handle, 8> hipcCopyHandles;
+        FixedVec<Handle, 8> hipcMoveHandles;
+        FixedVec<hipc::Static, 8> hipcSendStatics;
         std::optional<u64> pid;
-        util::Span<u8> data;
+        Span<u8> data;
 
         Service nextSubservice(Service* service) {
             if (service->isDomain())
@@ -468,7 +468,7 @@ namespace hk::sf {
             auto outHeader = HK_UNWRAP(reader.read<cmif::OutHeader>());
             dataWordsLeft -= sizeof(cmif::OutHeader) / 4;
             response.result = outHeader.result;
-            response.data = util::Span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
+            response.data = Span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
             reader.seek(reader.tell() + response.data.size_bytes());
             for (u8 i = 0; i < objectCount; i++)
                 response.objects.add(HK_UNWRAP(reader.read<u32>()));

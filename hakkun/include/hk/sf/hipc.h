@@ -1,7 +1,7 @@
 #pragma once
 
+#include "hk/container/Span.h"
 #include "hk/types.h"
-#include "hk/util/Span.h"
 
 namespace hk::sf::hipc {
 
@@ -76,8 +76,8 @@ namespace hk::sf::hipc {
         }
 
         template <typename T>
-        util::Span<T> span() {
-            return util::Span(cast<T*>(address()), size());
+        Span<T> span() {
+            return Span(cast<T*>(address()), size());
         }
     };
 

@@ -10,7 +10,7 @@ namespace hk {
         class FixedVecStorage : util::CustomTypeName {
             union {
                 T mData[Capacity];
-                T* mDataPtrForConsteval;
+                mutable T* mDataPtrForConsteval;
             };
             size mSize = 0;
 

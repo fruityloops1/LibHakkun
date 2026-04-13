@@ -1,9 +1,9 @@
 #pragma once
 
+#include "hk/container/Span.h"
+#include "hk/container/StringView.h"
 #include "hk/types.h"
 #include "hk/util/Stream.h"
-#include "hk/util/Span.h"
-#include "hk/util/StringView.h"
 
 namespace hk::vi::parcel {
 
@@ -13,17 +13,17 @@ namespace hk::vi::parcel {
         u32 objectsOffset = sizeof(ParcelHeader);
         u32 objectsSize = 0;
 
-        util::Span<const u8> payload() const {
-            return util::Span(cast<const u8*>(this) + payloadOffset, payloadSize);
+        Span<const u8> payload() const {
+            return Span(cast<const u8*>(this) + payloadOffset, payloadSize);
         }
 
-        util::Span<const u8> objects() const {
-            return util::Span(cast<const u8*>(this) + objectsOffset, objectsSize);
+        Span<const u8> objects() const {
+            return Span(cast<const u8*>(this) + objectsOffset, objectsSize);
         }
     };
 
     struct OutParcel {
-        util::Array<u8, 0x400> data;
+        Array<u8, 0x400> data;
 
         util::Stream<u8> reader() {
             return util::Stream<u8>(data.data(), data.size());
@@ -31,7 +31,7 @@ namespace hk::vi::parcel {
     };
 
     inline void writeString(util::Stream<u8>& stream, const char* text) {
-        util::StringView view(text);
+        StringView view(text);
         stream.write(u32(view.size()));
         for (char c : view)
             stream.write(u16(c));
@@ -43,7 +43,7 @@ namespace hk::vi::parcel {
         writeString(stream, text);
     }
 
-    inline void writeFlattenedObject(util::Stream<u8>& stream, util::Span<const u8> data) {
+    inline void writeFlattenedObject(util::Stream<u8>& stream, Span<const u8> data) {
         stream.write(u32(data.size()));
         stream.write(u32(0));
         stream.writeIterator<const u8>(data);
@@ -52,7 +52,7 @@ namespace hk::vi::parcel {
     template <size size>
     class InParcel {
         ParcelHeader header;
-        util::Array<u8, size> data;
+        Array<u8, size> data;
 
     public:
         template <typename P, typename O>

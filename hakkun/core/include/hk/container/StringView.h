@@ -1,9 +1,10 @@
 #pragma once
 
-#include "hk/util/Span.h"
+#include "hk/container/Span.h"
+#include "hk/util/hash.h"
 #include <string>
 
-namespace hk::util {
+namespace hk {
 
     namespace detail {
 
@@ -13,14 +14,13 @@ namespace hk::util {
 
             using Super = Span<T>;
 
-            using Super::empty;
-
             using CharTraits = std::char_traits<std::remove_const_t<T>>;
 
         public:
             using Super::Super;
 
             using Super::data;
+            using Super::length;
 
             constexpr StringViewBase()
                 : StringViewBase(getEmpty()) { }
@@ -31,9 +31,6 @@ namespace hk::util {
 
             StringViewBase(const Span<const u8>& data)
                 : StringViewBase(cast<T>(data)) { }
-
-            constexpr ::size length() const { return Span<T>::size(); }
-            constexpr bool empty() const { return length() == 0; }
 
             constexpr bool operator==(StringViewBase other) const {
                 return this->length() == other.length() && __builtin_memcmp(this->data(), other.data(), length()) == 0;
@@ -89,8 +86,8 @@ namespace hk::util {
         using Super::getSize;
         using Super::setSize;
 
-        constexpr void assureNullTerminated() {
-            setSize(hk::util::min(getSize(), mCapacity - 1));
+        constexpr void ensureNullTerminated() {
+            setSize(util::min(getSize(), mCapacity - 1));
 
             getData()[getSize()] = cNullChar;
         }
@@ -109,19 +106,19 @@ namespace hk::util {
             , mCapacity(buffer.size()) { }
 
         constexpr void truncate(size newSize) {
-            HK_ABORT_UNLESS(newSize <= mCapacity, "hk::util::MutableStringViewBase<%s>::truncate(%zu): new size exceeds capacity (capacity: %zu)", getTypeName<T>, newSize, mCapacity);
+            HK_ABORT_UNLESS(newSize <= mCapacity, "hk::MutableStringViewBase<%s>::truncate(%zu): new size exceeds capacity (capacity: %zu)", util::getTypeName<T>, newSize, mCapacity);
             setSize(newSize);
-            assureNullTerminated();
+            ensureNullTerminated();
         }
 
-        constexpr bool append(const StringView other) {
+        constexpr bool append(StringView other) {
             size desiredSize = getSize() + other.size();
-            size newSize = hk::util::min(desiredSize, mCapacity - 1);
+            size newSize = util::min(desiredSize, mCapacity - 1);
             size left = mCapacity - getSize() - 1;
 
-            std::copy_n(other.data(), hk::util::min(other.length(), left), getData() + getSize());
+            util::copy(getData() + getSize(), other.data(), util::min(other.length(), left));
             setSize(newSize);
-            assureNullTerminated();
+            ensureNullTerminated();
             return desiredSize == newSize;
         }
 
@@ -129,8 +126,9 @@ namespace hk::util {
             if (getSize() >= mCapacity - 1)
                 return false;
 
-            getData()[getSize()++] = value;
-            assureNullTerminated();
+            getData()[getSize()] = value;
+            setSize(getSize() + 1);
+            ensureNullTerminated();
             return true;
         }
 
@@ -149,4 +147,27 @@ namespace hk::util {
     using MutableWideStringView = MutableStringViewBase<wchar_t>;
     using MutableStringView16 = MutableStringViewBase<char16_t>;
 
-} // namespace hk::util
+    namespace util {
+
+        constexpr u32 hashMurmur(StringView str, u32 seed = 0) {
+            return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str.data(), str.length(), seed);
+        }
+
+        constexpr u64 hashMurmur64(StringView str) {
+            return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.data(), str.length());
+        }
+
+        template <typename T>
+            requires(std::is_convertible_v<T, Span<const char>> or std::is_convertible_v<T, StringView>)
+        struct MurmurHash3<T> {
+            static size hash(StringView str) {
+                if constexpr (is64Bit())
+                    return hashMurmur64(str);
+                else
+                    return hashMurmur(str);
+            }
+        };
+
+    } // namespace util
+
+} // namespace hk

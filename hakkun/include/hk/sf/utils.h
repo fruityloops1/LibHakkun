@@ -1,11 +1,11 @@
 #pragma once
 
+#include "hk/container/Array.h"
 #include "hk/diag/diag.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
 #include "hk/util/Math.h"
 #include "hk/util/TypeName.h"
-#include "hk/util/Array.h"
 #include <type_traits>
 
 namespace hk::sf {
@@ -28,8 +28,8 @@ namespace hk::sf {
     static_assert(calcParamsSize<u8, u64, u8>() == 0x18);
 
     template <typename... Args>
-    util::Array<u8, calcParamsSize<Args...>()> packInput(const Args&... args) {
-        util::Array<u8, calcParamsSize<Args...>()> array = {};
+    Array<u8, calcParamsSize<Args...>()> packInput(const Args&... args) {
+        Array<u8, calcParamsSize<Args...>()> array = { };
         ptr offset = 0;
         ([&] {
             offset = alignUp(offset, alignof(Args));

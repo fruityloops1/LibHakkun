@@ -1,7 +1,6 @@
 #pragma once
 
 #include "hk/types.h"
-#include "hk/util/StringView.h"
 
 #ifdef HK_ADDON_Sead
 #include <sead/prim/seadSafeString.h>
@@ -319,16 +318,8 @@ namespace hk::util {
         return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str), seed);
     }
 
-    constexpr u32 hashMurmur(StringView str, u32 seed = 0) {
-        return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str.data(), str.length(), seed);
-    }
-
     constexpr u64 hashMurmur64(const char* str) {
         return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str));
-    }
-
-    constexpr u64 hashMurmur64(StringView str) {
-        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.data(), str.length());
     }
 
     template <typename T>
@@ -375,16 +366,6 @@ namespace hk::util {
     template <>
     struct MurmurHash3<const char*> {
         static size hash(const char* str) {
-            if constexpr (is64Bit())
-                return hashMurmur64(str);
-            else
-                return hashMurmur(str);
-        }
-    };
-
-    template <>
-    struct MurmurHash3<StringView> {
-        static size hash(StringView str) {
             if constexpr (is64Bit())
                 return hashMurmur64(str);
             else

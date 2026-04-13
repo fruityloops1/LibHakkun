@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/container/Span.h"
 #include "hk/prim/VecOperations.h"
 #include "hk/util/Allocator.h"
 
@@ -23,7 +24,7 @@ namespace hk {
                     data = cast<T*>(Allocator::allocate(capacity * sizeof(T), alignof(T)));
                 }
 
-                HK_ABORT_UNLESS(data != nullptr, "%s<%s>::allocate(): allocation failed (Capacity = %zu)", cTypeName, getTypeName<T>(), capacity);
+                HK_ABORT_UNLESS(data != nullptr, "%s<%s>::allocate(): allocation failed (Capacity = %zu)", cTypeName, util::getTypeName<T>(), capacity);
 
                 return Span<T>(data, size);
             }

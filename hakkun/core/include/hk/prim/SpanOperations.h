@@ -90,12 +90,16 @@ namespace hk {
             hk_alwaysinline constexpr operator Span<const T>() const { return Span<const T>(getDataConst(), getSize()); }
 
             constexpr const T& operator[](::size index) const {
-                HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+                if not consteval {
+                    HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+                }
                 return getDataConst()[index];
             }
 
             constexpr const T& at(::size index) const {
-                HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+                if not consteval {
+                    HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+                }
                 return getDataConst()[index];
             }
 
@@ -278,18 +282,6 @@ namespace hk {
             fill(0, getSize(), value);
         }
 
-        constexpr void move(size dstIdx, size srcIdx, size amount) {
-            if (dstIdx == srcIdx or amount == 0)
-                return;
-
-            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-
-            util::moveOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
-        }
-
         using Super::copy;
         constexpr void copy(size dstIdx, size srcIdx, size amount) {
             if (dstIdx == srcIdx or amount == 0)
@@ -306,6 +298,18 @@ namespace hk {
     protected:
         using Super::getData;
         using Super::getSize;
+
+        constexpr void move(size dstIdx, size srcIdx, size amount) {
+            if (dstIdx == srcIdx or amount == 0)
+                return;
+
+            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+
+            util::constructMoveOverlapping<true>(getData() + dstIdx, getData() + srcIdx, amount);
+        }
     };
 
     template <typename T, typename Storage>
@@ -332,7 +336,7 @@ namespace hk {
                 : SpanOperationsWithBufferPointerBase(other.getData(), other.getSize()) { }
 
             constexpr SpanOperationsWithBufferPointerBase& operator=(const SpanOperationsWithBufferPointerBase& other) {
-                set(other.data(), other.size());
+                set(other.getData(), other.getSize());
                 return *this;
             }
 

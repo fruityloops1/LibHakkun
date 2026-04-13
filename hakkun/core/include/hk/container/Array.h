@@ -34,10 +34,4 @@ namespace hk {
         static constexpr size cLength = Length;
     };
 
-    constexpr int a() {
-        Array<int, 3> test = { 3, 2, 1 };
-        test.sort();
-        return test[0];
-    }
-
 } // namespace hk

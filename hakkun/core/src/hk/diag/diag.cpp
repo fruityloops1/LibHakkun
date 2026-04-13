@@ -1,8 +1,8 @@
 #include "hk/diag/diag.h"
 #include <cstdarg>
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 
 #if NNSDK
 #include "hk/diag/ipclogger.h"
@@ -100,6 +100,9 @@ File: %s:%d
 #if NNSDK
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+        std::va_list listCopy;
+        va_copy(listCopy, arg);
+
         constexpr size cMsgBufSize = 0x80;
         char userMsgBuf[cMsgBufSize + 1] { '\0' };
         userMsgBuf[0] = '\n';
@@ -108,8 +111,8 @@ File: %s:%d
         char headerMsgBuf[cMsgBufSize] { '\0' };
         snprintf(headerMsgBuf, cMsgBufSize, cAbortFormat, file, line);
 
-        log(headerMsgBuf);
-        log(userMsgBuf);
+        log(cAbortFormat, file, line);
+        logLineImpl(msgFmt, listCopy);
 
         dumpStackTrace();
 

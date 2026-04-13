@@ -2,10 +2,10 @@
 #pragma once
 
 #include "hk/ValueOrResult.h"
+#include "hk/container/FixedVec.h"
 #include "hk/services/sm.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
-#include "hk/util/FixedVec.h"
 #include "hk/util/Singleton.h"
 #include "hk/util/Stream.h"
 #include <alloca.h>
@@ -20,8 +20,8 @@ namespace hk::lm {
         Logger(sf::Service&& service)
             : sf::Service(std::forward<sf::Service>(service)) { };
 
-        util::FixedVec<u8, 4> encodeUleb128(u32 value) {
-            util::FixedVec<u8, 4> result;
+        FixedVec<u8, 4> encodeUleb128(u32 value) {
+            FixedVec<u8, 4> result;
 
             do {
                 u8 byte = value & 0x7F;
@@ -64,7 +64,7 @@ namespace hk::lm {
             // chunk key text log
             stream.write(u8(2));
             stream.writeIterator<u8>(sizeBytes);
-            stream.writeIterator<char>(util::Span<const char>(text, len));
+            stream.writeIterator<char>(Span<const char>(text, len));
 
             auto request = sf::Request(this, 0);
             request.addInAutoselect(logData, stream.tell());

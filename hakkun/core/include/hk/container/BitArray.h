@@ -3,7 +3,7 @@
 #include "hk/diag/diag.h"
 #include "hk/types.h"
 
-namespace hk::util {
+namespace hk {
 
     /**
      * @brief Packed array of bits.
@@ -85,4 +85,4 @@ namespace hk::util {
         }
     };
 
-} // namespace hk::util
+} // namespace hk

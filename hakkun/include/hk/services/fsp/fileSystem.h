@@ -1,12 +1,12 @@
 #pragma once
 
 #include "hk/Result.h"
+#include "hk/container/StringView.h"
 #include "hk/services/fsp/file.h"
 #include "hk/services/fsp/util.h"
 #include "hk/sf/sf.h"
 #include "hk/sf/utils.h"
 #include "hk/types.h"
-#include "hk/util/StringView.h"
 
 namespace hk::fsp {
     enum FileMode {
@@ -25,7 +25,7 @@ namespace hk::fsp {
         IFileSystem(sf::Service&& service)
             : sf::Service(forward<sf::Service>(service)) { }
 
-        Result createFile(util::StringView path, s64 size, u32 flags) {
+        Result createFile(StringView path, s64 size, u32 flags) {
             ASSERT_PATH_LEN(path);
             auto input = sf::packInput(flags, size);
             auto request = sf::Request(this, 0, &input);
@@ -33,35 +33,35 @@ namespace hk::fsp {
             return invokeRequest(move(request));
         }
 
-        Result deleteFile(util::StringView path) {
+        Result deleteFile(StringView path) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 1);
             request.addInPointer<char>(path);
             return invokeRequest(move(request));
         }
 
-        Result createDirectory(util::StringView path) {
+        Result createDirectory(StringView path) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 2);
             request.addInPointer<char>(path);
             return invokeRequest(move(request));
         }
 
-        Result deleteDirectory(util::StringView path) {
+        Result deleteDirectory(StringView path) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 3);
             request.addInPointer<char>(path);
             return invokeRequest(move(request));
         }
 
-        Result deleteDirectoryRecursive(util::StringView path) {
+        Result deleteDirectoryRecursive(StringView path) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 4);
             request.addInPointer<char>(path);
             return invokeRequest(move(request));
         }
 
-        Result renameFile(util::StringView oldPath, util::StringView newPath) {
+        Result renameFile(StringView oldPath, StringView newPath) {
             ASSERT_PATH_LEN(oldPath);
             ASSERT_PATH_LEN(newPath);
             auto request = sf::Request(this, 5);
@@ -70,7 +70,7 @@ namespace hk::fsp {
             return invokeRequest(move(request));
         }
 
-        Result renameDirectory(util::StringView oldPath, util::StringView newPath) {
+        Result renameDirectory(StringView oldPath, StringView newPath) {
             ASSERT_PATH_LEN(oldPath);
             ASSERT_PATH_LEN(newPath);
             auto request = sf::Request(this, 6);
@@ -79,14 +79,14 @@ namespace hk::fsp {
             return invokeRequest(move(request));
         }
 
-        ValueOrResult<IFile> openFile(util::StringView path, FileMode mode) {
+        ValueOrResult<IFile> openFile(StringView path, FileMode mode) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 8, &mode);
             request.addInPointer<char>(path);
             return IFile(HK_TRY(invokeRequest(move(request), sf::subserviceExtractor(this))));
         }
 
-        ValueOrResult<sf::Service> openDirectory(util::StringView path, DirectoryFilter filter) {
+        ValueOrResult<sf::Service> openDirectory(StringView path, DirectoryFilter filter) {
             ASSERT_PATH_LEN(path);
             auto request = sf::Request(this, 9, &filter);
             request.addInPointer<char>(path);

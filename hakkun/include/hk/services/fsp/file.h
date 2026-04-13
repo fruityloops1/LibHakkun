@@ -13,7 +13,7 @@ namespace hk::fsp {
             : sf::Service(forward<sf::Service>(service)) { }
 
         template <typename T>
-        ValueOrResult<u64> read(util::Span<T> data, s64 offset) {
+        ValueOrResult<u64> read(Span<T> data, s64 offset) {
             auto input = sf::packInput(u32(0), offset, u64(data.size()));
             auto request = sf::Request(this, 0, &input);
             request.addOutMapAlias(data, sf::hipc::BufferMode::NonSecure);
@@ -21,7 +21,7 @@ namespace hk::fsp {
         }
 
         template <typename T>
-        Result write(util::Span<const T> data, s64 offset, bool flush = false) {
+        Result write(Span<const T> data, s64 offset, bool flush = false) {
             auto input = sf::packInput(u32(flush), offset, u64(data.size()));
             auto request = sf::Request(this, 1, &input);
             request.addInMapAlias(data, sf::hipc::BufferMode::NonSecure);

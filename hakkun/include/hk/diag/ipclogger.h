@@ -1,11 +1,11 @@
 #pragma once
 
+#include "hk/container/Span.h"
 #include "hk/sf/sf.h"
 #include "hk/svc/api.h"
 #include "hk/util/Stream.h"
 #include <atomic>
 #include <limits>
-#include "hk/util/Span.h"
 
 namespace hk::diag::ipclogger {
     class IpcLogger {
@@ -18,7 +18,7 @@ namespace hk::diag::ipclogger {
             return !session || session == cInvalidSession;
         }
 
-        void logImpl(util::Span<const u8> buffer, u16 tag) {
+        void logImpl(Span<const u8> buffer, u16 tag) {
             if (isDisconnected())
                 return;
 
@@ -33,11 +33,11 @@ namespace hk::diag::ipclogger {
     public:
         static IpcLogger* instance();
 
-        void logWithLine(util::Span<const u8> buffer) {
+        void logWithLine(Span<const u8> buffer) {
             logImpl(buffer, 0);
         }
 
-        void logWithoutLine(util::Span<const u8> buffer) {
+        void logWithoutLine(Span<const u8> buffer) {
             logImpl(buffer, 1);
         }
     };
