@@ -34,6 +34,8 @@ namespace hk {
             friend SpanOperationsWithBufferPointer<T, Storage>;
             friend SpanOperations<T, Storage>;
 
+            using Storage::cTypeName;
+
             constexpr SpanOperationsBase() = default;
             NON_COPYABLE(SpanOperationsBase);
             NON_MOVABLE(SpanOperationsBase);
