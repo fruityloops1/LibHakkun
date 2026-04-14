@@ -16,6 +16,8 @@ namespace hk {
             hk_alwaysinline constexpr T* getData() { return mData; }
             const hk_alwaysinline constexpr T* getDataConst() const { return mData; }
             hk_alwaysinline constexpr static size getSize() { return Length; }
+
+            static constexpr char cTypeName[] = "hk::Array";
         };
 
     } // namespace detail
