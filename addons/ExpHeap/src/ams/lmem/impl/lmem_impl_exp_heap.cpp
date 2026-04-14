@@ -372,7 +372,7 @@ namespace ams::lmem::impl {
             return ConvertFreeBlockToUsedBlock(exp_heap_head, found_block_head, found_block, size, AllocationDirection_Back);
         }
 
-    }
+    } // namespace
 
     HeapHandle CreateExpHeap(void* address, size_t size, u32 option) {
         const uintptr_t uptr_end = hk::alignDown(reinterpret_cast<uintptr_t>(address) + size, MinimumAlignment);
@@ -605,6 +605,22 @@ namespace ams::lmem::impl {
         return old_mode;
     }
 
+    bool GetExpHeapUseMarginsOfAlignment(HeapHandle handle) {
+        HK_ASSERT(IsValidHeapHandle(handle));
+
+        const ExpHeapHead* exp_heap_head = GetExpHeapHead(handle);
+        return exp_heap_head->use_alignment_margins;
+    }
+
+    bool SetExpHeapUseMarginsOfAlignment(HeapHandle handle, bool use_margins) {
+        HK_ASSERT(IsValidHeapHandle(handle));
+
+        ExpHeapHead* exp_heap_head = GetExpHeapHead(handle);
+        const bool old_use_margins = exp_heap_head->use_alignment_margins;
+        exp_heap_head->use_alignment_margins = use_margins;
+        return old_use_margins;
+    }
+
     u16 GetExpHeapGroupId(HeapHandle handle) {
         HK_ASSERT(IsValidHeapHandle(handle));
 
@@ -647,4 +663,4 @@ namespace ams::lmem::impl {
         return GetMemoryBlockAllocationDirection(GetHeadForMemoryBlock(memory_block));
     }
 
-}
+} // namespace ams::lmem::impl
