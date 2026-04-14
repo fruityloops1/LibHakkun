@@ -40,83 +40,83 @@ namespace hk::util {
     struct Vector2 {
         T x = 0, y = 0;
 
-        Vector2() = default;
-        Vector2(T x, T y)
+        constexpr Vector2() = default;
+        constexpr Vector2(T x, T y)
             : x(x)
             , y(y) { }
 
-        Vector2 operator+(const Vector2& rhs) const {
+        constexpr Vector2 operator+(const Vector2& rhs) const {
             return { x + rhs.x, y + rhs.y };
         }
-        Vector2 operator-(const Vector2& rhs) const {
+        constexpr Vector2 operator-(const Vector2& rhs) const {
             return { x - rhs.x, y - rhs.y };
         }
-        Vector2 operator*(const Vector2& rhs) const {
+        constexpr Vector2 operator*(const Vector2& rhs) const {
             return { x * rhs.x, y * rhs.y };
         }
-        Vector2 operator/(const Vector2& rhs) const {
+        constexpr Vector2 operator/(const Vector2& rhs) const {
             return { x / rhs.x, y / rhs.y };
         }
 
-        Vector2& operator+=(const Vector2& rhs) {
+        constexpr Vector2& operator+=(const Vector2& rhs) {
             x += rhs.x;
             y += rhs.y;
             return *this;
         }
-        Vector2& operator-=(const Vector2& rhs) {
+        constexpr Vector2& operator-=(const Vector2& rhs) {
             x -= rhs.x;
             y -= rhs.y;
             return *this;
         }
-        Vector2& operator*=(const Vector2& rhs) {
+        constexpr Vector2& operator*=(const Vector2& rhs) {
             x *= rhs.x;
             y *= rhs.y;
             return *this;
         }
-        Vector2& operator/=(const Vector2& rhs) {
+        constexpr Vector2& operator/=(const Vector2& rhs) {
             x /= rhs.x;
             y /= rhs.y;
             return *this;
         }
 
-        Vector2 operator+(T v) {
+        constexpr Vector2 operator+(T v) {
             return { x + v, y + v };
         }
-        Vector2 operator-(T v) {
+        constexpr Vector2 operator-(T v) {
             return { x - v, y - v };
         }
-        Vector2 operator*(T v) {
+        constexpr Vector2 operator*(T v) {
             return { x * v, y * v };
         }
-        Vector2 operator/(T v) {
+        constexpr Vector2 operator/(T v) {
             return { x / v, y / v };
         }
 
-        Vector2& operator+=(T v) {
+        constexpr Vector2& operator+=(T v) {
             x += v;
             y += v;
             return *this;
         }
-        Vector2& operator-=(T v) {
+        constexpr Vector2& operator-=(T v) {
             x -= v;
             y -= v;
             return *this;
         }
-        Vector2& operator*=(T v) {
+        constexpr Vector2& operator*=(T v) {
             x *= v;
             y *= v;
             return *this;
         }
-        Vector2& operator/=(T v) {
+        constexpr Vector2& operator/=(T v) {
             x /= v;
             y /= v;
         }
 
-        T length() {
+        constexpr T length() {
             return std::sqrt(x * x + y * y);
         }
 
-        Vector2& normalize() {
+        constexpr Vector2& normalize() {
             const T len = length();
             if (len > 0) {
                 const T invLen = 1 / len;
@@ -126,13 +126,13 @@ namespace hk::util {
             return *this;
         }
 
-        operator Vector2<f32>() const {
+        constexpr operator Vector2<f32>() const {
             return Vector2<f32>(f32(x), f32(y));
         }
-        operator Vector2<f64>() const {
+        constexpr operator Vector2<f64>() const {
             return Vector2<f64>(f64(x), f64(y));
         }
-        operator Vector2<int>() const {
+        constexpr operator Vector2<int>() const {
             return Vector2<int>(int(x), int(y));
         }
     };
@@ -145,92 +145,92 @@ namespace hk::util {
     struct Vector3 {
         T x = 0, y = 0, z = 0;
 
-        Vector3() = default;
-        Vector3(T x, T y, T z)
+        constexpr Vector3() = default;
+        constexpr Vector3(T x, T y, T z)
             : x(x)
             , y(y)
             , z(z) { }
 
-        Vector3 operator+(const Vector3& rhs) const {
+        constexpr Vector3 operator+(const Vector3& rhs) const {
             return { x + rhs.x, y + rhs.y, z + rhs.z };
         }
-        Vector3 operator-(const Vector3& rhs) const {
+        constexpr Vector3 operator-(const Vector3& rhs) const {
             return { x - rhs.x, y - rhs.y, z - rhs.z };
         }
-        Vector3 operator*(const Vector3& rhs) const {
+        constexpr Vector3 operator*(const Vector3& rhs) const {
             return { x * rhs.x, y * rhs.y, z * rhs.z };
         }
-        Vector3 operator/(const Vector3& rhs) const {
+        constexpr Vector3 operator/(const Vector3& rhs) const {
             return { x / rhs.x, y / rhs.y, z / rhs.z };
         }
 
-        Vector3& operator+=(const Vector3& rhs) {
+        constexpr Vector3& operator+=(const Vector3& rhs) {
             x += rhs.x;
             y += rhs.y;
             z += rhs.z;
             return *this;
         }
-        Vector3& operator-=(const Vector3& rhs) {
+        constexpr Vector3& operator-=(const Vector3& rhs) {
             x -= rhs.x;
             y -= rhs.y;
             z -= rhs.z;
             return *this;
         }
-        Vector3& operator*=(const Vector3& rhs) {
+        constexpr Vector3& operator*=(const Vector3& rhs) {
             x *= rhs.x;
             y *= rhs.y;
             z *= rhs.z;
             return *this;
         }
-        Vector3& operator/=(const Vector3& rhs) {
+        constexpr Vector3& operator/=(const Vector3& rhs) {
             x /= rhs.x;
             y /= rhs.y;
             z /= rhs.z;
             return *this;
         }
 
-        Vector3 operator+(T v) {
+        constexpr Vector3 operator+(T v) {
             return { x + v, y + v, z + v };
         }
-        Vector3 operator-(T v) {
+        constexpr Vector3 operator-(T v) {
             return { x - v, y - v, z - v };
         }
-        Vector3 operator*(T v) {
+        constexpr Vector3 operator*(T v) {
             return { x * v, y * v, z * v };
         }
-        Vector3 operator/(T v) {
+        constexpr Vector3 operator/(T v) {
             return { x / v, y / v, z / v };
         }
 
-        Vector3& operator+=(T v) {
+        constexpr Vector3& operator+=(T v) {
             x += v;
             y += v;
             z += v;
             return *this;
         }
-        Vector3& operator-=(T v) {
+        constexpr Vector3& operator-=(T v) {
             x -= v;
             y -= v;
             z -= v;
             return *this;
         }
-        Vector3& operator*=(T v) {
+        constexpr Vector3& operator*=(T v) {
             x *= v;
             y *= v;
             z *= v;
             return *this;
         }
-        Vector3& operator/=(T v) {
+        constexpr Vector3& operator/=(T v) {
             x /= v;
             y /= v;
             z /= v;
         }
 
-        T length() {
+        constexpr T length() {
             return std::sqrt(x * x + y * y + z * z);
         }
 
-        Vector3& normalize() {
+        constexpr Vector3& normalize() {
             const T len = length();
             if (len > 0) {
                 const T invLen = 1 / len;
@@ -240,13 +240,13 @@ namespace hk::util {
             return *this;
         }
 
-        operator Vector3<f32>() const {
+        constexpr operator Vector3<f32>() const {
             return Vector3<f32>(f32(x), f32(y), f32(z));
         }
-        operator Vector3<f64>() const {
+        constexpr operator Vector3<f64>() const {
             return Vector3<f64>(f64(x), f64(y), f64(z));
         }
-        operator Vector3<int>() const {
+        constexpr operator Vector3<int>() const {
             return Vector3<int>(int(x), int(y), int(z));
         }
     };
