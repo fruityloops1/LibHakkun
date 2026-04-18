@@ -4,12 +4,12 @@
 #include "hk/ValueOrResult.h"
 #include "hk/container/FixedVec.h"
 #include "hk/diag/diag.h"
+#include "hk/prim/traits/Function.h"
 #include "hk/sf/cmif.h"
 #include "hk/sf/hipc.h"
 #include "hk/svc/api.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
-#include "hk/util/Lambda.h"
 #include "hk/util/Stream.h"
 #include <cstddef>
 #include <cstring>

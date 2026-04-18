@@ -3,8 +3,8 @@
 #include "hk/Result.h"
 #include "hk/diag/diag.h"
 #include "hk/diag/results.h"
+#include "hk/prim/traits/Function.h"
 #include "hk/util/Algorithm.h"
-#include "hk/util/Lambda.h"
 #include "hk/util/TemplateString.h"
 #include "hk/util/TypeName.h"
 #include <memory>

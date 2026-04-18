@@ -3,9 +3,9 @@
 #include "hk/Result.h"
 #include "hk/hook/InstrUtil.h"
 #include "hk/hook/results.h"
+#include "hk/prim/traits/Function.h"
 #include "hk/ro/RoUtil.h"
 #include "hk/util/Context.h"
-#include "hk/util/Lambda.h"
 #include <type_traits>
 
 namespace hk::hook {

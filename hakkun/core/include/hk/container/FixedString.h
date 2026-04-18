@@ -3,8 +3,8 @@
 #include "hk/container/Array.h"
 #include "hk/container/Span.h"
 #include "hk/container/StringView.h"
+#include "hk/prim/traits/Function.h"
 #include "hk/types.h"
-#include "hk/util/Lambda.h"
 #include <algorithm>
 #include <cstdarg>
 #include <format>
