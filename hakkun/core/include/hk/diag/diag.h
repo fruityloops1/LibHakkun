@@ -38,14 +38,14 @@ namespace hk::diag {
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
-#define HK_ASSERT(CONDITION, ...)                                                                       \
-    do {                                                                                                \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                            \
-        if (_condition_temp == false) {                                                                 \
-            if (__builtin_is_constant_evaluated())                                                      \
-                ::hk::diag::detail::abortConstexpr("AssertionFailed: " FMT __VA_OPT__(, ) __VA_ARGS__); \
-            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAssertionFailure());     \
-        }                                                                                               \
+#define HK_ASSERT(CONDITION, ...)                                                                   \
+    do {                                                                                            \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                        \
+        if (_condition_temp == false) {                                                             \
+            if (__builtin_is_constant_evaluated())                                                  \
+                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION);                 \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__>(::hk::diag::ResultAssertionFailure()); \
+        }                                                                                           \
     } while (0)
 
 #define HK_ABORT(FMT, ...)                                                                                      \
