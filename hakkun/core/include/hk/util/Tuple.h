@@ -85,7 +85,7 @@ namespace hk {
     struct OutTuple<A&> {
         A& a;
 
-        constexpr OutTuple& operator=(const Tuple<A>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A>& v) {
             a = v.a;
             return *this;
         }
@@ -96,7 +96,7 @@ namespace hk {
         A& a;
         B& b;
 
-        constexpr OutTuple& operator=(const Tuple<A, B>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B>& v) {
             a = v.a;
             b = v.b;
             return *this;
@@ -109,7 +109,7 @@ namespace hk {
         B& b;
         C& c;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C>& v) {
             a = v.a;
             b = v.b;
             c = v.c;
@@ -124,7 +124,7 @@ namespace hk {
         C& c;
         D& d;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C, D>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D>& v) {
             a = v.a;
             b = v.b;
             c = v.c;
@@ -141,7 +141,7 @@ namespace hk {
         D& d;
         E& e;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E>& v) {
             a = v.a;
             b = v.b;
             c = v.c;
@@ -160,7 +160,7 @@ namespace hk {
         E& e;
         F& f;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F>& v) {
             a = v.a;
             b = v.b;
             c = v.c;
@@ -181,7 +181,7 @@ namespace hk {
         F& f;
         G& g;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G>& v) {
             a = v.a;
             b = v.b;
             c = v.c;
@@ -204,7 +204,7 @@ namespace hk {
         G& g;
         H& h;
 
-        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G, H>&& v) {
+        constexpr OutTuple& operator=(const Tuple<A, B, C, D, E, F, G, H>& v) {
             a = v.a;
             b = v.b;
             c = v.c;

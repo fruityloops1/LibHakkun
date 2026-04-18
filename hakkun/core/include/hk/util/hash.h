@@ -345,7 +345,7 @@ namespace hk::util {
     }
 
     template <typename T>
-    hk_alwaysinline u32 hashMurmur64T(const T& value) {
+    hk_alwaysinline u64 hashMurmur64T(const T& value) {
         struct {
             u8 data[sizeof(T)];
         } data = pun<typeof(data)>(value);
@@ -365,7 +365,7 @@ namespace hk::util {
 
     template <>
     struct MurmurHash3<const char*> {
-        static size hash(const char* str) {
+        constexpr static size hash(const char* str) {
             if constexpr (is64Bit())
                 return hashMurmur64(str);
             else
@@ -376,14 +376,14 @@ namespace hk::util {
 #ifdef HK_ADDON_Sead
     template <Derived<sead::SafeString> T>
     struct MurmurHash3<T> {
-        static size hash(const T& str) {
+        constexpr static size hash(const T& str) {
             return MurmurHash3<const char*>::hash(str.cstr());
         }
     };
 #endif
 
     template <size N>
-    hk_alwaysinline bool isEqualStringHash(const char* str, const char (&literal)[N], u32 seed = 0) {
+    hk_alwaysinline constexpr bool isEqualStringHash(const char* str, const char (&literal)[N], u32 seed = 0) {
         constexpr u32 literalHash = hashMurmur(literal, seed);
         return hashMurmur(str, seed) == literalHash;
     }
