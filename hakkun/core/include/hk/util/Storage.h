@@ -2,51 +2,61 @@
 
 #include "hk/diag/diag.h"
 #include "hk/types.h"
+#include "hk/util/Algorithm.h"
 #include <new> // IWYU pragma: keep
 #include <utility>
 
 namespace hk::util {
 
     /**
-     * @brief Object of which the lifetime is manually managed by the user of the class
+     * @brief Object the lifetime of which is manually managed by the user of the class
      *
      * @tparam T Object
      */
     template <typename T>
     class Storage {
-        alignas(alignof(T)) u8 mStorage[sizeof(T)] { 0 };
+        union {
+            T mInstance;
+        };
         bool mAlive = false;
 
-        void destroyImpl() {
-            getUnsafe()->~T();
+        constexpr void destroyImpl() {
+            mInstance.~T();
             mAlive = false;
         }
 
         template <typename... Args>
-        void createImpl(Args&&... args) {
-            new (getUnsafe()) T(std::forward<Args>(args)...);
+        constexpr void createImpl(Args&&... args) {
+            construct_at(&mInstance, forward<Args>(args)...);
             mAlive = true;
         }
 
     public:
-        T* getUnsafe() { return cast<T*>(mStorage); }
+        constexpr Storage() { }
 
-        bool isAlive() const { return mAlive; }
+        constexpr ~Storage() {
+            tryDestroy();
+        }
 
-        bool tryDestroy() {
+        constexpr T* getUnsafe() { return &mInstance; }
+        constexpr const T* getUnsafe() const { return &mInstance; }
+
+        constexpr bool isAlive() const { return mAlive; }
+
+        constexpr bool tryDestroy() {
             if (!mAlive)
                 return false;
             destroy();
             return true;
         }
 
-        void destroy() {
+        constexpr void destroy() {
             HK_ASSERT(mAlive);
             destroyImpl();
         }
 
         template <typename... Args>
-        bool tryCreate(Args&&... args) {
+        constexpr bool tryCreate(Args&&... args) {
             if (mAlive)
                 return false;
             createImpl(std::forward<Args>(args)...);
@@ -54,27 +64,34 @@ namespace hk::util {
         }
 
         template <typename... Args>
-        void create(Args&&... args) {
+        constexpr void create(Args&&... args) {
             HK_ASSERT(!mAlive);
             createImpl(std::forward<Args>(args)...);
         }
 
-        T take() {
-            HK_ASSERT(mAlive);
-            T value = move(*getUnsafe());
+        constexpr hk::ValueOrResult<T> take() {
+            HK_UNLESS(mAlive, hk::ResultNoValue());
+            T value = move(mInstance);
             destroyImpl();
             return move(value);
         }
 
-        T* get() {
+        constexpr T* get() {
             HK_ASSERT(mAlive);
-            return getUnsafe();
+            return &mInstance;
         }
 
-        T* tryGet() {
-            if (!mAlive)
-                return nullptr;
-            return getUnsafe();
+        constexpr const T* get() const {
+            HK_ASSERT(mAlive);
+            return &mInstance;
+        }
+
+        constexpr T* tryGet() {
+            return mAlive ? &mInstance : nullptr;
+        }
+
+        constexpr const T* tryGet() const {
+            return mAlive ? &mInstance : nullptr;
         }
     };
 
