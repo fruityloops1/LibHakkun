@@ -62,7 +62,7 @@ namespace hk::util {
             checkReadOnly();
 
             if (hasSize() && mCursor + dataSize > mSize)
-                return hk::ResultOutOfRange();
+                return MAKE_RESULT(hk::ResultOutOfRange());
 
             memcpy(cast<void*>(mBuffer + mCursor), data, dataSize);
             mCursor += dataSize;
@@ -139,7 +139,7 @@ namespace hk::util {
 
         hk::Result tryRead(void* out, size dataSize) {
             if (hasSize() && mCursor + dataSize > mSize)
-                return hk::ResultOutOfRange();
+                return MAKE_RESULT(hk::ResultOutOfRange());
 
             memcpy(out, cast<const void*>(mBuffer + mCursor), dataSize);
             mCursor += dataSize;

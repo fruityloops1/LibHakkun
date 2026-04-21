@@ -83,7 +83,7 @@ namespace hk {
 
             auto [ref, info] = detail::ResultDebugReference::allocate();
 
-            ResultBase out = makeResult(value.getDescription(), value.getModule(), ref);
+            ResultBase out = makeResult(value.getModule(), value.getDescription(), ref);
 
             info = inInfo;
             info.parentRef = value.getDebugRef();
