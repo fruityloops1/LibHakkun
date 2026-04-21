@@ -138,6 +138,13 @@ namespace hk {
                 copy(out, N);
             }
 
+            constexpr bool includes(const T& value) const {
+                for (const T& cmp : *this)
+                    if (value == cmp)
+                        return true;
+                return false;
+            }
+
         protected:
             using Storage::getData;
             using Storage::getDataConst;
@@ -391,6 +398,9 @@ namespace hk {
         constexpr SpanOperationsWithBufferPointer(const std::span<const T>& other) = delete;
         constexpr SpanOperationsWithBufferPointer(const std::span<T>& other)
             : Super(other.data(), other.size()) { }
+
+        constexpr SpanOperationsWithBufferPointer(std::initializer_list<T> data)
+            : Super(data.begin(), data.size()) { }
     };
 
     template <typename T, typename Storage>
@@ -408,6 +418,9 @@ namespace hk {
             : Super(other.data(), other.size()) { }
         constexpr SpanOperationsWithBufferPointer(const std::span<T>& other)
             : Super(other.data(), other.size()) { }
+
+        constexpr SpanOperationsWithBufferPointer(std::initializer_list<T> data)
+            : Super(data.begin(), data.size()) { }
     };
 
 #define HK_SPANOPERATIONSWITHBUFFERPOINTER_DEDUCTION_GUIDE(TYPE, DESIRED)         \
@@ -415,7 +428,9 @@ namespace hk {
     template <typename T>                                                         \
     TYPE(const ::std::span<T>&)->DESIRED;                                         \
     template <typename T>                                                         \
-    TYPE(const ::std::span<const T>&)->DESIRED
+    TYPE(const ::std::span<const T>&)->DESIRED;                                   \
+    template <typename T>                                                         \
+    TYPE(std::initializer_list<T>)->DESIRED
 
     namespace detail {
 
