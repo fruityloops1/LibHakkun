@@ -1,5 +1,5 @@
-include(sys/cmake/module_config.cmake)
-include(sys/cmake/visibility.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/module_config.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/visibility.cmake)
 
 function(add_rtld_standalone)
     add_executable(rtld

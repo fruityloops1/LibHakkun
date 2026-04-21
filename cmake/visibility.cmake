@@ -1,4 +1,4 @@
-include(sys/cmake/watch.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/watch.cmake)
 
 set_property(GLOBAL PROPERTY VISIBILITY_SYMBOLS_LIST "")
 

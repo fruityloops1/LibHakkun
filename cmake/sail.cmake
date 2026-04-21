@@ -6,7 +6,7 @@ set(SAIL_LIBS
     )
 
 include(config/config.cmake)
-include(sys/cmake/watch.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/watch.cmake)
 set(SAIL_REVISION K)
 
 function (usesail lib)

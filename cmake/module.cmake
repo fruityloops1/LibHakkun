@@ -1,8 +1,8 @@
 include(config/config.cmake)
-include(sys/cmake/apply_config.cmake)
-include(sys/cmake/generate_exefs.cmake)
-include(sys/cmake/addons.cmake)
-include(sys/cmake/module_config.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/apply_config.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/generate_exefs.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/addons.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/module_config.cmake)
 
 if (MODULE_BINARY STREQUAL "rtld")
     message(FATAL_ERROR "Hakkun cannot be used in place of rtld")

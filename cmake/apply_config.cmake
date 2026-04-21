@@ -1,8 +1,7 @@
+include(${CMAKE_CURRENT_LIST_DIR}/apply_config_core.cmake)
+
 function(apply_config project)
-    foreach(item IN LISTS LLDFLAGS)
-        list(APPEND LLDFLAGS_WL "-Wl,${item}")
-    endforeach()
-    target_link_options(${project} PRIVATE ${LLDFLAGS_WL})
+    apply_config_core(${project})
 
     if (TARGET_IS_STATIC)
         target_compile_definitions(${project} PRIVATE TARGET_IS_STATIC)
@@ -26,30 +25,9 @@ function(apply_config project)
 
     target_compile_definitions(${project} PRIVATE NNSDK HK_HOOK_TRAMPOLINE_POOL_SIZE=${TRAMPOLINE_POOL_SIZE} MODULE_NAME=${MODULE_NAME})
 
-    target_include_directories(${project} PRIVATE ${INCLUDES})
-    target_compile_definitions(${project} PRIVATE ${DEFINITIONS})
-
     if (BAKE_SYMBOLS)
         target_compile_definitions(${project} PRIVATE HK_USE_PRECALCULATED_SYMBOL_DB_HASHES)
     endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL Release)
-        set(OPTIMIZE_OPTIONS ${OPTIMIZE_OPTIONS_RELEASE})
-    else()
-        set(OPTIMIZE_OPTIONS ${OPTIMIZE_OPTIONS_DEBUG})
-    endif()
-
-    target_compile_options(${project} PRIVATE
-        $<$<COMPILE_LANGUAGE:ASM>:${ASM_OPTIONS}>
-    )
-    target_compile_options(${project} PRIVATE
-        $<$<COMPILE_LANGUAGE:C>:${OPTIMIZE_OPTIONS} ${WARN_OPTIONS} ${C_OPTIONS}>
-    )
-    target_compile_options(${project} PRIVATE
-        $<$<COMPILE_LANGUAGE:CXX>:${OPTIMIZE_OPTIONS} ${WARN_OPTIONS} ${C_OPTIONS} ${CXX_OPTIONS}>
-    )
-    
-    target_link_options(${project} PRIVATE ${LINKFLAGS} ${OPTIMIZE_OPTIONS})
     
     target_compile_definitions(${project} PRIVATE HK_TITLE_ID=${TITLE_ID})
 endfunction()

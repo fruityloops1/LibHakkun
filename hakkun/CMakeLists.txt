@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.5)
 include(../../config/config.cmake)
 include(../cmake/apply_config.cmake)
 
+set(HAKKUN_CORE_CONFIG_FILE ${CMAKE_CURRENT_LIST_DIR}/../../config/config.cmake)
+
 add_subdirectory(core)
 
 set(SOURCES
@@ -62,6 +64,7 @@ target_include_directories(LibHakkunForModule PUBLIC include)
 target_link_libraries(LibHakkun PUBLIC LibHakkunCore)
 target_link_libraries(LibHakkunForModule PUBLIC LibHakkunCore)
 
+apply_config(LibHakkunCore)
 apply_config(LibHakkun)
 apply_config(LibHakkunForModule)
 
