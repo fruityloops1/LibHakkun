@@ -20,7 +20,7 @@ extern ResultNameEntry cResultNames[];
 extern const size cMaxNames;
 static size cNumResultNames = 0;
 
-template <hk::Derived<hk::Result> Result>
+template <hk::Derived<hk::ResultBase> Result>
 struct AddResultName {
     AddResultName() {
         if (cNumResultNames >= cMaxNames)
@@ -54,7 +54,7 @@ const size cMaxNames = cResultCount;
 
 namespace hk::diag {
 
-    const char* getResultName(hk::Result result) {
+    const char* getResultName(hk::ResultBase result) {
         for (size i = 0; i < cResultCount; i++) {
             if (cResultNames[i].value == result.getValue())
                 return cResultNames[i].name;

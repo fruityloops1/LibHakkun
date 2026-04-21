@@ -1,4 +1,5 @@
 #include "hk/diag/diag.h"
+#include "hk/util/Algorithm.h"
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -50,7 +51,7 @@ namespace hk::diag {
                     const u8* d = module->getBuildId();
 
                     static_assert(ro::cBuildIdSize == 0x10);
-                    logLine("\tReturn[%02d]: %016zX ([%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x] + 0x%zx)", level - 1, address, module->getBuildId(),
+                    logLine("\tReturn[%02d]: %016zX ([%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x] + 0x%zx)", level - 1, address,
                         d[0], d[1], d[2], d[3],
                         d[4], d[5], d[6], d[7],
                         d[8], d[9], d[10], d[11],
@@ -85,6 +86,38 @@ namespace hk::diag {
     }
 #endif
 
+#if HK_RESULT_ADVANCED
+    void dumpResultTrace(Result result) {
+        const char* resultName = getResultName(result);
+
+        resultName ? logLine("Result Trace from Result[%s]:", resultName)
+                   : logLine("Result Trace from Result[%04d-%04d/0x%x]:", result.getModule() + 2000, result.getDescription(), result.getValue());
+
+        const hk::detail::ResultDebugReference* curInfo = result.getInfo();
+        size numInfos = curInfo != nullptr;
+
+        if (curInfo != nullptr)
+            numInfos += curInfo->calcNumParents();
+
+        const hk::detail::ResultDebugReference* infos[numInfos];
+        {
+            size i = 0;
+
+            while (curInfo != nullptr) {
+                infos[i++] = curInfo;
+                curInfo = curInfo->getParent();
+            }
+        }
+
+        util::reverseCopy(infos, numInfos);
+
+        for (size i = 0; i < numInfos; i++) {
+            curInfo = infos[i];
+            logLine("\t%s:%d: from %s", curInfo->sourceFile, curInfo->sourceLine, curInfo->expr);
+        }
+    }
+#endif
+
     constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~
 File: %s:%d
@@ -114,6 +147,7 @@ File: %s:%d
         log(cAbortFormat, file, line);
         logLineImpl(msgFmt, listCopy);
 
+        dumpResultTrace(result);
         dumpStackTrace();
 
         auto* module = ro::getSelfModule();
@@ -145,7 +179,7 @@ File: %s:%d
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void logBuffer(const char* buf, size length) {
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length }));
+        // HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length }));
         hkLogSink(buf, length);
     }
 
@@ -156,7 +190,7 @@ File: %s:%d
         char buf[len + 1];
         vsnprintf(buf, len + 1, fmt, listCopy);
 
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len }));
+        // HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len }));
         buf[len] = '\0';
         hkLogSink(buf, len);
     }
@@ -174,7 +208,7 @@ File: %s:%d
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 2];
         vsnprintf(buf, len + 2, fmt, listCopy);
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len }));
+        // HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len }));
 
         buf[len] = '\n';
         buf[len + 1] = '\0';

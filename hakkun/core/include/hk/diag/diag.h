@@ -18,15 +18,21 @@ namespace hk::diag {
 #endif
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    const char* getResultName(hk::Result result);
+    const char* getResultName(ResultBase result);
 
     [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), HAS_NNSDK_TERNARY(6, 5))]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
     [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), 0)]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
 #else
-    const hk_alwaysinline inline char* getResultName(hk::Result result) { return nullptr; }
+    const hk_alwaysinline inline char* getResultName(ResultBase result) { return nullptr; }
 
     template <util::TemplateString File, int Line>
     hk_noreturn hk_noinline void abortReleaseImpl(Result result, ...) { __builtin_trap(); }
+#endif
+
+#if HK_RESULT_ADVANCED
+    void dumpResultTrace(Result result);
+#else
+    inline hk_alwaysinline void dumpResultTrace(Result result) { }
 #endif
 
     constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
@@ -91,7 +97,7 @@ namespace hk::diag {
                 ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION);       \
             ::hk::diag::abortImpl(                                                        \
                 HAS_NNSDK(::hk::svc::BreakReason_Assert,)                                 \
-                ::hk::diag::ResultAssertionFailure(),                                     \
+                MAKE_RESULT(::hk::diag::ResultAssertionFailure()),                        \
                 __FILE__,                                                                 \
                 __LINE__,                                                                 \
                 ::hk::diag::cAssertionFailFormat,                                         \
@@ -105,7 +111,7 @@ namespace hk::diag {
             ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
         ::hk::diag::abortImpl(                                                  \
             HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
-            ::hk::diag::ResultAbort(),                                          \
+            MAKE_RESULT(::hk::diag::ResultAbort()),                             \
             __FILE__,                                                           \
             __LINE__,                                                           \
             "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
@@ -120,48 +126,48 @@ namespace hk::diag {
                 ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
             ::hk::diag::abortImpl(                                                  \
                 HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
-                ::hk::diag::ResultAbort(),                                          \
+                MAKE_RESULT(::hk::diag::ResultAbort()),                             \
                 __FILE__,                                                           \
                 __LINE__,                                                           \
                 "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
         }                                                                           \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT, ...)                                               \
-    do {                                                                             \
-        const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;         \
-        if (_result_temp.failed()) {                                                 \
-            if (__builtin_is_constant_evaluated())                                   \
-                ::hk::diag::detail::abortConstexpr(                                  \
-                    "ResultAbort",                                                   \
-                    _result_temp.getModule() + 2000,                                 \
-                    _result_temp.getDescription(),                                   \
-                    _result_temp.getValue());                                        \
-            const char* _result_temp_name = ::hk::diag::getResultName(_result_temp); \
-            if (_result_temp_name != nullptr) {                                      \
-                ::hk::diag::abortImpl(                                               \
-                    HAS_NNSDK(::hk::svc::BreakReason_User,)                          \
-                    _result_temp,                                                    \
-                    __FILE__,                                                        \
-                    __LINE__,                                                        \
-                    ::hk::diag::cAbortUnlessResultFormatWithName,                    \
-                    _result_temp.getModule() + 2000,                                 \
-                    _result_temp.getDescription(),                                   \
-                    _result_temp_name,                                               \
-                    #RESULT);                                                        \
-            } else {                                                                 \
-                ::hk::diag::abortImpl(                                               \
-                    HAS_NNSDK(::hk::svc::BreakReason_User,)                          \
-                    _result_temp,                                                    \
-                    __FILE__,                                                        \
-                    __LINE__,                                                        \
-                    ::hk::diag::cAbortUnlessResultFormat,                            \
-                    _result_temp.getModule() + 2000,                                 \
-                    _result_temp.getDescription(),                                   \
-                    _result_temp.getValue(),                                         \
-                    #RESULT);                                                        \
-            }                                                                        \
-        }                                                                            \
+#define HK_ABORT_UNLESS_R(RESULT, ...)                                                    \
+    do {                                                                                  \
+        const ::hk::Result _result_temp = MAKE_RESULT(RESULT __VA_OPT__(, ) __VA_ARGS__); \
+        if (_result_temp.failed()) {                                                      \
+            if (__builtin_is_constant_evaluated())                                        \
+                ::hk::diag::detail::abortConstexpr(                                       \
+                    "ResultAbort",                                                        \
+                    _result_temp.getModule() + 2000,                                      \
+                    _result_temp.getDescription(),                                        \
+                    _result_temp.getValue());                                             \
+            const char* _result_temp_name = ::hk::diag::getResultName(_result_temp);      \
+            if (_result_temp_name != nullptr) {                                           \
+                ::hk::diag::abortImpl(                                                    \
+                    HAS_NNSDK(::hk::svc::BreakReason_User,)                               \
+                    _result_temp,                                                         \
+                    __FILE__,                                                             \
+                    __LINE__,                                                             \
+                    ::hk::diag::cAbortUnlessResultFormatWithName,                         \
+                    _result_temp.getModule() + 2000,                                      \
+                    _result_temp.getDescription(),                                        \
+                    _result_temp_name,                                                    \
+                    #RESULT);                                                             \
+            } else {                                                                      \
+                ::hk::diag::abortImpl(                                                    \
+                    HAS_NNSDK(::hk::svc::BreakReason_User,)                               \
+                    _result_temp,                                                         \
+                    __FILE__,                                                             \
+                    __LINE__,                                                             \
+                    ::hk::diag::cAbortUnlessResultFormat,                                 \
+                    _result_temp.getModule() + 2000,                                      \
+                    _result_temp.getDescription(),                                        \
+                    _result_temp.getValue(),                                              \
+                    #RESULT);                                                             \
+            }                                                                             \
+        }                                                                                 \
     } while (0)
 
 #define HK_TODO(...) \

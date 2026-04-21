@@ -84,6 +84,7 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `DEFINITIONS`: Preprocessor definitions
 * `INCLUDES`: Include directories
 * `ASM_OPTIONS`, `C_OPTIONS`, `CXX_OPTIONS`: Various compiler options
+* `USE_ADVANCED_RESULT`: Whether to enable stack trace building in hk::Result. Use hk::ResultNN to mask out extra data for compatibility with nn::Result
 * `IS_32_BIT`: Whether or not target is 32-bit 
 * `TARGET_IS_STATIC`: Whether or not target program has statically linked rtld/sdk. Usually sysmodules or applets do this, Applications do not. Enabling this will also add a dummy RTLD module, to work around an unfortunate decision in `loader`
 * `MODULE_NAME`: Name of your output RTLD module
