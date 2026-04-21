@@ -43,7 +43,7 @@ namespace hk::ro {
 
             Result rc = ResultSuccess();
             if (nnModule == nullptr || nnModule->m_Base == 0)
-                rc = ResultRtldModuleInvalid();
+                rc = MAKE_RESULT(ResultRtldModuleInvalid());
             HK_ABORT_UNLESS_R(rc);
 
             HK_ABORT_UNLESS_R(module.findRanges());
@@ -113,7 +113,7 @@ namespace hk::ro {
             __builtin_memcpy(out, buildId, cBuildIdSize);
             return ResultSuccess();
         }
-        return ResultGnuHashMissing();
+        return MAKE_RESULT(ResultGnuHashMissing());
     }
 
     ptr lookupSymbol(const char* symbol) {

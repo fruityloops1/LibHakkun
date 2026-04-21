@@ -8,9 +8,7 @@
 namespace hk::ro {
 
     Result RoModule::findRanges() {
-        svc::MemoryInfo curRangeInfo;
-        u32 pageInfo;
-        HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, mModule->m_Base));
+        auto [curRangeInfo, pageInfo] = HK_TRY(svc::QueryMemory(mModule->m_Base));
 
         HK_ASSERT(curRangeInfo.base_address == mModule->m_Base);
 
@@ -22,7 +20,7 @@ namespace hk::ro {
 #endif
 
         auto prev = mModule->m_Base;
-        HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, curRangeInfo.base_address + curRangeInfo.size));
+        tie(curRangeInfo, pageInfo) = HK_TRY(svc::QueryMemory(curRangeInfo.base_address + curRangeInfo.size));
 
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_Read, ResultUnusualSectionLayout());
 
@@ -33,7 +31,7 @@ namespace hk::ro {
 #endif
 
         while (curRangeInfo.permission == svc::MemoryPermission_Read)
-            HK_TRY(svc::QueryMemory(&curRangeInfo, &pageInfo, curRangeInfo.base_address + curRangeInfo.size));
+            tie(curRangeInfo, pageInfo) = HK_TRY(svc::QueryMemory(curRangeInfo.base_address + curRangeInfo.size));
 
         HK_UNLESS(curRangeInfo.permission == svc::MemoryPermission_ReadWrite, ResultUnusualSectionLayout());
 
@@ -69,7 +67,7 @@ namespace hk::ro {
             }
         }
 
-        return ResultGnuHashMissing();
+        return MAKE_RESULT(ResultGnuHashMissing());
     }
 
     static RoWriteCallback sRoWriteCallback = nullptr;

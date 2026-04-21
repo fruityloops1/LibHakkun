@@ -88,7 +88,7 @@ namespace hk::hook {
             u32 offset = sh ? imm12 << 12 : imm12;
             *out = page + offset;
         } else
-            return ResultMismatchedInstruction();
+            return MAKE_RESULT(ResultMismatchedInstruction());
         return ResultSuccess();
     }
 

@@ -9,56 +9,56 @@
 
 namespace hk::svc {
 
-    Result QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
-    Result MapMemory(ptr dest, ptr source, size size);
-    Result UnmapMemory(ptr addr, ptr source, size size);
+    ResultNN QueryMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, ptr address);
+    ResultNN MapMemory(ptr dest, ptr source, size size);
+    ResultNN UnmapMemory(ptr addr, ptr source, size size);
     hk_noreturn void ExitProcess();
-    Result CreateThread(Handle* outHandle, ThreadFunc func, ptr arg, ptr stackTop, s32 priority, s32 coreId);
-    Result StartThread(Handle threadHandle);
+    ResultNN CreateThread(Handle* outHandle, ThreadFunc func, ptr arg, ptr stackTop, s32 priority, s32 coreId);
+    ResultNN StartThread(Handle threadHandle);
     hk_noreturn void ExitThread();
     // values 0, -1, and -2 will yield the thread.
     // see https://switchbrew.org/wiki/SVC#SleepThread
     void SleepThread(s64 nanoseconds);
-    Result SetThreadCoreMask(Handle handle, s32 preferredCore, u32 mask);
-    Result CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
-    Result CloseHandle(Handle handle);
-    Result SignalEvent(Handle handle);
-    Result ClearEvent(Handle handle);
-    Result WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
-    Result CancelSynchronization(Handle handle);
-    Result ResetSignal(Handle handle);
-    Result ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
-    Result ArbitrateUnlock(ptr addr);
-    Result ConnectToNamedPort(Handle* outHandle, const char* name);
-    Result SendSyncRequestLight(Handle sessionHandle, u8 data[28]);
-    Result SendSyncRequest(Handle sessionHandle);
-    Result SendSyncRequestWithUserBuffer(ptr buffer, size bufferSize, Handle sessionHandle);
-    hk_noreturn Result Break(BreakReason reason, void* arg, size argSize);
-    Result OutputDebugString(const char* str, size_t len);
+    ResultNN SetThreadCoreMask(Handle handle, s32 preferredCore, u32 mask);
+    ResultNN CreateTransferMemory(Handle* outHandle, ptr address, size size, MemoryPermission perm);
+    ResultNN CloseHandle(Handle handle);
+    ResultNN SignalEvent(Handle handle);
+    ResultNN ClearEvent(Handle handle);
+    ResultNN WaitSynchronization(s32* outIdx, const Handle* handles, s32 numHandles, s64 timeout);
+    ResultNN CancelSynchronization(Handle handle);
+    ResultNN ResetSignal(Handle handle);
+    ResultNN ArbitrateLock(Handle threadHandle, ptr addr, u32 tag);
+    ResultNN ArbitrateUnlock(ptr addr);
+    ResultNN ConnectToNamedPort(Handle* outHandle, const char* name);
+    ResultNN SendSyncRequestLight(Handle sessionHandle, u8 data[28]);
+    ResultNN SendSyncRequest(Handle sessionHandle);
+    ResultNN SendSyncRequestWithUserBuffer(ptr buffer, size bufferSize, Handle sessionHandle);
+    hk_noreturn ResultNN Break(BreakReason reason, void* arg, size argSize);
+    ResultNN OutputDebugString(const char* str, size_t len);
     hk_noreturn void ReturnFromException(Result result);
-    Result CreateSession(Handle* outServerHandle, Handle* outClientHandle, bool isLight, ptr name);
-    Result AcceptSession(Handle* outSessionHandle, Handle portHandle);
-    Result ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
-    Result ReplyAndReceive(u32* outIndex, const Handle* handles, u32 handleCount, Handle replyHandle, u64 timeout);
-    Result CreateEvent(Handle* outWriteHandle, Handle* outReadHandle);
-    Result ManageNamedPort(Handle* outHandle, const char* name, s32 maxSessions);
-    Result GetInfo(u64* out, InfoType type, Handle handle, u64 subType);
-    Result WaitForAddress(const void* address, ArbitrationType type, u32 value, u64 timeout);
-    Result SignalToAddress(void* address, SignalType type, u32 value, u64 timeout);
-    Result InvalidateProcessDataCache(Handle process, ptr addr, size size);
-    Result FlushProcessDataCache(Handle process, ptr addr, size size);
-    Result DebugActiveProcess(Handle* outHandle, u64 processId);
-    Result BreakDebugProcess(Handle debugHandle);
-    Result TerminateDebugProcess(Handle debugHandle);
-    Result GetDebugEvent(DebugEventInfo* outInfo, Handle debugHandle);
-    Result ContinueDebugEvent(Handle debugHandle, u32 flags, const u64* threadIds, s32 numThreadIds);
-    Result GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
-    Result QueryDebugProcessMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, Handle debugHandle, u64 address);
-    Result ReadDebugProcessMemory(void* buffer, Handle debugHandle, u64 address, size size);
-    Result WriteDebugProcessMemory(Handle debugHandle, const void* buffer, u64 address, size size);
-    Result GetSystemInfo(u64* outInfo, SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType);
-    Result MapProcessMemory(ptr dest, Handle process, u64 source, size size);
-    Result CallSecureMonitor(SecmonArgs args);
+    ResultNN CreateSession(Handle* outServerHandle, Handle* outClientHandle, bool isLight, ptr name);
+    ResultNN AcceptSession(Handle* outSessionHandle, Handle portHandle);
+    ResultNN ReplyAndReceiveLight(Handle sessionHandle, u8 data[28]);
+    ResultNN ReplyAndReceive(u32* outIndex, const Handle* handles, u32 handleCount, Handle replyHandle, u64 timeout);
+    ResultNN CreateEvent(Handle* outWriteHandle, Handle* outReadHandle);
+    ResultNN ManageNamedPort(Handle* outHandle, const char* name, s32 maxSessions);
+    ResultNN GetInfo(u64* out, InfoType type, Handle handle, u64 subType);
+    ResultNN WaitForAddress(const void* address, ArbitrationType type, u32 value, u64 timeout);
+    ResultNN SignalToAddress(void* address, SignalType type, u32 value, u64 timeout);
+    ResultNN InvalidateProcessDataCache(Handle process, ptr addr, size size);
+    ResultNN FlushProcessDataCache(Handle process, ptr addr, size size);
+    ResultNN DebugActiveProcess(Handle* outHandle, u64 processId);
+    ResultNN BreakDebugProcess(Handle debugHandle);
+    ResultNN TerminateDebugProcess(Handle debugHandle);
+    ResultNN GetDebugEvent(DebugEventInfo* outInfo, Handle debugHandle);
+    ResultNN ContinueDebugEvent(Handle debugHandle, u32 flags, const u64* threadIds, s32 numThreadIds);
+    ResultNN GetProcessList(s32* outNumProcesses, u64* outProcessIds, s32 maxProcesses);
+    ResultNN QueryDebugProcessMemory(MemoryInfo* outMemoryInfo, u32* outPageInfo, Handle debugHandle, u64 address);
+    ResultNN ReadDebugProcessMemory(void* buffer, Handle debugHandle, u64 address, size size);
+    ResultNN WriteDebugProcessMemory(Handle debugHandle, const void* buffer, u64 address, size size);
+    ResultNN GetSystemInfo(u64* outInfo, SystemInfoType infoType, Handle handle, PhysicalMemorySystemInfo infoSubType);
+    ResultNN MapProcessMemory(ptr dest, Handle process, u64 source, size size);
+    ResultNN CallSecureMonitor(SecmonArgs args);
 
     // ValueOrResult wrappers
 
@@ -95,7 +95,7 @@ namespace hk::svc {
         return outHandle;
     }
 
-    inline hk_alwaysinline Result SendSyncRequestWithUserBuffer(Span<u8> userBuffer, Handle sessionHandle) {
+    inline hk_alwaysinline ResultNN SendSyncRequestWithUserBuffer(Span<u8> userBuffer, Handle sessionHandle) {
         return SendSyncRequestWithUserBuffer(ptr(userBuffer.data()), userBuffer.size_bytes(), sessionHandle);
     }
 
@@ -183,7 +183,7 @@ namespace hk::svc {
 
     // Misc.
 
-    hk_noreturn Result BreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
+    hk_noreturn ResultNN BreakWithMessage(BreakReason reason, void* arg, size argSize, void* headerSym, void* msgSym);
 
     inline hk_alwaysinline ValueOrResult<Handle> getProcessHandleMesosphere() {
         u64 value = 0;

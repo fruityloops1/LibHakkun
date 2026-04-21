@@ -24,7 +24,7 @@ namespace hk::diag::ipclogger {
         stream.seek(0);
         auto header = HK_UNWRAP(stream.read<sf::hipc::Header>());
         if (header.tag == 1)
-            return ResultSessionMoveFailed();
+            return MAKE_RESULT(ResultSessionMoveFailed());
 
         auto special = HK_UNWRAP(stream.read<sf::hipc::SpecialHeader>());
         HK_ASSERT(special.moveHandleCount == 1);
