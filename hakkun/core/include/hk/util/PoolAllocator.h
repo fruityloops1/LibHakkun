@@ -18,16 +18,16 @@ namespace hk::util {
         BitArray<Capacity> mAllocations;
         T* mBuffer = nullptr;
 
-        T* getData(size index) const {
+        constexpr T* getData(size index) const {
             HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid index (%zu not in buffer)", getTypeName<T>(), Capacity, index);
             return mBuffer + index;
         }
 
     public:
-        PoolAllocator(void* buffer)
-            : mBuffer(cast<T*>(buffer)) { }
+        constexpr PoolAllocator(T* buffer)
+            : mBuffer(buffer) { }
 
-        s32 allocateIdx() {
+        constexpr s32 allocateIdx() {
             for (size i = 0; i < Capacity; i++) {
                 if (mAllocations[i] == false) {
                     mAllocations[i] = true;
@@ -37,19 +37,19 @@ namespace hk::util {
             return -1;
         }
 
-        T* allocate() {
+        constexpr T* allocate() {
             s32 idx = allocateIdx();
             return idx == -1 ? nullptr : getData(idx);
         }
 
-        void freeIdx(s32 index) {
+        constexpr void freeIdx(s32 index) {
             HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid free (%d not in buffer)", getTypeName<T>(), Capacity, index);
             HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator<%s, %zu>: double free (idx %d)", getTypeName<T>(), Capacity, index);
 
             mAllocations[index] = false;
         }
 
-        void free(T* data) {
+        constexpr void free(T* data) {
             size index = data - mBuffer;
             HK_ABORT_UNLESS(index >= 0 && index < Capacity, "PoolAllocator<%s, %zu>: invalid free (%p not in buffer)", getTypeName<T>(), Capacity, data);
             HK_ABORT_UNLESS(mAllocations[index] == true, "PoolAllocator<%s, %zu>: double free (ptr %p, idx %zd)", getTypeName<T>(), Capacity, data, index);
@@ -60,11 +60,11 @@ namespace hk::util {
 
     template <typename T, size Capacity>
     class BufferPoolAllocator : public PoolAllocator<T, Capacity> {
-        u8 mData[sizeof(T) * Capacity] { 0 };
+        alignas(T) u8 mData[sizeof(T) * Capacity] { 0 };
 
     public:
-        BufferPoolAllocator()
-            : PoolAllocator<T, Capacity>(mData) { }
+        constexpr BufferPoolAllocator()
+            : PoolAllocator<T, Capacity>(cast<T*>(mData)) { }
     };
 
 } // namespace hk::util

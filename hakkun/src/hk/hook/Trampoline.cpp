@@ -13,7 +13,7 @@ namespace hk::hook {
             return cast<void*>(sRwAddr);
         }
 
-        util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool { mapRw() };
+        util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool { cast<TrampolineBackup*>(mapRw()) };
 
         ptr TrampolineBackup::getRx() const {
             ptr rw = ptr(this);
