@@ -10,7 +10,7 @@ namespace hk {
 
         template <typename T, size Length>
         class ArrayStorage {
-            T mData[Length];
+            T mData[Length] { };
 
         public:
             hk_alwaysinline constexpr T* getData() { return mData; }

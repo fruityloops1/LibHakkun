@@ -206,3 +206,8 @@ namespace hk::diag {
     } // namespace detail
 
 } // namespace hk::diag
+
+#if HK_RESULT_ADVANCED
+#define INCLUDE_HK_CONTAINER_DETAIL_ONEOF
+#include "hk/container/detail/OneOf.ih"
+#endif

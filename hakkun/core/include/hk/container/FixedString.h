@@ -38,7 +38,7 @@ namespace hk {
 
         constexpr FixedStringBase(const T* data)
             : mLength(std::min(std::char_traits<T>::length(data), Capacity - 1)) {
-            std::copy(data, data + mLength, mData);
+            std::copy(data, data + mLength, mData.data());
         }
 
         constexpr FixedStringBase(const FixedStringBase& other)
@@ -49,7 +49,7 @@ namespace hk {
         template <size N>
         constexpr FixedStringBase(const T data[N])
             : mLength(std::min(N - 1, Capacity - 1)) {
-            std::copy(data, data + mLength, mData);
+            std::copy(data, data + mLength, mData.data());
         }
 
         constexpr FixedStringBase(const StringView src) {

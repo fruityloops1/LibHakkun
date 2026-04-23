@@ -1,0 +1,16 @@
+#ifndef INCLUDE_HK_CONTAINER_DETAIL_ONEOF
+#error "do not include"
+#endif
+
+#include "hk/diag/diag.h"
+
+namespace hk {
+
+    template <typename Top, typename Parent, size Index, typename First, typename... Rest>
+    constexpr void detail::OneOfOperations<Top, Parent, Index, First, Rest...>::checkMe() {
+        HK_ABORT_UNLESS(isMe(), "%s: retrieved %s, but type is %s", util::getTypeName<Parent>(), util::getTypeName<Mine>(), static_cast<Top*>(this)->getCurrentTypeName());
+    }
+
+} // namespace hk
+
+#undef INCLUDE_HK_CONTAINER_DETAIL_ONEOF

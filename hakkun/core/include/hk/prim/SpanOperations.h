@@ -506,11 +506,12 @@ namespace hk {
             return *this;
         }
 
+        using Super::setCopy;
+        using Super::setMove;
+
     protected:
         using Super::getData;
         using Super::getSize;
-        using Super::setCopy;
-        using Super::setMove;
     };
 
 #define HK_SPANOPERATIONSCOPYABLE_DEDUCTION_GUIDE(TYPE, DESIRED) \
