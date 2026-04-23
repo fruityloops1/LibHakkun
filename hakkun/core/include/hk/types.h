@@ -30,10 +30,6 @@ using fs64 = int_fast64_t;
 using f32 = float;
 using f64 = double;
 
-using size = size_t;
-using ptrdiff = ptrdiff_t;
-using ptr = uintptr_t;
-
 using std::forward;
 using std::move;
 

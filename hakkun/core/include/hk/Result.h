@@ -3,10 +3,6 @@
 #include "hk/types.h"
 #include "hk/util/TemplateString.h"
 
-#if HK_RESULT_ADVANCED and defined(HK_RELEASE)
-#define HK_RESULT_ADVANCED 0
-#endif
-
 #if HK_RESULT_ADVANCED
 #include "hk/util/Tuple.h"
 #endif
@@ -73,7 +69,7 @@ namespace hk {
 #if HK_RESULT_ADVANCED
         constexpr detail::ResultDebugReference::Ref getDebugRef() const { return this->value >> 22; }
 
-        static constexpr ResultBase makeWithInfo(const ResultBase& value, const detail::ResultDebugReference& inInfo) {
+        static constexpr ResultBase makeWithInfo(ResultBase value, const detail::ResultDebugReference& inInfo) {
             if (value.getModule() == 0 && value.getModule() == value.getDescription())
                 return makeResult(0, 0, 0);
 
@@ -157,7 +153,7 @@ namespace hk {
         using ResultBase::succeeded;
 
 #if HK_RESULT_ADVANCED
-        hk_noinline Result(const ResultBase& value, const char* expr, const char* sourceFile, int line)
+        hk_noinline Result(ResultBase value, const char* expr, const char* sourceFile, int line)
             : ResultBase(ResultBase::makeWithInfo(value, { .sourceFile = sourceFile, .expr = expr, .sourceLine = u32(line) })) { }
 
         const detail::ResultDebugReference* getInfo() const { return this->getDebugRef() != 0 ? &detail::ResultDebugReference::get(this->getDebugRef()) : nullptr; }
@@ -285,7 +281,7 @@ namespace hk {
 #define HK_TRY(VALUE, ...)                                                                                                                                                             \
     ({                                                                                                                                                                                 \
         auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                                                                                \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                           \
         using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
                                                                                                                                                                                        \
         const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \
@@ -301,7 +297,7 @@ namespace hk {
 #define HK_CHECK(VALUE, ...)                                                                                                                                                           \
     {                                                                                                                                                                                  \
         auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                                                                                \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                           \
         using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
                                                                                                                                                                                        \
         const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \

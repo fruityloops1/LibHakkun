@@ -128,19 +128,19 @@ namespace hk {
     template <SizeType MaxValue>
     using SmallestUnsignedInteger = util::SmallestUnsignedIntegerTraits<MaxValue>::Type;
 
-    template <IntegerType T>
-    constexpr T alignUp(T from, SizeType alignment) { return T((typename util::IntegerTraits<T>::UnsignedTraits::Type(from) + (alignment - 1)) & ~(alignment - 1)); }
-    template <IntegerType T>
-    constexpr T alignDown(T from, SizeType alignment) { return T(typename util::IntegerTraits<T>::UnsignedTraits::Type(from) & ~(alignment - 1)); }
+    template <typename T>
+    constexpr T alignUp(T from, SizeType alignment) { return T((SizeType(from) + (alignment - 1)) & ~(alignment - 1)); }
+    template <typename T>
+    constexpr T alignDown(T from, SizeType alignment) { return T(SizeType(from) & ~(alignment - 1)); }
 
-    template <IntegerType T>
+    template <typename T>
     constexpr T alignUpPage(T from) { return alignUp(from, cPageSize); }
-    template <IntegerType T>
+    template <typename T>
     constexpr T alignDownPage(T from) { return alignDown(from, cPageSize); }
 
-    template <IntegerType T>
+    template <typename T>
     constexpr bool isAligned(T from, T alignment) { return alignDown(from, alignment) == from; }
-    template <IntegerType T>
+    template <typename T>
     constexpr bool isAlignedPage(T from) { return alignDown(from, cPageSize) == from; }
 
 } // namespace hk
@@ -156,6 +156,8 @@ using u32 = hk::UnsignedInteger<32>;
 using u64 = hk::UnsignedInteger<64>;
 
 using size = hk::UnsignedInteger<hk::cSystemRegisterWidth>;
+using ptrdiff = hk::SignedInteger<hk::cSystemRegisterWidth>;
+using ptr = hk::UnsignedInteger<hk::cSystemRegisterWidth>;
 
 namespace hk::util::detail {
 

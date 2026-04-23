@@ -52,7 +52,7 @@ namespace hk {
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
-            mResult = diag::ResultValueDisowned();
+            mResult = MAKE_RESULT(diag::ResultValueDisowned());
 
             return move(mValue);
         }
@@ -287,7 +287,7 @@ namespace hk {
 
                 if (value == nullptr) {
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
-                    diag::abortReleaseImpl<File, Line>(ResultNoValue());
+                    diag::abortReleaseImpl<File, Line>(_result_temp);
 #else
                     diag::abortImpl(
                         HAS_NNSDK(svc::BreakReason_User, )
@@ -388,7 +388,7 @@ namespace hk {
 #define HK_UNWRAP(VALUE, ...)                                                                                                                   \
     ({                                                                                                                                          \
         auto&& _hk_unwrap_v = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                 \
-        using _ValueT = std::remove_reference_t<decltype(_hk_unwrap_v)>;                                                                        \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_hk_unwrap_v)>;                                                                   \
         ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_hk_unwrap_v)); \
     })
 
@@ -415,7 +415,7 @@ namespace hk {
 #define HK_TRY(VALUE, ...)                                                                                                                                                             \
     ({                                                                                                                                                                                 \
         auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                                                                                \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                           \
         using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
                                                                                                                                                                                        \
         const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \

@@ -397,7 +397,5 @@ namespace hk {
 #define INCLUDE_HK_DETAIL_PLATFORM
 #include "hk/detail/platform.h"
 
-#if !HK_RESULT_ADVANCED
 #define INCLUDE_HK_CONTAINER_DETAIL_ONEOF
 #include "hk/container/detail/OneOf.ih"
-#endif
