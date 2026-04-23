@@ -1,5 +1,8 @@
 #include "hk/diag/diag.h"
+#include "hk/container/FixedString.h"
+#include "hk/container/Span.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Tuple.h"
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -99,7 +102,8 @@ namespace hk::diag {
         if (curInfo != nullptr)
             numInfos += curInfo->calcNumParents();
 
-        const hk::detail::ResultDebugReference* infos[numInfos];
+        const hk::detail::ResultDebugReference* _infos[numInfos];
+        Span infos(_infos, numInfos);
         {
             size i = 0;
 
@@ -109,11 +113,13 @@ namespace hk::diag {
             }
         }
 
-        util::reverseCopy(infos, numInfos);
+        infos.reverse();
 
-        for (size i = 0; i < numInfos; i++) {
-            curInfo = infos[i];
-            logLine("\t%s:%d: from %s", curInfo->sourceFile, curInfo->sourceLine, curInfo->expr);
+        for (const auto* info : infos) {
+            if (info == nullptr)
+                continue;
+
+            logLine("\t%s:%d: from %s", info->sourceFile, info->sourceLine, info->expr);
         }
     }
 #endif
@@ -164,6 +170,7 @@ File: %s:%d
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
         log(cAbortFormat, file, line);
         logLineImpl(msgFmt, arg);
+        dumpResultTrace(result);
 #endif
         abort();
     }

@@ -344,14 +344,4 @@ namespace hk::util {
         return ((value >> shift) | (value << (width - shift))) & mask;
     }
 
-    template <size Width, size NumShift>
-    constexpr bool isRepresentable(u64 value) {
-        for (size i = 0; i < NumShift; i++) {
-            if ((value & (bits(Width) << (i * Width))) == value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 } // namespace hk::util

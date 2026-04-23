@@ -1,9 +1,11 @@
 #pragma once
 
-#include "hk/types.h"
+#include "hk/prim/traits/Integer.h"
 #include <memory>
 
 using std::construct_at;
+using std::forward;
+using std::move;
 
 namespace hk::util {
 
@@ -20,9 +22,9 @@ namespace hk::util {
      * @return s32
      */
     template <typename T, typename GetFunc>
-    constexpr size binarySearch(GetFunc get, fs32 low, fs32 high, T searchValue, bool findBetween = false) {
+    constexpr size binarySearch(GetFunc get, s32 low, s32 high, T searchValue, bool findBetween = false) {
         while (low <= high) {
-            fs32 mid = (low + high) / 2;
+            int_fast32_t mid = (low + high) / 2;
             if (get(mid) == searchValue)
                 return mid;
 
@@ -165,7 +167,7 @@ namespace hk::util {
             dest[i].~T();
             construct_at(dest + i, forward<T>(dest[amount - i - 1]));
             dest[amount - i - 1].~T();
-            construct_at(dest + forward<T>(amount - i - 1, temp));
+            construct_at(dest + amount - i - 1, forward<T>(temp));
         }
     }
 #pragma clang diagnostic pop

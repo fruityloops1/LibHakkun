@@ -2,6 +2,8 @@
 #error "do not include"
 #endif
 
+#pragma once
+
 #if NNSDK
 #define HAS_NNSDK(...) __VA_ARGS__
 #define NOT_NNSDK(...)
@@ -11,3 +13,5 @@
 #define NOT_NNSDK(...) __VA_ARGS__
 #define HAS_NNSDK_TERNARY(DOES, DOESNT) DOESNT
 #endif
+
+#undef INCLUDE_HK_DETAIL_PLATFORM

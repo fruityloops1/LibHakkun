@@ -1,8 +1,8 @@
 #pragma once
 
-#include "hk/types.h"
+#include "hk/prim/traits/Integer.h"
+#include "hk/prim/traits/Type.h"
 #include <array>
-#include <type_traits>
 
 namespace hk::util {
 
@@ -40,7 +40,7 @@ namespace hk::util {
         };
 
         template <typename T>
-            requires std::is_base_of_v<CustomTypeName, T>
+            requires ctIsBaseOf<CustomTypeName, T>
         struct TypeNameExtractor<T> {
             constexpr static const auto& getTypeNameData() {
                 constexpr static std::array data { T::cTypeName };

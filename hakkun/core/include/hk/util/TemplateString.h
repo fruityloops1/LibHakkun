@@ -1,6 +1,5 @@
 #pragma once
 
-#include "hk/types.h"
 #include <algorithm>
 
 namespace hk::util {
@@ -10,10 +9,10 @@ namespace hk::util {
      *
      * @tparam N
      */
-    template <size N, typename Char = char>
+    template <size_t N, typename Char = char>
     struct TemplateString {
         using CharType = Char;
-        constexpr static size length = N;
+        constexpr static size_t length = N;
         Char value[N];
 
         constexpr TemplateString(const Char (&str)[N]) {

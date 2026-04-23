@@ -206,10 +206,10 @@ namespace hk::hook::a64 {
 
     template <bool Neg, size Width, size NumShift>
     constexpr bool canBeImm(u64 value) {
-        if (util::isRepresentable<Width, NumShift>(value))
+        if (util::isRepresentable(Width, value, NumShift))
             return true;
 
-        if (Neg && util::isRepresentable<Width, NumShift>(~value))
+        if (Neg && util::isRepresentable(Width, ~value, NumShift))
             return true;
         return false;
     }

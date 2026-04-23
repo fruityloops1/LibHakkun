@@ -57,6 +57,7 @@ namespace hk::util {
         }
 
         size tell() const { return mCursor; }
+        size getMaxSize() const { return mSize; }
 
         hk::Result tryWrite(const void* data, size dataSize) {
             checkReadOnly();
