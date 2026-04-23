@@ -4,7 +4,7 @@ function(apply_config_core project)
     endforeach()
     target_link_options(${project} PRIVATE ${LLDFLAGS_WL})
 
-    if (USE_ADVANCED_RESULT)
+    if (USE_ADVANCED_RESULT AND NOT CMAKE_BUILD_TYPE STREQUAL Release)
         target_compile_definitions(${project} PRIVATE HK_RESULT_ADVANCED=1)
     else()
         target_compile_definitions(${project} PRIVATE HK_RESULT_ADVANCED=0)
