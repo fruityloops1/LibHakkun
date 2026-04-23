@@ -52,7 +52,7 @@ namespace hk {
                 mResult.getModule() + 2000,
                 mResult.getDescription(),
                 mResult.getValue());
-            mResult = diag::ResultValueDisowned();
+            mResult = MAKE_RESULT(diag::ResultValueDisowned());
 
             return move(mValue);
         }
@@ -269,12 +269,26 @@ namespace hk {
 
         template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, int Line>
         struct ResultChecker<Result, ValueOrResult<T>, Expr, File, Line> {
-            hk_alwaysinline static constexpr Result check(const ValueOrResult<T>& value) { return MAKE_RESULT_IMPL(Result(value), Expr.value, File.value, Line); }
+            hk_alwaysinline static constexpr Result check(RvalueRefWithMsg<ValueOrResult<T>>& value) {
+                return MAKE_RESULT_IMPL(Result(value.ref), Expr.value, File.value, Line
+#if HK_RESULT_ADVANCED
+                    ,
+                    value.msg
+#endif
+                );
+            }
         };
 
         template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, int Line>
         struct ResultChecker<Result, ValueOrResult<T&>, Expr, File, Line> {
-            hk_alwaysinline static constexpr Result check(const ValueOrResult<T&>& value) { return MAKE_RESULT_IMPL(Result(value), Expr.value, File.value, Line); }
+            hk_alwaysinline static constexpr Result check(RvalueRefWithMsg<ValueOrResult<T&>>& value) {
+                return MAKE_RESULT_IMPL(Result(value), Expr.value, File.value, Line
+#if HK_RESULT_ADVANCED
+                    ,
+                    value.msg
+#endif
+                );
+            }
         };
 
         template <typename T, util::TemplateString Expr, util::TemplateString File, int Line>
@@ -282,12 +296,12 @@ namespace hk {
 
         template <typename T, util::TemplateString Expr, util::TemplateString File, int Line>
         struct UnwrapChecker<T*, Expr, File, Line> {
-            static hk_alwaysinline T* check(T* value) {
+            static hk_alwaysinline T* check(RvalueRefWithMsg<T*>& value) {
                 const Result _result_temp = ResultChecker<Result, T*, Expr, File, Line>::check(value);
 
-                if (value == nullptr) {
+                if (value.ref == nullptr) {
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
-                    diag::abortReleaseImpl<File, Line>(ResultNoValue());
+                    diag::abortReleaseImpl<File, Line>(_result_temp);
 #else
                     diag::abortImpl(
                         HAS_NNSDK(svc::BreakReason_User, )
@@ -298,13 +312,13 @@ namespace hk {
                         Expr.value);
 #endif
                 }
-                return value;
+                return value.ref;
             }
         };
 
         template <typename T, util::TemplateString Expr, util::TemplateString File, int Line>
         struct UnwrapChecker<ValueOrResult<T>, Expr, File, Line> {
-            static hk_alwaysinline T check(ValueOrResult<T>&& value) {
+            static hk_alwaysinline T check(RvalueRefWithMsg<ValueOrResult<T>>& value) {
                 const Result _result_temp = ResultChecker<Result, ValueOrResult<T>, Expr, File, Line>::check(value);
 
                 if (_result_temp.failed()) {
@@ -337,13 +351,13 @@ namespace hk {
                     }
 #endif
                 }
-                return move((T)value);
+                return move((T)value.ref);
             }
         };
 
         template <typename T, util::TemplateString Expr, util::TemplateString File, int Line>
         struct UnwrapChecker<ValueOrResult<T&>, Expr, File, Line> {
-            static hk_alwaysinline ValueOrResult<T&> check(ValueOrResult<T&>&& value) {
+            static hk_alwaysinline ValueOrResult<T&> check(RvalueRefWithMsg<ValueOrResult<T&>>& value) {
                 const Result _result_temp = ResultChecker<Result, ValueOrResult<T&>, Expr, File, Line>::check(value);
 
                 if (_result_temp.failed()) {
@@ -376,7 +390,7 @@ namespace hk {
                     }
 #endif
                 }
-                return move(value);
+                return move(value.ref);
             }
         };
 
@@ -385,11 +399,11 @@ namespace hk {
  *        When VALUE is a pointer, abort if it is nullptr.
  *
  */
-#define HK_UNWRAP(VALUE, ...)                                                                                                                   \
-    ({                                                                                                                                          \
-        auto&& _hk_unwrap_v = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                 \
-        using _ValueT = std::remove_reference_t<decltype(_hk_unwrap_v)>;                                                                        \
-        ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_hk_unwrap_v)); \
+#define HK_UNWRAP(VALUE, ...)                                                                                               \
+    ({                                                                                                                      \
+        ::hk::detail::RvalueRefWithMsg _hk_unwrap_v = { VALUE __VA_OPT__(, ) __VA_ARGS__ };                                 \
+        using _ValueT = decltype(_hk_unwrap_v)::Type;                                                                       \
+        ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(_hk_unwrap_v); \
     })
 
         template <typename T>
@@ -412,16 +426,16 @@ namespace hk {
  * Function must return Result.
  */
 #undef HK_TRY
-#define HK_TRY(VALUE, ...)                                                                                                                                                             \
-    ({                                                                                                                                                                                 \
-        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = std::remove_reference_t<decltype(_value_temp)>;                                                                                                                \
-        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
-                                                                                                                                                                                       \
-        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \
-        if (_result_temp.failed())                                                                                                                                                     \
-            return _result_temp;                                                                                                                                                       \
-        ::hk::detail::getTryExpressionValue(::move(_value_temp));                                                                                                                      \
+#define HK_TRY(VALUE, ...)                                                                                                                                         \
+    ({                                                                                                                                                             \
+        ::hk::detail::RvalueRefWithMsg _value_temp = { VALUE __VA_OPT__(, ) __VA_ARGS__ };                                                                         \
+        using _ValueT = decltype(_value_temp)::Type;                                                                                                               \
+        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                               \
+                                                                                                                                                                   \
+        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(_value_temp); \
+        if (_result_temp.failed())                                                                                                                                 \
+            return _result_temp;                                                                                                                                   \
+        ::hk::detail::getTryExpressionValue(::move(_value_temp.ref));                                                                                              \
     })
 
 } // namespace hk

@@ -1,5 +1,8 @@
 #include "hk/diag/diag.h"
+#include "hk/container/FixedString.h"
+#include "hk/container/Span.h"
 #include "hk/util/Algorithm.h"
+#include "hk/util/Tuple.h"
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -94,26 +97,45 @@ namespace hk::diag {
                    : logLine("Result Trace from Result[%04d-%04d/0x%x]:", result.getModule() + 2000, result.getDescription(), result.getValue());
 
         const hk::detail::ResultDebugReference* curInfo = result.getInfo();
+        const hk::detail::ResultDebugReference::Msg* curMsg = result.getMsg();
         size numInfos = curInfo != nullptr;
 
         if (curInfo != nullptr)
             numInfos += curInfo->calcNumParents();
 
-        const hk::detail::ResultDebugReference* infos[numInfos];
+        Tuple<const hk::detail::ResultDebugReference*, const hk::detail::ResultDebugReference::Msg*> _infos[numInfos];
+        Span infos(_infos, numInfos);
         {
             size i = 0;
 
             while (curInfo != nullptr) {
-                infos[i++] = curInfo;
+                infos[i++] = { curInfo, curMsg };
+                curMsg = curInfo->getParentMsg();
                 curInfo = curInfo->getParent();
             }
         }
 
-        util::reverseCopy(infos, numInfos);
+        infos.reverse();
 
-        for (size i = 0; i < numInfos; i++) {
-            curInfo = infos[i];
-            logLine("\t%s:%d: from %s", curInfo->sourceFile, curInfo->sourceLine, curInfo->expr);
+        for (auto [info, msg] : infos) {
+            if (info == nullptr)
+                continue;
+
+            if (msg != nullptr)
+                msg->map([&]<typename T>(T value) {
+                    constexpr auto cTypeFormat = util::ctPrintfFormatVerbose<T>;
+                    constexpr const char cFmt[] = "\t%s:%d: from %s msg: ";
+                    using FixedString = FixedString<sizeof(cFmt) + __builtin_strlen(cTypeFormat)>;
+                    constexpr static FixedString fmt = ([&]() -> FixedString {
+                        FixedString fmt = cFmt;
+                        fmt.append(cTypeFormat);
+                        return fmt;
+                    })();
+
+                    logLine(fmt.cstr(), info->sourceFile, info->sourceLine, info->expr, value);
+                });
+            else
+                logLine("\t%s:%d: from %s", info->sourceFile, info->sourceLine, info->expr);
         }
     }
 #endif
@@ -164,6 +186,7 @@ File: %s:%d
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
         log(cAbortFormat, file, line);
         logLineImpl(msgFmt, arg);
+        dumpResultTrace(result);
 #endif
         abort();
     }
