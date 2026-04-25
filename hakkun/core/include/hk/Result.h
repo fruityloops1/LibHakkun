@@ -153,7 +153,7 @@ namespace hk {
         using ResultBase::succeeded;
 
 #if HK_RESULT_ADVANCED
-        hk_noinline Result(ResultBase value, const char* expr, const char* sourceFile, int line)
+        hk_noinline constexpr Result(ResultBase value, const char* expr, const char* sourceFile, int line)
             : ResultBase(ResultBase::makeWithInfo(value, { .sourceFile = sourceFile, .expr = expr, .sourceLine = u32(line) })) { }
 
         const detail::ResultDebugReference* getInfo() const { return this->getDebugRef() != 0 ? &detail::ResultDebugReference::get(this->getDebugRef()) : nullptr; }
