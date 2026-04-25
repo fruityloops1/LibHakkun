@@ -68,19 +68,19 @@ namespace hk {
         constexpr Pair& insert(K&& key, V&& value) {
             checkInsert(key);
             s32 insertIdx = binarySearch(key, true);
-            return VecType::insert({ move(key), move(value) }, insertIdx);
+            return VecType::insert({ forward<K>(key), forward<V>(value) }, insertIdx);
         }
 
         constexpr Pair& insert(const K& key, V&& value) {
             checkInsert(key);
             s32 insertIdx = binarySearch(key, true);
-            return VecType::insert({ key, move(value) }, insertIdx);
+            return VecType::insert({ key, forward<V>(value) }, insertIdx);
         }
 
         constexpr Pair& insert(K&& key, const V& value) {
             checkInsert(key);
             s32 insertIdx = binarySearch(key, true);
-            return VecType::insert({ move(key), value }, insertIdx);
+            return VecType::insert({ forward<K>(key), value }, insertIdx);
         }
 
         constexpr V& at(const K& key) {
@@ -90,12 +90,12 @@ namespace hk {
         }
 
         constexpr const V& at(const K& key) const {
-            V* value = find(key);
+            const V* value = find(key);
             HK_ABORT_UNLESS(value != nullptr, "hk::Map<%s, %s>::at(): key not found", util::getTypeName<K>(), util::getTypeName<V>());
             return *value;
         }
 
-        constexpr ValueOrResult<V> remove(const K& key) {
+        constexpr ValueOrResult<Pair> remove(const K& key) {
             ::size index = binarySearch(key);
             HK_UNLESS(index != -1, ResultNoValue());
 

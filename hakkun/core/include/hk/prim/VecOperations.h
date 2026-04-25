@@ -74,6 +74,16 @@ namespace hk {
                 return T(::move(removedValue));
             }
 
+            constexpr T popBack() {
+                HK_ABORT_UNLESS(getSize() > 0, "%s<%s>::popBack(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+                return T(::move(remove(getSize() - 1)));
+            }
+
+            constexpr T popFront() {
+                HK_ABORT_UNLESS(getSize() > 0, "%s<%s>::popFront(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+                return T(::move(remove(0)));
+            }
+
             constexpr void extend(size newSize, const T& extendValue = T()) {
                 HK_ABORT_UNLESS(newSize >= getSize() && newSize <= getCapacity(), "%s<%s>::extend(%zu): out of range (size: %zu, capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), newSize, getSize(), getCapacity());
                 util::fill(getData() + getSize(), newSize - getSize(), extendValue);
