@@ -22,12 +22,12 @@ namespace hk {
         using VecType = Vec<Pair, ReserveSize, Allocator>;
         using Hash = size;
 
-        constexpr size binarySearch(const T& key, bool findBetween = false) const {
-            return VecType::binarySearch([](const Pair& pair) -> Hash { return pair.a; }, HashFunc::hash(key), findBetween);
+        constexpr size binarySearch(const T& value, bool findBetween = false) const {
+            return VecType::binarySearch([](const Pair& pair) -> Hash { return pair.a; }, HashFunc::hash(value), findBetween);
         }
 
-        constexpr void checkInsert(const T& key) {
-            HK_ABORT_UNLESS(binarySearch(key) == -1, "hk::Set<%s>::insert: value already exists", util::getTypeName<T>());
+        constexpr bool checkCanInsert(const T& value) {
+            return binarySearch(value) == -1;
         }
 
         using VecType::at;
@@ -59,16 +59,20 @@ namespace hk {
             return &VecType::at(foundIdx).b;
         }
 
-        constexpr T& insert(const T& value) {
-            checkInsert(value);
+        constexpr T* insert(const T& value) {
+            if (!checkCanInsert(value))
+                return nullptr;
+
             s32 insertIdx = binarySearch(value, true);
-            return VecType::insert({ HashFunc::hash(value), value }, insertIdx).b;
+            return &VecType::insert({ HashFunc::hash(value), value }, insertIdx).b;
         }
 
-        constexpr Pair& insert(T&& value) {
-            checkInsert(value);
+        constexpr T* insert(T&& value) {
+            if (!checkCanInsert(value))
+                return nullptr;
+
             s32 insertIdx = binarySearch(value, true);
-            return VecType::insert({ HashFunc::hash(static_cast<const T&>(value)), forward<T>(value) }, insertIdx).b;
+            return &VecType::insert({ HashFunc::hash(static_cast<const T&>(value)), forward<T>(value) }, insertIdx).b;
         }
 
         constexpr T& at(const T& key) {

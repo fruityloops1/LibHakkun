@@ -200,6 +200,12 @@ namespace hk::util {
     }
 
     template <typename T>
+        requires std::is_destructible_v<T>
+    constexpr void destroy(T* dest) {
+        dest->~T();
+    }
+
+    template <typename T>
     constexpr bool isEqual(const T* a, const T* b, size amount) {
         for (size i = 0; i < amount; i++)
             if (*a++ != *b++)

@@ -13,6 +13,7 @@ namespace hk {
         struct VecOperationsBase : detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer> {
             using Super = detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer>;
 
+            using Super::findIndex;
             using Super::Super;
 
             constexpr VecOperationsBase(size numElements) {
@@ -72,6 +73,21 @@ namespace hk {
                 setSize(getSize() - 1);
 
                 return T(::move(removedValue));
+            }
+
+            constexpr T removeByValue(const T& value) {
+                size index = findIndex(value);
+                HK_ABORT_UNLESS(index != -1, "%s<%s>::remove(const T&): value not found (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getSize());
+
+                return T(::move(remove(index)));
+            }
+
+            constexpr bool tryRemoveByValue(const T& value) {
+                size index = findIndex(value);
+                if (index == -1)
+                    return false;
+
+                return T(::move(remove(index)));
             }
 
             constexpr T popBack() {

@@ -304,6 +304,15 @@ namespace hk {
             util::copyOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
         }
 
+        constexpr size findIndex(const T& value) const {
+            for (size i = 0; i < getSize(); i++) {
+                const T* cur = getData() + i;
+                if (*cur == value)
+                    return i;
+            }
+            return -1;
+        }
+
     protected:
         using Super::getData;
         using Super::getSize;
