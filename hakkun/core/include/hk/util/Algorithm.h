@@ -41,8 +41,8 @@ namespace hk::util {
 #pragma clang diagnostic ignored "-Wnontrivial-memcall"
 
     template <typename T>
-        requires std::is_copy_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsCopyConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void copy(T* dest, const T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -55,8 +55,8 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires std::is_copy_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsCopyConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void copyOverlapping(T* dest, const T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
@@ -80,8 +80,8 @@ namespace hk::util {
 
     using ::move;
     template <typename T>
-        requires std::is_move_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsMoveConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void move(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -93,7 +93,7 @@ namespace hk::util {
     }
 
     template <bool DestroyMovedFrom = false, typename T>
-        requires std::is_move_constructible_v<T>
+        requires util::ctIsMoveConstructible<T>
     constexpr void constructMove(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -108,8 +108,8 @@ namespace hk::util {
     }
 
     template <bool DestroyMovedFrom = false, typename T>
-        requires std::is_move_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsMoveConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void constructMoveOverlapping(T* dest, T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
@@ -134,7 +134,7 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires std::is_move_constructible_v<T>
+        requires util::ctIsMoveConstructible<T>
     constexpr void constructCopy(T* dest, const T* src, size amount) {
         if (!std::is_constant_evaluated() and std::is_trivially_copy_constructible_v<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
@@ -144,8 +144,8 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires std::is_copy_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsCopyConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void reverseCopy(T* dest, size amount) {
         for (size i = 0; i < amount / 2; i++) {
             T temp = dest[i];
@@ -158,8 +158,8 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires std::is_move_constructible_v<T>
-        and std::is_destructible_v<T>
+        requires util::ctIsMoveConstructible<T>
+        and util::ctIsDestructible<T>
     constexpr void reverseMove(T* dest, size amount) {
         for (size i = 0; i < amount / 2; i++) {
             T temp = T(forward<T>(dest[i]));
@@ -193,10 +193,16 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires std::is_destructible_v<T>
+        requires util::ctIsDestructible<T>
     constexpr void destroy(T* dest, size amount) {
         for (size i = 0; i < amount; i++)
             dest[i].~T();
+    }
+
+    template <typename T>
+        requires util::ctIsDestructible<T>
+    constexpr void destroy(T* dest) {
+        dest->~T();
     }
 
     template <typename T>
@@ -205,6 +211,14 @@ namespace hk::util {
             if (*a++ != *b++)
                 return false;
         return true;
+    }
+
+    template <typename T>
+        requires util::ctIsCopyConstructible<T>
+    constexpr void swap(T& a, T& b) {
+        T tmp = a;
+        a = b;
+        b = tmp;
     }
 
 } // namespace hk::util
