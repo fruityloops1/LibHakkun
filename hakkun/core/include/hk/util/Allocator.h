@@ -7,6 +7,7 @@
 
 #ifdef HK_ADDON_Sead
 #include "hk/ValueOrResult.h"
+#include "hk/diag/diag.h"
 #include <sead/heap/seadHeapMgr.h>
 #endif
 
@@ -72,17 +73,20 @@ namespace hk::util {
 #ifdef HK_ADDON_Sead
     struct SeadAllocator : Allocator<SeadAllocator> {
         hk_noinline static void* allocate(::size size, ::size alignment) {
-            sead::Heap* heap = HK_UNWRAP(HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap());
+            sead::Heap* heap = HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap();
+            HK_ABORT_UNLESS(heap != nullptr, "hk::util::SeadAllocator::allocate(%zu, %zu): No heap set on Thread[%s]", size, alignment, diag::getCurrentThreadName() or "Invalid");
             return heap->alloc(size, alignment);
         }
 
-        hk_noinline static void* reallocate(void* ptr, ::size size) {
-            sead::Heap* heap = HK_UNWRAP(HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap());
+        hk_noinline static void* reallocate(void* ptr, ::size size, ::size alignment) {
+            sead::Heap* heap = HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap();
+            HK_ABORT_UNLESS(heap != nullptr, "hk::util::SeadAllocator::reallocate(%p, %zu, %zu): No heap set on Thread[%s]", ptr, size, alignment, diag::getCurrentThreadName() or "Invalid");
             return heap->tryRealloc(ptr, size, sizeof(size));
         }
 
         hk_noinline static void free(void* ptr) {
-            sead::Heap* heap = HK_UNWRAP(HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap());
+            sead::Heap* heap = HK_UNWRAP(sead::HeapMgr::instance())->getCurrentHeap();
+            HK_ABORT_UNLESS(heap != nullptr, "hk::util::SeadAllocator::free(%p): No heap set on Thread[%s]", ptr, diag::getCurrentThreadName() or "Invalid");
             heap->free(ptr);
         }
     };
