@@ -13,6 +13,7 @@ namespace hk {
         struct VecOperationsBase : detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer> {
             using Super = detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer>;
 
+            using Super::findIndex;
             using Super::Super;
 
             constexpr VecOperationsBase(size numElements) {
@@ -36,11 +37,23 @@ namespace hk {
                 return *construct_at(getData() + getSize() - 1, forward<T>(value));
             }
 
+            template <typename... Args>
+            constexpr T& emplace(Args&&... args) {
+                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+
+                setSize(getSize() + 1);
+                return *construct_at(getData() + getSize() - 1, forward<Args>(args)...);
+            }
+
             constexpr T& pushBack(const T& value) { return add(value); }
             constexpr T& pushBack(T&& value) { return add(forward<T>(value)); }
+            template <typename... Args>
+            constexpr T& emplaceBack(Args&&... args) { return emplace(forward<Args>(args)...); }
 
             constexpr T& pushFront(const T& value) { return insert(value, 0); }
             constexpr T& pushFront(T&& value) { return insert(forward<T>(value), 0); }
+            template <typename... Args>
+            constexpr T& emplaceFront(Args&&... args) { return emplaceAt(0, forward<Args>(args)...); }
 
             using Super::move;
 
@@ -60,6 +73,15 @@ namespace hk {
                 return *construct_at(getData() + index, forward<T>(value));
             }
 
+            template <typename... Args>
+            constexpr T& emplaceAt(size index, Args&&... args) {
+                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::emplaceAt: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+                HK_ABORT_UNLESS(index <= getSize(), "%s<%s>::emplaceAt(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+                setSize(getSize() + 1);
+                move(index + 1, index, getSize() - 1 - index);
+                return *construct_at(getData() + index, forward<Args>(args)...);
+            }
+
             constexpr T remove(size index) {
                 HK_ABORT_UNLESS(index < getSize(), "%s<%s>::remove(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
 
@@ -72,6 +94,21 @@ namespace hk {
                 setSize(getSize() - 1);
 
                 return T(::move(removedValue));
+            }
+
+            constexpr T removeByValue(const T& value) {
+                size index = findIndex(value);
+                HK_ABORT_UNLESS(index != -1, "%s<%s>::remove(const T&): value not found (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getSize());
+
+                return T(::move(remove(index)));
+            }
+
+            constexpr bool tryRemoveByValue(const T& value) {
+                size index = findIndex(value);
+                if (index == -1)
+                    return false;
+
+                return T(::move(remove(index)));
             }
 
             constexpr T popBack() {
@@ -354,16 +391,6 @@ namespace hk {
             Super::resize(newSize, extendValue);
         }
 
-        constexpr T& insert(const T& value, size index = 0) {
-            reserve(getSize() + 1);
-            return Super::insert(value, index);
-        }
-
-        constexpr T& insert(T&& value, size index = 0) {
-            reserve(getSize() + 1);
-            return Super::insert(forward<T>(value), index);
-        }
-
         constexpr T& add(const T& valueAt) {
             reserve(getSize() + 1);
             return Super::add(valueAt);
@@ -374,11 +401,37 @@ namespace hk {
             return Super::add(forward<T>(valueAt));
         }
 
+        template <typename... Args>
+        constexpr T& emplace(Args&&... args) {
+            reserve(getSize() + 1);
+            return Super::emplace(forward<Args>(args)...);
+        }
+
+        template <typename... Args>
+        constexpr T& emplaceAt(size index, Args&&... args) {
+            reserve(getSize() + 1);
+            return Super::emplaceAt(index, forward<Args>(args)...);
+        }
+
         constexpr T& pushBack(const T& value) { return add(value); }
         constexpr T& pushBack(T&& value) { return add(forward<T>(value)); }
+        template <typename... Args>
+        constexpr T& emplaceBack(Args&&... args) { return emplace(forward<Args>(args)...); }
 
         constexpr T& pushFront(const T& value) { return insert(value, 0); }
         constexpr T& pushFront(T&& value) { return insert(forward<T>(value), 0); }
+        template <typename... Args>
+        constexpr T& emplaceFront(Args&&... args) { return emplaceAt(0, forward<Args>(args)...); }
+
+        constexpr T& insert(const T& value, size index = 0) {
+            reserve(getSize() + 1);
+            return Super::insert(value, index);
+        }
+
+        constexpr T& insert(T&& value, size index = 0) {
+            reserve(getSize() + 1);
+            return Super::insert(forward<T>(value), index);
+        }
 
     protected:
         using Super::getCapacity;
@@ -388,8 +441,14 @@ namespace hk {
 
     private:
         using Super::add;
+        using Super::emplace;
+        using Super::emplaceAt;
+        using Super::emplaceBack;
+        using Super::emplaceFront;
         using Super::extend;
         using Super::insert;
+        using Super::pushBack;
+        using Super::pushFront;
         using Super::resize;
 
         using Storage::allocate;
