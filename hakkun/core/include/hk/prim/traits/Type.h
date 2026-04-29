@@ -5,8 +5,11 @@ namespace hk::util {
     template <typename... Types>
     struct TypeTraits;
 
+    template <typename... Types>
+    struct TypeTraitsVariadic;
+
     template <typename T>
-    struct TypeTraits<T> {
+    struct TypeTraits<T> : TypeTraitsVariadic<T> {
         template <bool Value>
         struct Bool {
             static constexpr bool cValue = Value;
@@ -19,17 +22,28 @@ namespace hk::util {
         struct Same : False { };
         template <>
         struct Same<T> : True { };
+
         template <typename Derived>
         struct BaseOf : Bool<__is_base_of(T, Derived)> { };
+
         struct Reference;
         struct Pointer : Bool<__is_pointer(T)> { };
         struct Const : Bool<__is_const(T)> { };
+
+        template <typename... Args>
+        struct Constructible : Bool<__is_constructible(T, Args...)> { };
+        struct DefaultConstructible : Constructible<> { };
+        struct CopyConstructible : Constructible<const T&> { };
+        struct MoveConstructible : Constructible<T&&> { };
+        struct Destructible : Bool<__is_destructible(T)> { };
+
         template <typename... Args>
         struct TriviallyConstructible : Bool<__is_trivially_constructible(T, Args...)> { };
         struct TriviallyDefaultConstructible : TriviallyConstructible<> { };
         struct TriviallyMoveConstructible : TriviallyConstructible<T&&> { };
         struct TriviallyCopyConstructible : TriviallyConstructible<const T&> { };
         struct TriviallyDestructible : Bool<__is_trivially_destructible(T)> { };
+
         struct Integral;
         struct FloatingPoint;
 
@@ -47,24 +61,39 @@ namespace hk::util {
 
     template <typename T, typename C>
     using ttSame = TypeTraits<T>::template Same<C>;
+
     template <typename Base, typename Derived>
     using ttBaseOf = TypeTraits<Base>::template BaseOf<Derived>;
+
     template <typename T>
     using ttReference = TypeTraits<T>::Reference;
     template <typename T>
     using ttPointer = TypeTraits<T>::Pointer;
     template <typename T>
     using ttConst = TypeTraits<T>::Const;
+
+    template <typename T, typename... Args>
+    using ttConstructible = TypeTraits<T>::template Constructible<Args...>;
+    template <typename T>
+    using ttDefaultConstructible = TypeTraits<T>::DefaultConstructible;
+    template <typename T>
+    using ttCopyConstructible = TypeTraits<T>::CopyConstructible;
+    template <typename T>
+    using ttMoveConstructible = TypeTraits<T>::MoveConstructible;
+    template <typename T>
+    using ttDestructible = TypeTraits<T>::Destructible;
+
     template <typename T, typename... Args>
     using ttTriviallyConstructible = TypeTraits<T>::template TriviallyConstructible<Args...>;
     template <typename T>
     using ttTriviallyDefaultConstructible = TypeTraits<T>::TriviallyDefaultConstructible;
     template <typename T>
-    using ttTriviallyMoveConstructible = TypeTraits<T>::TriviallyMoveConstructible;
-    template <typename T>
     using ttTriviallyCopyConstructible = TypeTraits<T>::TriviallyCopyConstructible;
     template <typename T>
+    using ttTriviallyMoveConstructible = TypeTraits<T>::TriviallyMoveConstructible;
+    template <typename T>
     using ttTriviallyDestructible = TypeTraits<T>::TriviallyDestructible;
+
     template <typename T>
     using ttIntegral = TypeTraits<T>::Integral;
     template <typename T>
@@ -72,24 +101,39 @@ namespace hk::util {
 
     template <typename T, typename C>
     constexpr bool ctIsSame = ttSame<T, C>::cValue;
+
     template <typename Base, typename Derived>
     constexpr bool ctIsBaseOf = ttBaseOf<Base, Derived>::cValue;
+
     template <typename T>
     constexpr bool ctIsReference = ttReference<T>::cValue;
     template <typename T>
     constexpr bool ctIsPointer = ttPointer<T>::cValue;
     template <typename T>
     constexpr bool ctIsConst = ttConst<T>::cValue;
+
+    template <typename T, typename... Args>
+    constexpr bool ctIsConstructible = ttConstructible<T, Args...>::cValue;
+    template <typename T>
+    constexpr bool ctIsDefaultConstructible = ttDefaultConstructible<T>::cValue;
+    template <typename T>
+    constexpr bool ctIsCopyConstructible = ttCopyConstructible<T>::cValue;
+    template <typename T>
+    constexpr bool ctIsMoveConstructible = ttMoveConstructible<T>::cValue;
+    template <typename T>
+    constexpr bool ctIsDestructible = ttDestructible<T>::cValue;
+
     template <typename T, typename... Args>
     constexpr bool ctIsTriviallyConstructible = ttTriviallyConstructible<T, Args...>::cValue;
     template <typename T>
     constexpr bool ctIsTriviallyDefaultConstructible = ttTriviallyDefaultConstructible<T>::cValue;
     template <typename T>
-    constexpr bool ctIsTriviallyMoveConstructible = ttTriviallyMoveConstructible<T>::cValue;
-    template <typename T>
     constexpr bool ctIsTriviallyCopyConstructible = ttTriviallyCopyConstructible<T>::cValue;
     template <typename T>
+    constexpr bool ctIsTriviallyMoveConstructible = ttTriviallyMoveConstructible<T>::cValue;
+    template <typename T>
     constexpr bool ctIsTriviallyDestructible = ttTriviallyDestructible<T>::cValue;
+
     template <typename T>
     constexpr bool ctIsIntegral = ttIntegral<T>::cValue;
     template <typename T>
@@ -106,7 +150,7 @@ namespace hk::util {
     constexpr const char* ctPrintfFormatVerbose = TypeTraits<T>::PrintfFormatVerbose::cValue;
 
     template <typename... Types>
-    struct TypeTraits {
+    struct TypeTraitsVariadic {
         template <template <typename> typename Trait>
         static constexpr bool all() {
             bool satisfied = true;
@@ -147,6 +191,19 @@ namespace hk::util {
             return found;
         }
 
+        template <typename Base>
+        static constexpr bool containsDerived() {
+            bool found = false;
+            ([&] {
+                using Cur = Types;
+                if (ctIsBaseOf<Base, Cur>)
+                    found = true;
+            }(),
+                ...);
+
+            return found;
+        }
+
         static constexpr bool amount() {
             int amount = 0;
             ([&] {
@@ -158,6 +215,9 @@ namespace hk::util {
             return amount;
         }
     };
+
+    template <typename... Types>
+    struct TypeTraits : TypeTraitsVariadic<Types...> { };
 
     namespace detail {
 
@@ -184,6 +244,9 @@ namespace hk::util {
 
     template <typename T, typename... In>
     constexpr static bool ctContains = TypeTraits<In...>::template contains<T>();
+
+    template <typename Base, typename... In>
+    constexpr static bool ctContainsDerived = TypeTraits<In...>::template containsDerived<Base>();
 
     template <typename... Types>
     constexpr static int ctAmount = TypeTraits<Types...>::amount();
