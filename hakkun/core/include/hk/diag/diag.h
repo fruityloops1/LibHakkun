@@ -17,11 +17,11 @@ namespace hk::diag {
     void dumpStackTrace();
 #endif
 
-#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    const char* getResultName(ResultBase result);
-
     [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), HAS_NNSDK_TERNARY(6, 5))]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
     [[gnu::format(printf, HAS_NNSDK_TERNARY(5, 4), 0)]] hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, std::va_list arg);
+
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+    const char* getResultName(ResultBase result);
 #else
     const hk_alwaysinline inline char* getResultName(ResultBase result) { return nullptr; }
 
