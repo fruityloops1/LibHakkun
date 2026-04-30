@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/prim/traits/Type.h"
+#include <cstddef>
 #include <cstdint>
 
 constexpr std::size_t operator""_B(unsigned long long val) { return val; }
@@ -109,8 +110,6 @@ namespace hk {
         }
 
         constexpr int calcSmallestWidth(SizeType max) {
-            if (max <= 1)
-                return 1;
             int curWidth = 8;
             while (curWidth != cMaxRepresentableWidth) {
                 if (isRepresentable(curWidth, max))
