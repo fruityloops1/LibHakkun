@@ -31,6 +31,7 @@ namespace hk::util {
 
     template <typename Iterator>
     struct IteratorTraits {
+        using Type = util::tRemoveQualifier<typename FunctionTraits<decltype(&Iterator::operator*)>::ReturnType>;
         using DerefType = FunctionTraits<decltype(&Iterator::operator*)>::ReturnType;
         using ArrowType = FunctionTraits<decltype(&Iterator::operator->)>::ReturnType;
     };

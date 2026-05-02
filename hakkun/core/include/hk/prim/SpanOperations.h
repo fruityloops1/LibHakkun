@@ -304,6 +304,11 @@ namespace hk {
             util::copyOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
         }
 
+        template <typename L>
+        constexpr void transform(L&& func) {
+            util::transform(getData(), getSize(), forward<L>(func));
+        }
+
         constexpr size findIndex(const T& value) const {
             for (size i = 0; i < getSize(); i++) {
                 const T* cur = getData() + i;

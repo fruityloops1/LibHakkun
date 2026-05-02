@@ -55,6 +55,7 @@ namespace hk::util {
         struct RemoveReference;
         struct RemovePointer : _Type<__remove_pointer(T)> { };
         struct RemoveConst : _Type<__remove_const(T)> { };
+        struct RemoveQualifiers : TypeTraits<typename TypeTraits<typename RemovePointer::Type>::RemoveConst::Type>::RemoveReference { };
 
         struct PrintfFormatVerbose;
     };
@@ -145,6 +146,8 @@ namespace hk::util {
     using tRemovePointer = TypeTraits<T>::RemovePointer::Type;
     template <typename T>
     using tRemoveConst = TypeTraits<T>::RemoveConst::Type;
+    template <typename T>
+    using tRemoveQualifier = TypeTraits<T>::RemoveQualifiers::Type;
 
     template <typename T>
     constexpr const char* ctPrintfFormatVerbose = TypeTraits<T>::PrintfFormatVerbose::cValue;

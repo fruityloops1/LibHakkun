@@ -221,4 +221,14 @@ namespace hk::util {
         b = tmp;
     }
 
+    template <typename T, typename L>
+        requires util::ctIsMoveConstructible<T>
+    constexpr void transform(T* dest, size amount, L&& func) {
+        for (size i = 0; i < amount; i++) {
+            T tmp = move(func(dest[i]));
+            dest[i].~T();
+            construct_at(dest + i, move(tmp));
+        }
+    }
+
 } // namespace hk::util

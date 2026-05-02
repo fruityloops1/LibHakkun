@@ -51,11 +51,6 @@ namespace hk::util {
         constexpr const Iterator end() const { return mEnd; }
     };
 
-    template <auto b>
-    class A;
-
-    using T = A<[]() { }>;
-
     template <auto L, typename Container>
     constexpr FilterIterable<Container, decltype(L)> iterateFilter(Container& iterable) {
         return { iterable, L };
