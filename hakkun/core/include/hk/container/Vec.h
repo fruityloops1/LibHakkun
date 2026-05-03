@@ -71,4 +71,6 @@ namespace hk {
         friend Super::Super::Super::Super::Super;
     };
 
+    HK_SPANOPERATIONSWITHBUFFERPOINTER_DEDUCTION_GUIDE(Vec, Vec<T>);
+
 } // namespace hk

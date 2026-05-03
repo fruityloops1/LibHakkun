@@ -444,6 +444,8 @@ namespace hk {
     template <typename T>                                                         \
     TYPE(const ::std::span<const T>&)->DESIRED;                                   \
     template <typename T>                                                         \
+    Span(const TYPE<T>&) -> Span<T>;                                              \
+    template <typename T>                                                         \
     TYPE(std::initializer_list<T>)->DESIRED
 
     namespace detail {

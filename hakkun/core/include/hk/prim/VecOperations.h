@@ -354,19 +354,11 @@ namespace hk {
             setCopy(other, other.getCapacity());
         }
 
-        constexpr void setMove(Span<T> data, size capacity = -1) {
-            if (capacity == -1)
-                capacity = data.size();
-
-            clear();
-            set(allocate(data.size(), capacity));
-            setCapacity(capacity);
-            util::constructMove(getData(), data.data(), data.size());
-        }
-
         constexpr void setMove(VecOperationsOnHeap&& other) {
-            setMove(other, other.getCapacity());
-            other.clear();
+            set(other.getData(), other.getSize());
+            setCapacity(other.getCapacity());
+            other.setCapacity(0);
+            other.setSize(0);
         }
 
         constexpr void reserve(size capacity) {
