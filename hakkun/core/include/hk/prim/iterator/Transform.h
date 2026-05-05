@@ -1,6 +1,5 @@
 #pragma once
 
-#include "hk/container/Vec.h"
 #include "hk/prim/traits/Function.h"
 #include "hk/prim/traits/Iterator.h"
 
