@@ -44,7 +44,7 @@ namespace hk::util {
         requires util::ctIsCopyConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void copy(T* dest, const T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
         else {
             for (size i = 0; i < amount; i++) {
@@ -58,7 +58,7 @@ namespace hk::util {
         requires util::ctIsCopyConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void copyOverlapping(T* dest, const T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
         else {
             if (dest < src)
@@ -83,7 +83,7 @@ namespace hk::util {
         requires util::ctIsMoveConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void move(T* dest, T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
         else
             for (size i = 0; i < amount; i++) {
@@ -95,7 +95,7 @@ namespace hk::util {
     template <bool DestroyMovedFrom = false, typename T>
         requires util::ctIsMoveConstructible<T>
     constexpr void constructMove(T* dest, T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
         else
             for (size i = 0; i < amount; i++) {
@@ -111,7 +111,7 @@ namespace hk::util {
         requires util::ctIsMoveConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void constructMoveOverlapping(T* dest, T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_move_constructible_v<T> and std::is_trivially_destructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
         else {
             if (dest < src)
@@ -134,9 +134,9 @@ namespace hk::util {
     }
 
     template <typename T>
-        requires util::ctIsMoveConstructible<T>
+        requires util::ctIsCopyConstructible<T>
     constexpr void constructCopy(T* dest, const T* src, size amount) {
-        if (!std::is_constant_evaluated() and std::is_trivially_copy_constructible_v<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyCopyConstructible<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
         else
             for (size i = 0; i < amount; i++)
