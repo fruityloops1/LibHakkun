@@ -106,7 +106,7 @@ namespace nn::ro::detail {
     }
 
     template <typename Entry>
-        requires std::is_same_v<Entry, Elf_Rel> or std::is_same_v<Entry, Elf_Rela>
+        requires hk::util::ctIsSame<Entry, Elf_Rel> or hk::util::ctIsSame<Entry, Elf_Rela>
     void RoModule::ResolveSymbol(const Entry* rel) {
         auto type = ELF_R_TYPE(rel->r_info);
         auto symIndex = ELF_R_SYM(rel->r_info);
@@ -118,7 +118,7 @@ namespace nn::ro::detail {
             auto res = ResolveSymbol(symbol);
 
             res.map([&](ptr addr) {
-                if constexpr (std::is_same_v<Entry, Elf_Rel>)
+                if constexpr (hk::util::ctIsSame<Entry, Elf_Rel>)
                     *dest += addr;
                 else
                     *dest = addr + rel->r_addend;
@@ -127,7 +127,7 @@ namespace nn::ro::detail {
     }
 
     template <typename Entry, typename Func>
-        requires std::is_same_v<Entry, Elf_Rel> or std::is_same_v<Entry, Elf_Rela>
+        requires hk::util::ctIsSame<Entry, Elf_Rel> or hk::util::ctIsSame<Entry, Elf_Rela>
     void RoModule::ForEachRelocation(const Entry* entries, size numEntries, const Func& func) {
         for (size i = 0; i < numEntries; i++) {
             const Entry* entry = &entries[i];

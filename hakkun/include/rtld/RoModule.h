@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <type_traits>
 
 #include "hk/ValueOrResult.h"
 #include "hk/types.h"
@@ -27,11 +26,11 @@ namespace nn::ro::detail {
         hk::ValueOrResult<ptr> ResolveSymbol(const Elf_Sym* symbol) const;
 
         template <typename Entry>
-            requires std::is_same_v<Entry, Elf_Rel> or std::is_same_v<Entry, Elf_Rela>
+            requires hk::util::ctIsSame<Entry, Elf_Rel> or hk::util::ctIsSame<Entry, Elf_Rela>
         void ResolveSymbol(const Entry* entry);
 
         template <typename Entry, typename Func>
-            requires std::is_same_v<Entry, Elf_Rel> or std::is_same_v<Entry, Elf_Rela>
+            requires hk::util::ctIsSame<Entry, Elf_Rel> or hk::util::ctIsSame<Entry, Elf_Rela>
         void ForEachRelocation(const Entry* entries, size numEntries, const Func& func);
 
     public:
