@@ -41,6 +41,11 @@ namespace hk {
             constexpr const T* data() const { return isAlive() ? getStorageConst() : nullptr; }
             constexpr T* data() { return isAlive() ? getStorage() : nullptr; }
 
+            template <Derived<T> To>
+            constexpr To* down() { return isAlive() ? static_cast<To*>(getStorage()) : nullptr; }
+            template <Derived<T> To>
+            constexpr const To* down() const { return isAlive() ? static_cast<const To*>(getStorageConst()) : nullptr; }
+
             constexpr operator const T&() const {
                 checkAlive();
                 return *getStorageConst();
