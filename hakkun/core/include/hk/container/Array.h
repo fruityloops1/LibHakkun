@@ -36,4 +36,11 @@ namespace hk {
         static constexpr size cLength = Length;
     };
 
+    template <typename T, size N>
+    Array(T (&data)[N]) -> Array<T, N>;
+    template <typename T, size N>
+    Array(const T (&data)[N]) -> Array<T, N>;
+    template <typename T, size N>
+    Span(const Array<T, N>&) -> Span<T>;
+
 } // namespace hk

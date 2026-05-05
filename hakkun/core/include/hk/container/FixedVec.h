@@ -81,5 +81,7 @@ namespace hk {
     FixedVec(T (&data)[N]) -> FixedVec<T, N>;
     template <typename T, size N>
     FixedVec(const T (&data)[N]) -> FixedVec<T, N>;
+    template <typename T, size N>
+    Span(const FixedVec<T, N>&) -> Span<T>;
 
 } // namespace hk
