@@ -116,7 +116,8 @@ namespace hk {
                 if (index == -1)
                     return false;
 
-                return T(::move(remove(index)));
+                remove(index);
+                return true;
             }
 
             constexpr T popBack() {
@@ -433,6 +434,11 @@ namespace hk {
             return Super::insert(forward<T>(value), index);
         }
 
+        constexpr T* append(Span<const T> data) {
+            reserve(getSize() + data.size());
+            return Super::append(data);
+        }
+
     protected:
         using Super::getCapacity;
         using Super::getData;
@@ -441,6 +447,7 @@ namespace hk {
 
     private:
         using Super::add;
+        using Super::append;
         using Super::emplace;
         using Super::emplaceAt;
         using Super::emplaceBack;

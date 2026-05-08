@@ -19,7 +19,7 @@ namespace hk::util {
      * @param high
      * @param searchValue
      * @param findBetween whether to return -1 or in between index with no exact match
-     * @return s32
+     * @return size
      */
     template <typename T, typename GetFunc>
     constexpr size binarySearch(GetFunc get, s32 low, s32 high, T searchValue, bool findBetween = false) {
@@ -44,7 +44,7 @@ namespace hk::util {
         requires util::ctIsCopyConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void copy(T* dest, const T* src, size amount) {
-        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyCopyConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memcpy(dest, src, amount * sizeof(T));
         else {
             for (size i = 0; i < amount; i++) {
@@ -58,7 +58,7 @@ namespace hk::util {
         requires util::ctIsCopyConstructible<T>
         and util::ctIsDestructible<T>
     constexpr void copyOverlapping(T* dest, const T* src, size amount) {
-        if (!std::is_constant_evaluated() and util::ctIsTriviallyMoveConstructible<T> and util::ctIsTriviallyDestructible<T>)
+        if (!std::is_constant_evaluated() and util::ctIsTriviallyCopyConstructible<T> and util::ctIsTriviallyDestructible<T>)
             __builtin_memmove(dest, src, amount * sizeof(T));
         else {
             if (dest < src)
