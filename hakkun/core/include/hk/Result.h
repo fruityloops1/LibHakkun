@@ -93,9 +93,12 @@ namespace hk {
 
         u32 value = 0;
 
+        enum class NoMask { };
+
         constexpr ResultBase() = default;
         constexpr ResultBase(const ResultBase& other) = default;
         constexpr ResultBase(const Result& other);
+        constexpr ResultBase(NoMask, const Result& other);
         constexpr ResultBase(u32 value)
             : value(value) { }
         constexpr ResultBase(int module, int description)
@@ -177,13 +180,15 @@ namespace hk {
 
     constexpr ResultBase::ResultBase(const Result& other)
         : value(maskOutDebugRef(other.value)) { }
+    constexpr ResultBase::ResultBase(NoMask, const Result& other)
+        : value(other.value) { }
 
 #if HK_RESULT_ADVANCED
-#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(VALUE, EXPR, FILE, LINE)
-#define MAKE_RESULT(VALUE, ...) ::hk::Result(VALUE __VA_OPT__(, ) __VA_ARGS__, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__)
+#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE), EXPR, FILE, LINE)
+#define MAKE_RESULT(VALUE, ...) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE __VA_OPT__(, ) __VA_ARGS__), #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__)
 #else
-#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(VALUE)
-#define MAKE_RESULT(VALUE, ...) ::hk::Result(VALUE __VA_OPT__(, ) __VA_ARGS__)
+#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE))
+#define MAKE_RESULT(VALUE, ...) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE __VA_OPT__(, ) __VA_ARGS__))
 #endif
 
 #define MAKE_SUCCESS() ::hk::Result(0)
