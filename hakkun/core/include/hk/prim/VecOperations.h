@@ -83,7 +83,7 @@ namespace hk {
             }
 
             constexpr T* append(Span<const T> data) {
-                HK_ABORT_UNLESS(getSize() + data.size() < getCapacity(), "%s<%s>::append(%zu): Full (size: %zu capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), data.size(), getSize(), getCapacity());
+                HK_ABORT_UNLESS(getSize() + data.size() <= getCapacity(), "%s<%s>::append(%zu): Full (size: %zu capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), data.size(), getSize(), getCapacity());
                 util::constructCopy(getData() + getSize(), data.data(), data.size());
                 T* ptr = getData() + getSize();
                 setSize(getSize() + data.size());
