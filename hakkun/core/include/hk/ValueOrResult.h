@@ -252,6 +252,7 @@ namespace hk {
         constexpr operator Result() const { return mResult; }
         constexpr operator T&() { return get(); }
         constexpr T* operator->() { return &get(); }
+        constexpr T* ptr() { return &get(); }
     };
 
     template <>
