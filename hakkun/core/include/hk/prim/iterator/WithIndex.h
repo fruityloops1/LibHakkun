@@ -34,7 +34,7 @@ namespace hk::util {
         const Iterator mEnd;
 
     public:
-        constexpr IndexIterable(Container& iterable)
+        constexpr IndexIterable(Container&& iterable)
             : mBegin(iterable.begin())
             , mEnd(iterable.end()) { }
 
@@ -46,8 +46,8 @@ namespace hk::util {
     };
 
     template <typename Container>
-    constexpr IndexIterable<Container> iterateWithIdx(Container& iterable) {
-        return { iterable };
+    constexpr IndexIterable<Container> iterateWithIdx(Container&& iterable) {
+        return { forward<Container>(iterable) };
     }
 
 } // namespace hk::util

@@ -33,7 +33,7 @@ namespace hk::util {
         const Iterator mEnd;
 
     public:
-        constexpr TransformIterable(Container& iterable, const L& func)
+        constexpr TransformIterable(Container&& iterable, const L& func)
             : mBegin(func, iterable.begin())
             , mEnd(func, iterable.end()) { }
 
@@ -45,8 +45,8 @@ namespace hk::util {
     };
 
     template <auto L, typename Container>
-    constexpr TransformIterable<Container, decltype(L)> iterateTransform(Container& iterable) {
-        return { iterable, L };
+    constexpr TransformIterable<Container, decltype(L)> iterateTransform(Container&& iterable) {
+        return { forward<Container>(iterable), L };
     }
 
 } // namespace hk::util

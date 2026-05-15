@@ -40,7 +40,7 @@ namespace hk::util {
         const Iterator mEnd;
 
     public:
-        constexpr FilterIterable(Container& iterable, const L& func)
+        constexpr FilterIterable(Container&& iterable, const L& func)
             : mBegin(func, iterable.begin(), iterable.end())
             , mEnd(func, iterable.end(), iterable.end()) { }
 
@@ -52,8 +52,8 @@ namespace hk::util {
     };
 
     template <auto L, typename Container>
-    constexpr FilterIterable<Container, decltype(L)> iterateFilter(Container& iterable) {
-        return { iterable, L };
+    constexpr FilterIterable<Container, decltype(L)> iterateFilter(Container&& iterable) {
+        return { forward<Container>(iterable), L };
     }
 
     namespace detail {
@@ -63,8 +63,8 @@ namespace hk::util {
     } // namespace detail
 
     template <typename Container>
-    constexpr FilterIterable<Container, decltype(detail::cFilterNullptr)> iterateNonNullptr(Container& iterable) {
-        return { iterable, detail::cFilterNullptr };
+    constexpr FilterIterable<Container, decltype(detail::cFilterNullptr)> iterateNonNullptr(Container&& iterable) {
+        return { forward<Container>(iterable), detail::cFilterNullptr };
     }
 
 } // namespace hk::util
