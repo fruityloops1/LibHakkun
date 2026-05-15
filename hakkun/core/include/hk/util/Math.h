@@ -45,6 +45,10 @@ namespace hk::util {
             : x(x)
             , y(y) { }
 
+        constexpr bool operator==(const Vector2& rhs) const {
+            return x == rhs.x && y == rhs.y;
+        }
+
         constexpr Vector2 operator+(const Vector2& rhs) const {
             return { x + rhs.x, y + rhs.y };
         }
@@ -151,6 +155,10 @@ namespace hk::util {
             , y(y)
             , z(z) { }
 
+        constexpr bool operator==(const Vector3& rhs) const {
+            return x == rhs.x && y == rhs.y && z == rhs.z;
+        }
+
         constexpr Vector3 operator+(const Vector3& rhs) const {
             return { x + rhs.x, y + rhs.y, z + rhs.z };
         }
@@ -254,6 +262,133 @@ namespace hk::util {
     using Vector3f = Vector3<f32>;
     using Vector3f64 = Vector3<f64>;
     using Vector3i = Vector3<int>;
+
+    template <typename T>
+    struct Vector4 {
+        T x = 0, y = 0, z = 0, w = 0;
+
+        constexpr Vector4() = default;
+        constexpr Vector4(T x, T y, T z, T w)
+            : x(x)
+            , y(y)
+            , z(z)
+            , w(w) { }
+
+        constexpr bool operator==(const Vector4& rhs) const {
+            return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        }
+
+        constexpr Vector4 operator+(const Vector4& rhs) const {
+            return { x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+        }
+        constexpr Vector4 operator-(const Vector4& rhs) const {
+            return { x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+        }
+        constexpr Vector4 operator*(const Vector4& rhs) const {
+            return { x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w };
+        }
+        constexpr Vector4 operator/(const Vector4& rhs) const {
+            return { x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w };
+        }
+
+        constexpr Vector4& operator+=(const Vector4& rhs) {
+            x += rhs.x;
+            y += rhs.y;
+            z += rhs.z;
+            w += rhs.w;
+            return *this;
+        }
+        constexpr Vector4& operator-=(const Vector4& rhs) {
+            x -= rhs.x;
+            y -= rhs.y;
+            z -= rhs.z;
+            w -= rhs.w;
+            return *this;
+        }
+        constexpr Vector4& operator*=(const Vector4& rhs) {
+            x *= rhs.x;
+            y *= rhs.y;
+            z *= rhs.z;
+            w *= rhs.w;
+            return *this;
+        }
+        constexpr Vector4& operator/=(const Vector4& rhs) {
+            x /= rhs.x;
+            y /= rhs.y;
+            z /= rhs.z;
+            w /= rhs.w;
+            return *this;
+        }
+
+        constexpr Vector4 operator+(T v) {
+            return { x + v, y + v, z + v, w + v };
+        }
+        constexpr Vector4 operator-(T v) {
+            return { x - v, y - v, z - v, w - v };
+        }
+        constexpr Vector4 operator*(T v) {
+            return { x * v, y * v, z * v, w * v };
+        }
+        constexpr Vector4 operator/(T v) {
+            return { x / v, y / v, z / v, w / v };
+        }
+
+        constexpr Vector4& operator+=(T v) {
+            x += v;
+            y += v;
+            z += v;
+            w += v;
+            return *this;
+        }
+        constexpr Vector4& operator-=(T v) {
+            x -= v;
+            y -= v;
+            z -= v;
+            w -= v;
+            return *this;
+        }
+        constexpr Vector4& operator*=(T v) {
+            x *= v;
+            y *= v;
+            z *= v;
+            w *= v;
+            return *this;
+        }
+        constexpr Vector4& operator/=(T v) {
+            x /= v;
+            y /= v;
+            z /= v;
+            w /= v;
+        }
+
+        constexpr T length() {
+            return std::sqrt(x * x + y * y + z * z + w * w);
+        }
+
+        constexpr Vector4& normalize() {
+            const T len = length();
+            if (len > 0) {
+                const T invLen = 1 / len;
+                *this *= invLen;
+            }
+
+            return *this;
+        }
+
+        constexpr operator Vector4<f32>() const {
+            return Vector4<f32>(f32(x), f32(y), f32(z), f32(w));
+        }
+        constexpr operator Vector4<f64>() const {
+            return Vector4<f64>(f64(x), f64(y), f64(z), f64(w));
+        }
+        constexpr operator Vector4<int>() const {
+            return Vector4<int>(int(x), int(y), int(z), int(w));
+        }
+    };
+
+    using Vector4f = Vector4<f32>;
+    using Vector4f64 = Vector4<f64>;
+    using Vector4i = Vector4<int>;
 
     // Bit math
 
