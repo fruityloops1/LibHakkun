@@ -98,6 +98,14 @@ namespace hk {
 #endif
         ;
 
+    static constexpr SizeType cMinimumMappedAddress =
+#ifdef NNSDK
+        1_MB
+#else
+        1_MB // default
+#endif
+        ;
+
     namespace util {
 
         constexpr bool isRepresentable(SizeType width, SizeType value, SizeType numShift = 1) {

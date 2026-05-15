@@ -45,7 +45,7 @@ namespace hk::hook {
 
         template <typename L>
         TrampolineHook(L func)
-            : Rp(func) { }
+            : Rp(forward<L>(func)) { }
 
         Result installAtOffset(const ro::RoModule* module, ptr offset) override {
             HK_UNLESS(!Rp::isInstalled(), ResultAlreadyInstalled());
@@ -96,9 +96,9 @@ namespace hk::hook {
     };
 
     template <typename L>
-    typename std::enable_if<!util::LambdaHasCapture<L>::value, TrampolineHook<typename util::FunctionTraits<L>::FuncPtrType>>::type trampoline(L func) {
-        using Func = typename util::FunctionTraits<L>::FuncPtrType;
-        return { (Func)func };
+    typename std::enable_if<!util::LambdaHasCapture<L>::value, TrampolineHook<typename util::FunctionTraits<L>::FuncPtrTypeStatic>>::type trampoline(L func) {
+        using Traits = util::FunctionTraits<L>;
+        return { Traits::fromLambda(forward<L>(func)) };
     }
 
 } // namespace hk::hook

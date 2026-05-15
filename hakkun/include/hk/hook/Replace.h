@@ -31,7 +31,7 @@ namespace hk::hook {
 
         template <typename L>
         ReplaceHook(L func)
-            : mFunc((typename util::FunctionTraits<L>::FuncPtrType)func) { }
+            : mFunc(hk::util::FunctionTraits<L>::fromLambda(forward<L>(func))) { }
 
         bool isInstalled() const { return mOrigInstr != 0; }
 
@@ -53,17 +53,22 @@ namespace hk::hook {
             return ResultSuccess();
         }
 
-        template <typename T>
-        Result installAtPtr(T* addr) {
-            auto* module = ro::getModuleContaining(ptr(addr));
+        Result installAtPtr(ptr addr) {
+            HK_UNLESS(addr != 0, hk::ResultInvalidAddress());
+            auto* module = ro::getModuleContaining(addr);
             HK_UNLESS(module != nullptr, ResultOutOfBounds());
 
             return installAtOffset(module, ptr(addr) - module->range().start());
         }
 
-        template <typename T, typename R, typename... Args>
-        Result installAtPtr(R (T::*addr)(Args...)) {
-            return installAtPtr(pun<void*>(addr));
+        [[deprecated("use installAtPtr(ptr), installAtPtr(R(*)(Args...)), installAtPtr(R (T::*)(Args...))")]] Result installAtPtr(void* addr) {
+            return installAtPtr(ptr(addr));
+        }
+
+        template <AnyFunctionPointerType T>
+        Result installAtPtr(T func) {
+            using Traits = util::FunctionTraits<T>;
+            return installAtPtr(Traits::getAddress(func));
         }
 
         template <util::TemplateString Symbol>
@@ -95,9 +100,9 @@ namespace hk::hook {
     }*/
 
     template <typename L>
-    typename std::enable_if<!util::LambdaHasCapture<L>::value, ReplaceHook<typename util::FunctionTraits<L>::FuncPtrType>>::type replace(L func) {
-        using Func = typename util::FunctionTraits<L>::FuncPtrType;
-        return { (Func)func };
+    typename std::enable_if<!util::LambdaHasCapture<L>::value, ReplaceHook<typename util::FunctionTraits<L>::FuncPtrTypeStatic>>::type replace(L func) {
+        using Traits = util::FunctionTraits<L>;
+        return { Traits::fromLambda(forward<L>(func)) };
     }
 
 } // namespace hk::hook

@@ -44,6 +44,12 @@ namespace hk::util {
         struct TriviallyCopyConstructible : TriviallyConstructible<const T&> { };
         struct TriviallyDestructible : Bool<__is_trivially_destructible(T)> { };
 
+        struct Polymorphic : Bool<__is_polymorphic(T)> { };
+
+        struct Function : Bool<__is_function(T)> { };
+        struct FunctionPointer;
+        struct MemberFunctionPointer : Bool<__is_member_function_pointer(T)> { };
+
         struct Integral;
         struct FloatingPoint;
 
@@ -96,6 +102,16 @@ namespace hk::util {
     using ttTriviallyDestructible = TypeTraits<T>::TriviallyDestructible;
 
     template <typename T>
+    using ttPolymorphic = TypeTraits<T>::Polymorphic;
+
+    template <typename T>
+    using ttFunction = TypeTraits<T>::Function;
+    template <typename T>
+    using ttFunctionPointer = TypeTraits<T>::FunctionPointer;
+    template <typename T>
+    using ttMemberFunctionPointer = TypeTraits<T>::MemberFunctionPointer;
+
+    template <typename T>
     using ttIntegral = TypeTraits<T>::Integral;
     template <typename T>
     using ttFloatingPoint = TypeTraits<T>::FloatingPoint;
@@ -136,6 +152,16 @@ namespace hk::util {
     constexpr bool ctIsTriviallyDestructible = ttTriviallyDestructible<T>::cValue;
 
     template <typename T>
+    constexpr bool ctIsPolymorphic = ttPolymorphic<T>::cValue;
+
+    template <typename T>
+    constexpr bool ctIsFunction = ttFunction<T>::cValue;
+    template <typename T>
+    constexpr bool ctIsFunctionPointer = ttFunctionPointer<T>::cValue;
+    template <typename T>
+    constexpr bool ctIsMemberFunctionPointer = ttMemberFunctionPointer<T>::cValue;
+
+    template <typename T>
     constexpr bool ctIsIntegral = ttIntegral<T>::cValue;
     template <typename T>
     constexpr bool ctIsFloatingPoint = ttFloatingPoint<T>::cValue;
@@ -147,7 +173,7 @@ namespace hk::util {
     template <typename T>
     using tRemoveConst = TypeTraits<T>::RemoveConst::Type;
     template <typename T>
-    using tRemoveQualifier = TypeTraits<T>::RemoveQualifiers::Type;
+    using tRemoveQualifiers = TypeTraits<T>::RemoveQualifiers::Type;
 
     template <typename T>
     constexpr const char* ctPrintfFormatVerbose = TypeTraits<T>::PrintfFormatVerbose::cValue;
@@ -278,6 +304,28 @@ namespace hk::util {
 
     template <typename T>
     struct TypeTraits<T>::Reference : detail::Reference<T> { };
+
+    namespace detail {
+
+        template <typename T>
+        struct FunctionPointer {
+            constexpr static bool cValue = false;
+        };
+
+        template <typename R, typename... Args>
+        struct FunctionPointer<R (*)(Args...)> {
+            constexpr static bool cValue = true;
+        };
+
+        template <typename R, typename... Args>
+        struct FunctionPointer<R (*)(Args..., ...)> {
+            constexpr static bool cValue = true;
+        };
+
+    } // namespace detail
+
+    template <typename T>
+    struct TypeTraits<T>::FunctionPointer : detail::FunctionPointer<tRemoveConst<T>> { };
 
     template <typename T>
     struct TypeTraits<T>::Integral : Bool<ctContains<T,
