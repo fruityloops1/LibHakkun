@@ -138,6 +138,8 @@ File: %s:%d
 
 #if NNSDK
     hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
+        ResultNN abortResult = result;
+
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
         std::va_list listCopy;
         va_copy(listCopy, arg);
@@ -160,10 +162,10 @@ File: %s:%d
         if (module) {
             void* headerSym = setAbortMsg(module, headerMsgBuf, 0);
             void* userSym = setAbortMsg(module, userMsgBuf, 1);
-            svc::BreakWithMessage(reason, &result, sizeof(result), headerSym, userSym);
+            svc::BreakWithMessage(reason, &abortResult, sizeof(abortResult), headerSym, userSym);
         } else
 #endif
-            svc::Break(reason, &result, sizeof(result));
+            svc::Break(reason, &abortResult, sizeof(abortResult));
     }
 #else
     hk_noreturn void abortImpl(Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
