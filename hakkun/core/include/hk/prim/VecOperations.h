@@ -368,6 +368,7 @@ namespace hk {
             setCapacity(other.getCapacity());
             other.setCapacity(0);
             other.setSize(0);
+            other.setData(nullptr);
         }
 
         constexpr void reserve(size capacity) {

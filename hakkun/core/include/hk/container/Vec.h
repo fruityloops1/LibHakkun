@@ -30,6 +30,9 @@ namespace hk {
             }
 
             constexpr static void free(Span<T> data, ::size capacity) {
+                if (data.data() == nullptr)
+                    return;
+
                 if consteval {
                     std::allocator<T>().deallocate(data.data(), capacity);
                 } else {
