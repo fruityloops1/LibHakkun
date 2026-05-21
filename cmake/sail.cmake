@@ -40,7 +40,21 @@ function (usesail lib)
         
         file(GLOB_RECURSE ADDONS_SYMS_EMPTY_TEST ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms/*.sym)
         if (ADDONS_SYMS_EMPTY_TEST)
-            set(SAIL_CMD ${SAIL_CMD} ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms)
+            # Expand the glob ourselves rather than passing a literal pattern.
+            # On POSIX, /bin/sh expands the wildcard before sail sees it, so
+            # the original `.../sys/addons/*/syms` form happens to work. On
+            # Windows, add_custom_command(COMMAND ...) invokes the command
+            # directly (no shell glob), and sail receives the literal string
+            # "...sys/addons/*/syms" which doesn't exist — recursive_directory_iterator
+            # then throws and sail aborts. Expand at configure time so both
+            # platforms hand sail real directory paths.
+            file(GLOB ADDONS_SYM_DIRS LIST_DIRECTORIES TRUE
+                 ${CMAKE_CURRENT_SOURCE_DIR}/sys/addons/*/syms)
+            foreach (d IN LISTS ADDONS_SYM_DIRS)
+                if (IS_DIRECTORY ${d})
+                    set(SAIL_CMD ${SAIL_CMD} ${d})
+                endif()
+            endforeach()
         endif()
         
         add_custom_command(TARGET ${lib} PRE_LINK
