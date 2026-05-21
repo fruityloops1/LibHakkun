@@ -10,7 +10,13 @@
 
 namespace sail {
     static void compile(const char* outPath, const char* clangBinary, const char* language, const std::string& source, const std::string& flags, const char* filename) {
-        std::string cmd = clangBinary;
+        // Quote clangBinary so popen() handles paths with spaces (common on
+        // Windows: "C:\Program Files\LLVM\bin\clang.exe"). Without quoting,
+        // the shell parses "C:\Program" as the command and the rest as args.
+        std::string cmd;
+        cmd.push_back('"');
+        cmd.append(clangBinary);
+        cmd.push_back('"');
 
         if (is32Bit()) {
             cmd.append(" --target=armv7a-none-eabi -march=armv7-a");
