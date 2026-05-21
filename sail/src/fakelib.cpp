@@ -10,9 +10,7 @@
 
 namespace sail {
     static void compile(const char* outPath, const char* clangBinary, const char* language, const std::string& source, const std::string& flags, const char* filename) {
-        // Quote clangBinary so popen() handles paths with spaces (common on
-        // Windows: "C:\Program Files\LLVM\bin\clang.exe"). Without quoting,
-        // the shell parses "C:\Program" as the command and the rest as args.
+        // Quote clangBinary so popen() handles paths with spaces
         std::string cmd;
         cmd.push_back('"');
         cmd.append(clangBinary);
