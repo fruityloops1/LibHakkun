@@ -124,6 +124,30 @@ namespace hk::diag {
     }
 #endif
 
+    constexpr char cDumpFormat[] = R"(
+~~~ HakkunDump ~~~)";
+
+    void dumpImpl(Result result, const char* expr, const char* file, int line) {
+        logLine(cDumpFormat);
+        const auto dumpSimple = [=]() {
+            const char* resultName = getResultName(result);
+
+            resultName ? logLine("File: %s:%d\n%s [from %s]\n", file, line, resultName, expr)
+                       : logLine("File: %s:%d\n%04d-%04d/0x%x [from %s]\n", file, line, result.getModule() + 2000, result.getDescription(), result.getValue(), expr);
+        };
+
+        if (!HK_RESULT_ADVANCED or result.succeeded()
+#if HK_RESULT_ADVANCED
+            or result.getInfo() == nullptr
+#endif
+        )
+            dumpSimple();
+        else {
+            dumpResultTrace(result);
+            logLine("");
+        }
+    }
+
     constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~
 File: %s:%d

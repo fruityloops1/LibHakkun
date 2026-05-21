@@ -31,8 +31,10 @@ namespace hk::diag {
 
 #if HK_RESULT_ADVANCED
     void dumpResultTrace(Result result);
+    void dumpImpl(Result result, const char* expr, const char* file, int line);
 #else
     inline hk_alwaysinline void dumpResultTrace(Result result) { }
+    inline void dumpImpl(Result result, const char* file, int line) { }
 #endif
 
     constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
@@ -86,6 +88,7 @@ namespace hk::diag {
     } while (0)
 
 #define HK_TODO(...) HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
+#define HK_DUMP(RESULT, ...) (RESULT __VA_OPT__(, ) __VA_ARGS__)
 
 #else
     // clang-format off
@@ -170,9 +173,18 @@ namespace hk::diag {
         }                                                                                 \
     } while (0)
 
+#define HK_DUMP(RESULT, ...)                                                                              \
+    ({                                                                                                    \
+        auto&& _value_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                           \
+        ::hk::Result _result_temp = _value_temp;                                                          \
+        if (_result_temp.failed())                                                                        \
+            ::hk::diag::dumpImpl(_result_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__); \
+        ::move(_value_temp);                                                                              \
+    })
+
 #define HK_TODO(...) \
     HK_ABORT("TODO: " __VA_ARGS__)
-    // clang-format on
+// clang-format on
 #endif
 
     /**
