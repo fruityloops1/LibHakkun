@@ -33,7 +33,11 @@ int main(int argc, char* argv[]) {
             if (!entry.path().string().ends_with(".sym"))
                 continue;
 
-            const char* path = entry.path().c_str();
+            // std::filesystem::path::value_type is wchar_t on Windows, so
+            // entry.path().c_str() yields wchar_t*. Convert via .string() to
+            // a UTF-8 std::string before taking a C pointer.
+            const std::string pathStr = entry.path().string();
+            const char* path = pathStr.c_str();
 
             std::string data = sail::readFileString(path);
             auto syms = sail::parseSymbolFile(data, path);
