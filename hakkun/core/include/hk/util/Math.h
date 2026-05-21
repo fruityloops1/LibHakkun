@@ -469,6 +469,12 @@ namespace hk::util {
     }
 
     template <typename T>
+    constexpr T signExtend(T value, int width) {
+        T mask = T(1) << (width - 1);
+        return T((value ^ mask) - mask);
+    }
+
+    template <typename T>
     constexpr T ror(T value, int shift, int width) {
         shift = shift % width;
         if (shift == 0)
