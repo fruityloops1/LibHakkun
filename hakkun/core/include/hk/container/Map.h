@@ -22,8 +22,12 @@ namespace hk {
         using VecType = Vec<Pair, ReserveSize, Allocator>;
         using Hash = size;
 
+        constexpr size binarySearchByHash(Hash hash, bool findBetween = false) const {
+            return VecType::binarySearch([](const Pair& pair) -> Hash { return HashFunc::hash(pair.a); }, hash, findBetween);
+        }
+
         constexpr size binarySearch(const K& key, bool findBetween = false) const {
-            return VecType::binarySearch([](const Pair& pair) -> Hash { return HashFunc::hash(pair.a); }, HashFunc::hash(key), findBetween);
+            return binarySearchByHash(HashFunc::hash(key), findBetween);
         }
 
         constexpr void checkInsert(const K& key) {
@@ -43,8 +47,16 @@ namespace hk {
         using VecType::begin;
         using VecType::end;
 
+        constexpr V* findByHash(Hash hash) {
+            ::size foundIdx = binarySearchByHash(hash);
+            if (foundIdx == -1)
+                return nullptr;
+
+            return &VecType::at(foundIdx).b;
+        }
+
         constexpr V* find(const K& key) {
-            s32 foundIdx = binarySearch(key);
+            ::size foundIdx = binarySearch(key);
             if (foundIdx == -1)
                 return nullptr;
 
@@ -52,7 +64,7 @@ namespace hk {
         }
 
         constexpr const V* find(const K& key) const {
-            s32 foundIdx = binarySearch(key);
+            ::size foundIdx = binarySearch(key);
             if (foundIdx == -1)
                 return nullptr;
 
@@ -61,25 +73,25 @@ namespace hk {
 
         constexpr Pair& insert(const K& key, const V& value) {
             checkInsert(key);
-            s32 insertIdx = binarySearch(key, true);
+            ::size insertIdx = binarySearch(key, true);
             return VecType::insert({ key, value }, insertIdx);
         }
 
         constexpr Pair& insert(K&& key, V&& value) {
             checkInsert(key);
-            s32 insertIdx = binarySearch(key, true);
+            ::size insertIdx = binarySearch(key, true);
             return VecType::insert({ forward<K>(key), forward<V>(value) }, insertIdx);
         }
 
         constexpr Pair& insert(const K& key, V&& value) {
             checkInsert(key);
-            s32 insertIdx = binarySearch(key, true);
+            ::size insertIdx = binarySearch(key, true);
             return VecType::insert({ key, forward<V>(value) }, insertIdx);
         }
 
         constexpr Pair& insert(K&& key, const V& value) {
             checkInsert(key);
-            s32 insertIdx = binarySearch(key, true);
+            ::size insertIdx = binarySearch(key, true);
             return VecType::insert({ forward<K>(key), value }, insertIdx);
         }
 
