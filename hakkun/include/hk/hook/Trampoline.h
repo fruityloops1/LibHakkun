@@ -9,12 +9,25 @@ namespace hk::hook {
 
     namespace detail {
 
+        // A backup slot holds up to cMaxSlots instructions emitted by the
+        // prologue relocator. For a non-PC-relative original, only the
+        // first two slots are used (verbatim copy + back-branch); for
+        // PC-relative originals (adrp/adr/b/bl/b.cond/cbz/cbnz/tbz/tbnz)
+        // the relocator emits a movz/movk-immediate-build plus a branch
+        // sequence whose worst case is 8 instructions.
         struct TrampolineBackup {
-            Instr origInstr;
-            Instr bRetInstr;
+            static constexpr int cMaxSlots = 8;
+            Instr instrs[cMaxSlots];
 
             ptr getRx() const;
         };
+
+        // Decode `orig` (the instruction at function-entry PC `origPc`) and
+        // populate `backup->instrs[]` so that executing from backup->getRx()
+        // has the same architectural effect, then (unless the original was an
+        // unconditional B to a fixed target) append a `b origPc + 4` so
+        // control resumes inside the hooked function.
+        void installRelocatedPrologue(TrampolineBackup* backup, Instr orig, ptr origPc);
 
         extern util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool;
 
@@ -64,14 +77,7 @@ namespace hk::hook {
 
             mBackup = detail::sTrampolinePool.allocate();
             HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
-            mBackup->origInstr = mOrigInstr; // TODO: Relocate instruction, or at least abort if instruction needs to be relocated
-
-            const ptr from = mBackup->getRx() + sizeof(Instr), to = getAt() + sizeof(Instr);
-            const s64 gap = to - from;
-            HK_ABORT_UNLESS(abs(gap) <= cMaxBranchDistance, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", abs(gap), cMaxBranchDistance);
-
-            mBackup->bRetInstr = makeB(from, to);
-            svc::clearCache(mBackup->getRx(), sizeof(detail::TrampolineBackup));
+            detail::installRelocatedPrologue(mBackup, mOrigInstr, getAt());
 
             orig = getBackupFuncPtr();
 
