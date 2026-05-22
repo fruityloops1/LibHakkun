@@ -10,11 +10,18 @@ namespace hk::hook {
     namespace detail {
 
         struct TrampolineBackup {
-            Instr origInstr;
-            Instr bRetInstr;
+            static constexpr size cMaxNumInstrs = 5;
+
+            Instr instrs[cMaxNumInstrs] { cNop };
+
+            void make(Instr orig, ptr origAddr);
+            void clear() {
+                util::fill(this->instrs, cMaxNumInstrs, cNop);
+                svc::clearCache(getRx(), sizeof(*this));
+            }
 
             ptr getRx() const;
-        };
+        } __attribute__((packed));
 
         extern util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool;
 
@@ -64,14 +71,7 @@ namespace hk::hook {
 
             mBackup = detail::sTrampolinePool.allocate();
             HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
-            mBackup->origInstr = mOrigInstr; // TODO: Relocate instruction, or at least abort if instruction needs to be relocated
-
-            const ptr from = mBackup->getRx() + sizeof(Instr), to = getAt() + sizeof(Instr);
-            const s64 gap = to - from;
-            HK_ABORT_UNLESS(abs(gap) <= cMaxBranchDistance, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", abs(gap), cMaxBranchDistance);
-
-            mBackup->bRetInstr = makeB(from, to);
-            svc::clearCache(mBackup->getRx(), sizeof(detail::TrampolineBackup));
+            mBackup->make(mOrigInstr, getAt());
 
             orig = getBackupFuncPtr();
 
@@ -81,6 +81,7 @@ namespace hk::hook {
         Result uninstall() override {
             HK_UNLESS(Rp::isInstalled(), ResultNotInstalled());
 
+            mBackup->clear();
             detail::sTrampolinePool.free(mBackup);
             mBackup = nullptr;
 

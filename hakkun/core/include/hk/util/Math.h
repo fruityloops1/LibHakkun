@@ -479,4 +479,72 @@ namespace hk::util {
         return ((value >> shift) | (value << (width - shift))) & mask;
     }
 
+    template <UnsignedIntegerType T>
+    constexpr typename IntegerTraits<T>::SignedTraits::Type signExtend(T value, int width) {
+        using Signed = typename IntegerTraits<T>::SignedTraits::Type;
+        Signed mask = Signed(1) << (width - 1);
+        return (value ^ mask) - mask;
+    }
+
+    template <UnsignedIntegerType T, size NumValues = 1>
+    struct WildcardBits {
+        T mask;
+        T bits[NumValues] { 0 };
+
+        using Traits = IntegerTraits<T>;
+
+        constexpr bool test(T value) const {
+            T testValue = value & mask;
+            for (int i = 0; i < NumValues; i++)
+                if (testValue == bits[i])
+                    return true;
+            return false;
+        }
+
+        template <size N>
+        constexpr WildcardBits(T mask, T (&bits)[N])
+            : mask(mask) {
+            copy(this->bits, bits, N);
+        }
+
+        template <size N>
+            requires(NumValues == 1)
+        consteval WildcardBits(const char (&expr)[N])
+            : mask(hk::bits(N - 1)) {
+            if (N - 1 > Traits::cWidth)
+                throwErr("too big");
+
+            T& bits = this->bits[0];
+
+            for (int i = 0; i < N - 1; i++) {
+                const size idx = N - i - 2;
+                const char curBit = expr[idx];
+
+                if (curBit == '?')
+                    mask &= ~bit(i);
+                else if (curBit == '1')
+                    bits |= bit(i);
+                else if (curBit == '0')
+                    ;
+                else
+                    throwErr("Invalid bit: ", curBit);
+            }
+        }
+
+        template <size RhsNumValues>
+        constexpr WildcardBits<T, NumValues + RhsNumValues> operator or(const WildcardBits<T, RhsNumValues>& rhs) const {
+            T values[NumValues + RhsNumValues];
+            copy(values, this->bits, NumValues);
+            copy(values + NumValues, rhs.bits, RhsNumValues);
+            return { mask & rhs.mask, values };
+        }
+
+    private:
+        template <typename... Args>
+        constexpr void throwErr(Args...) {
+            char v[0];
+            (void)v[1];
+        }
+    };
+
 } // namespace hk::util

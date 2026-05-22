@@ -16,6 +16,8 @@ namespace hk::hook {
 #ifdef __aarch64__
     using Instr = u32;
 
+    constexpr Instr cNop = 0x1F2003D5;
+
     namespace detail {
 
         enum UnconditionalBranchOp {
@@ -95,6 +97,8 @@ namespace hk::hook {
 #elif __arm__
     using Instr = u32;
 
+    constexpr Instr cNop = 0x00F020E3;
+
     namespace detail {
 
         enum UnconditionalBranchOp {
@@ -167,5 +171,8 @@ namespace hk::hook {
     constexpr Instr makeB(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::Branch, pcAddr, branchToAddr); }
     constexpr Instr makeBL(ptr pcAddr, ptr branchToAddr) { return detail::makeUnconditionalBranch(detail::UnconditionalBranchOp::BranchLink, pcAddr, branchToAddr); }
 #undef _HK_HOOK_DETAIL_WRITEFUNC
+
+    template <size NumValues = 1>
+    using WildcardInstr = util::WildcardBits<Instr, NumValues>;
 
 } // namespace hk::hook
