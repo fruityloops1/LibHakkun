@@ -29,6 +29,11 @@ namespace hk {
 
         using Super::Super;
 
+        template <typename = void>
+            requires(Length == 1)
+        constexpr Array(const T& value)
+            : Super(&value, 1) { }
+
         friend Super;
         friend Super::Super;
         friend Super::Super::Super;
@@ -40,6 +45,8 @@ namespace hk {
     Array(T (&data)[N]) -> Array<T, N>;
     template <typename T, size N>
     Array(const T (&data)[N]) -> Array<T, N>;
+    template <typename T>
+    Array(const T& value) -> Array<T, 1>;
     template <typename T, size N>
     Span(const Array<T, N>&) -> Span<T>;
 
