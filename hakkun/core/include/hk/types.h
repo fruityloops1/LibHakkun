@@ -47,9 +47,6 @@ hk_alwaysinline To pun(From val) {
     return toValue;
 }
 
-template <typename T>
-constexpr T&& declval();
-
 namespace hk {
 
     constexpr bool is32Bit() {

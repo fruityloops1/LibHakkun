@@ -1,106 +1,52 @@
 #pragma once
 
-#include "hk/Result.h"
-#include "hk/hook/InstrUtil.h"
-#include "hk/hook/results.h"
-#include "hk/prim/traits/Function.h"
-#include "hk/ro/RoUtil.h"
-#include "hk/util/Context.h"
-#include <type_traits>
+#include "hk/container/VecSpan.h"
+#include "hk/hook/Hook.h"
+#include "hk/hook/a64/Assembler.h"
 
 namespace hk::hook {
 
-    /**
-     * @brief Hook to replace function in a module
-     *
-     * @tparam Func
-     */
     template <typename Func>
-    class ReplaceHook {
+    class Replace : public HookNInstr<detail::cHookMaxOverwriteSize>, public HookOperations<Replace<Func>> {
     protected:
         const Func mFunc = nullptr;
-        const ro::RoModule* mModule = nullptr;
-        ptr mOffset = 0;
-        u32 mOrigInstr = 0;
 
-        ptr getAt() const { return mModule->range().start() + mOffset; }
+        const static size N = detail::cHookMaxOverwriteSize;
 
     public:
-        ReplaceHook(Func func)
+        Replace(Func func)
             : mFunc(func) { }
 
         template <typename L>
-        ReplaceHook(L func)
+        Replace(L func)
             : mFunc(hk::util::FunctionTraits<L>::fromLambda(forward<L>(func))) { }
 
-        bool isInstalled() const { return mOrigInstr != 0; }
-
-        virtual Result installAtOffset(const ro::RoModule* module, ptr offset) {
+        Result installAtOffset(const ro::RoModule* module, ptr offset) {
+            const ptr at = module->range().start() + offset;
             HK_UNLESS(!isInstalled(), ResultAlreadyInstalled());
 
-            mModule = module;
-            mOffset = offset;
+            Instr instrs[N] { 0 };
 
-            mOrigInstr = *cast<u32*>(getAt());
-            Result rc = writeBranch(mModule, mOffset, mFunc);
-            if (rc.failed()) {
-                mModule = nullptr;
-                mOffset = 0;
-                mOrigInstr = 0;
-                return rc;
-            }
+            const ptr to = ptr(mFunc);
 
-            return ResultSuccess();
-        }
+#if __aarch64__
+            hk::VecSpan outInstrs(instrs, N);
+            a64::PseudoInstructionEmitter<false> emitter(outInstrs, at);
 
-        Result installAtPtr(ptr addr) {
-            HK_UNLESS(addr != 0, hk::ResultInvalidAddress());
-            auto* module = ro::getModuleContaining(addr);
-            HK_UNLESS(module != nullptr, ResultOutOfBounds());
+            emitter.emitB(to);
+            const size numInstrs = outInstrs.size();
+            const Span<const Instr> orig = { cast<const Instr*>(at), numInstrs };
 
-            return installAtOffset(module, ptr(addr) - module->range().start());
-        }
-
-        [[deprecated("use installAtPtr(ptr), installAtPtr(R(*)(Args...)), installAtPtr(R (T::*)(Args...))")]] Result installAtPtr(void* addr) {
-            return installAtPtr(ptr(addr));
-        }
-
-        template <AnyFunctionPointerType T>
-        Result installAtPtr(T func) {
-            using Traits = util::FunctionTraits<T>;
-            return installAtPtr(Traits::getAddress(func));
-        }
-
-        template <util::TemplateString Symbol>
-        hk_alwaysinline Result installAtSym() {
-            ptr addr = util::lookupSymbol<Symbol>();
-
-            return installAtPtr(cast<void*>(addr));
-        }
-
-        virtual Result uninstall() {
-            HK_UNLESS(isInstalled(), ResultNotInstalled());
-
-            HK_TRY(mModule->writeRo(mOffset, mOrigInstr));
-            mModule = nullptr;
-            mOffset = 0;
-            mOrigInstr = 0;
-
-            return ResultSuccess();
-        }
-
-        Result installAtMainOffset(ptr offset) {
-            return installAtOffset(ro::getMainModule(), offset);
+            return HookNInstr::installAtOffset(module, offset, outInstrs);
+#else
+            instrs[0] = makeB(at, to);
+            return HookNInstr::installAtOffset(module, offset, { instrs, 1 });
+#endif
         }
     };
 
-    /*template <typename Return, typename... Args>
-    ReplaceHook<Return (*)(Args...)> replace(Return (*func)(Args...)) {
-        return { func };
-    }*/
-
-    template <typename L>
-    typename std::enable_if<!util::LambdaHasCapture<L>::value, ReplaceHook<typename util::FunctionTraits<L>::FuncPtrTypeStatic>>::type replace(L func) {
+    template <LambdaNoCaptureType L>
+    Replace<typename util::FunctionTraits<L>::FuncPtrTypeStatic> replace(L func) {
         using Traits = util::FunctionTraits<L>;
         return { Traits::fromLambda(forward<L>(func)) };
     }
@@ -108,6 +54,4 @@ namespace hk::hook {
 } // namespace hk::hook
 
 template <typename Ret, typename... Args>
-using HkReplace = hk::hook::ReplaceHook<Ret (*)(Args...)>;
-template <typename Ret, typename... Args>
-using HkReplaceVarArgs = hk::hook::ReplaceHook<Ret (*)(Args..., ...)>;
+using HkReplace = hk::hook::Replace<Ret (*)(Args...)>;

@@ -2,10 +2,7 @@
 
 #include "hk/types.h"
 #include "hk/util/TemplateString.h"
-
-#if HK_RESULT_ADVANCED
 #include "hk/util/Tuple.h"
-#endif
 
 namespace hk {
 

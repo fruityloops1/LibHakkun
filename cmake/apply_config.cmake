@@ -22,8 +22,17 @@ function(apply_config project)
     if (NOT USE_SAIL)
         target_compile_definitions(${project} PRIVATE HK_DISABLE_SAIL)
     endif()
+    
+    if(NOT TRAMPOLINE_LEVEL)
+        message(WARNING "TRAMPOLINE_LEVEL not set; using 1")
+        set(TRAMPOLINE_LEVEL 1)
+    endif()
+    
+    target_compile_definitions(${project} PRIVATE NNSDK HK_HOOK_TRAMPOLINE_LEVEL=${TRAMPOLINE_LEVEL} MODULE_NAME=${MODULE_NAME})
 
-    target_compile_definitions(${project} PRIVATE NNSDK HK_HOOK_TRAMPOLINE_POOL_SIZE=${TRAMPOLINE_POOL_SIZE} MODULE_NAME=${MODULE_NAME})
+    if (TRAMPOLINE_POOL_SIZE)
+        message(WARNING "TRAMPOLINE_POOL_SIZE is deprecated; remove it from config.cmake")
+    endif()
 
     if (BAKE_SYMBOLS)
         target_compile_definitions(${project} PRIVATE HK_USE_PRECALCULATED_SYMBOL_DB_HASHES)

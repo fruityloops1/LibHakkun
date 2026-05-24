@@ -63,10 +63,10 @@ namespace hk {
      * @tparam Capacity
      */
     template <typename T, size Capacity>
-    class FixedVec : public VecOperations<T, detail::FixedVecStorage<T, Capacity>> {
+    class FixedVec : public VecOperations<T, detail::FixedVecStorage<T, Capacity>, true> {
 
     public:
-        using Super = VecOperations<T, detail::FixedVecStorage<T, Capacity>>;
+        using Super = VecOperations<T, detail::FixedVecStorage<T, Capacity>, true>;
 
         using Super::Super;
 

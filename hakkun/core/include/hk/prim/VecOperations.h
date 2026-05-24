@@ -8,7 +8,7 @@ namespace hk {
 
     namespace detail {
 
-        template <typename T, typename Storage, bool HasBufferPointer>
+        template <typename T, typename Storage, bool HasBufferPointer, bool Owning>
             requires(not std::is_const_v<T>)
         struct VecOperationsBase : detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer> {
             using Super = detail::SpanOperationsConditionalBufferPointer<T, Storage, HasBufferPointer>;
@@ -21,7 +21,8 @@ namespace hk {
             }
 
             constexpr ~VecOperationsBase() {
-                clear();
+                if constexpr (Owning)
+                    clear();
             }
 
             constexpr T& add(const T& value) {
@@ -168,12 +169,12 @@ namespace hk {
             using Storage::setSize;
         };
 
-        template <typename T, typename Storage, bool HasBufferPointer>
+        template <typename T, typename Storage, bool HasBufferPointer, bool Owning>
         struct VecOperations;
 
-        template <typename T, typename Storage>
-        struct VecOperations<T, Storage, true> : VecOperationsBase<T, Storage, true> {
-            using Super = VecOperationsBase<T, Storage, true>;
+        template <typename T, typename Storage, bool Owning>
+        struct VecOperations<T, Storage, true, Owning> : VecOperationsBase<T, Storage, true, Owning> {
+            using Super = VecOperationsBase<T, Storage, true, Owning>;
 
             using Super::Super;
 
@@ -188,9 +189,9 @@ namespace hk {
             constexpr VecOperations(const std::span<T>& other) = delete;
         };
 
-        template <typename T, typename Storage>
-        struct VecOperations<T, Storage, false> : VecOperationsBase<T, Storage, false> {
-            using Super = VecOperationsBase<T, Storage, false>;
+        template <typename T, typename Storage, bool Owning>
+        struct VecOperations<T, Storage, false, Owning> : VecOperationsBase<T, Storage, false, Owning> {
+            using Super = VecOperationsBase<T, Storage, false, Owning>;
 
             using Super::Super;
 
@@ -274,15 +275,15 @@ namespace hk {
 
     } // namespace detail
 
-    template <typename T, typename Storage>
-    using VecOperations = detail::VecOperations<T, Storage, false>;
+    template <typename T, typename Storage, bool Owning>
+    using VecOperations = detail::VecOperations<T, Storage, false, Owning>;
 
-    template <typename T, typename Storage>
-    using VecOperationsWithBufferPointer = detail::VecOperations<T, Storage, true>;
+    template <typename T, typename Storage, bool Owning>
+    using VecOperationsWithBufferPointer = detail::VecOperations<T, Storage, true, Owning>;
 
     template <typename T, typename Storage, size ReserveSize = 16, typename Allocator = util::DefaultAllocator>
-    struct VecOperationsOnHeap : VecOperationsWithBufferPointer<T, Storage> {
-        using Super = VecOperationsWithBufferPointer<T, Storage>;
+    struct VecOperationsOnHeap : VecOperationsWithBufferPointer<T, Storage, true> {
+        using Super = VecOperationsWithBufferPointer<T, Storage, true>;
 
         using Super::clear;
 

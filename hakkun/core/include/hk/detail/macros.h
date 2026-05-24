@@ -7,6 +7,8 @@
 #define hk_alwaysinline __attribute__((always_inline))
 #define hk_noinline __attribute__((noinline))
 #define hk_noreturn __attribute__((noreturn))
+#define hk_pure __attribute__((pure))
+#define hk_const __attribute__((const))
 #define section(SECTION) __attribute__((section(#SECTION)))
 #define STRINGIFY(X) #X
 #define STR(X) STRINGIFY(X)

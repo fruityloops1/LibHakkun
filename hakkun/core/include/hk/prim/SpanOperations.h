@@ -129,6 +129,17 @@ namespace hk {
                     func(at(i));
             }
 
+            template <typename = void>
+                requires(util::ctIsAddable<T>)
+            constexpr auto sum() const {
+                using Sum = util::tSum<T>;
+                Sum sum = Sum(0);
+
+                forEach([&](const T& v) { sum += v; });
+
+                return sum;
+            }
+
             constexpr void copy(MutableType* out, ::size max = -1) const {
                 util::copy(out, getDataConst(), util::min(max, getSize()));
             }

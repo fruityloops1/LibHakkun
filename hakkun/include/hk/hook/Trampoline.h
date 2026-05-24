@@ -1,7 +1,9 @@
 #pragma once
 
+#include "hk/container/VecSpan.h"
 #include "hk/hook/InstrUtil.h"
 #include "hk/hook/Replace.h"
+#include "hk/hook/a64/Assembler.h"
 #include "hk/svc/api.h"
 #include "hk/util/PoolAllocator.h"
 
@@ -9,102 +11,196 @@ namespace hk::hook {
 
     namespace detail {
 
-        struct TrampolineBackup {
-            static constexpr size cMaxNumInstrs = 5;
+        extern "C" struct _ __static_trampolines_begin__;
+        extern "C" struct _ __static_trampolines_end__;
 
-            Instr instrs[cMaxNumInstrs] { cNop };
+        static const ptr cTrampolinesBeginRx = ptr(&__static_trampolines_begin__);
+        static const ptr cTrampolinesEndRx = ptr(&__static_trampolines_end__);
+        static const size cTrampolinePoolSize = cTrampolinesEndRx - cTrampolinesBeginRx;
+        const extern size cTrampolineRwMap;
 
-            void make(Instr orig, ptr origAddr);
+        size makeTrampolineBackup(Span<const Instr> orig, ptr origAddr, ptr origReturnAddr, VecSpan<Instr> out, ptr trampolineRx);
+
+        template <size MaxNumInstrs>
+        struct TrampolineBackupBase {
+            Instr instrs[MaxNumInstrs] { 0 };
+
+            void make(Span<const Instr> orig, ptr origAddr, ptr origReturnAddr) { makeTrampolineBackup(orig, origAddr, origReturnAddr, this->instrs, getRx()); }
             void clear() {
-                util::fill(this->instrs, cMaxNumInstrs, cNop);
+                util::fill(this->instrs, MaxNumInstrs, Instr(0));
                 svc::clearCache(getRx(), sizeof(*this));
             }
 
-            ptr getRx() const;
+            ptr getRx() const { return cTrampolinesBeginRx + (ptr(this) - cTrampolineRwMap); }
+            TrampolineBackupBase* getRw() const { return cast<TrampolineBackupBase*>(cTrampolineRwMap + (ptr(this) - cTrampolinesBeginRx)); }
         } __attribute__((packed));
 
-        extern util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool;
+        /**
+         * HK_HOOK_TRAMPOLINE_LEVEL
+         * 0: only basic backups (no b.cond, cbz/cbnz, tbz/tbnz), +-128MB branch range
+         * 1: all backups, +-128MB branch range
+         * 2: all backups, infinite branch range
+         */
+
+        using TrampolineBackup = TrampolineBackupBase<
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0 or !__aarch64__
+            2
+#elif HK_HOOK_TRAMPOLINE_LEVEL == 1
+            5
+#elif HK_HOOK_TRAMPOLINE_LEVEL == 2
+            5 * 5
+#else
+#error
+#endif
+            >;
 
     } // namespace detail
 
-    /**
-     * @brief Hook to replace function in a module, while preserving the ability to call the original function
-     *
-     * @tparam Func
-     */
-    template <typename Func>
-    class TrampolineHook : public ReplaceHook<Func> {
-        using Rp = ReplaceHook<Func>;
+    namespace detail {
 
-        detail::TrampolineBackup* mBackup = nullptr;
+        template <typename...>
+        struct TrampolineStaticBackup {
+            static constinit inline section(.text.trampolines_static) hk::hook::detail::TrampolineBackup orig;
+        };
 
-        Func getBackupFuncPtr() const { return cast<Func>(mBackup->getRx()); }
+        enum _TrampolineTypeFlag { };
 
-        using Rp::getAt;
-        using Rp::mFunc;
-        using Rp::mModule;
-        using Rp::mOffset;
-        using Rp::mOrigInstr;
+        template <size N>
+        using TrampolineTypeFlag = _TrampolineTypeFlag;
 
-    public:
-        TrampolineHook(Func func)
-            : Rp(func) { }
+        using TrampolineStaticFlag = TrampolineTypeFlag<1>;
+        using TrampolineDynamicFlag = TrampolineTypeFlag<2>;
 
-        template <typename L>
-        TrampolineHook(L func)
-            : Rp(forward<L>(func)) { }
+        template <size Flag, typename...>
+        struct IsTrampolineLambdaWithFlag {
+            constexpr static bool cValue = false;
+        };
 
-        Result installAtOffset(const ro::RoModule* module, ptr offset) override {
-            HK_UNLESS(!Rp::isInstalled(), ResultAlreadyInstalled());
+        template <size Flag, LambdaNoCaptureDeduceThisType L>
+        struct IsTrampolineLambdaWithFlag<Flag, L> : IsTrampolineLambdaWithFlag<Flag, L, decltype(&L::template operator()<L>)> { };
 
-            mModule = module;
-            mOffset = offset;
+        template <size Flag, LambdaNoCaptureDeduceThisType L, typename Return, typename... Args>
+        struct IsTrampolineLambdaWithFlag<Flag, L, Return (*)(Args...)> {
+            constexpr static bool cValue = util::ctIsSame<TrampolineTypeFlag<Flag>, util::tIndex<2, Args...>>;
+        };
 
-            mOrigInstr = *cast<Instr*>(getAt());
-            Result rc = writeBranch(mModule, mOffset, mFunc);
-            if (rc.failed()) {
-                mModule = nullptr;
-                mOffset = 0;
-                mOrigInstr = 0;
-                return rc;
+        template </* hk::LambdaNoCaptureDeduceThisType */ typename L, typename...>
+        class TrampolineBackupInvoker : public TrampolineBackupInvoker<L, decltype(&L::template operator()<L>)> {
+        private:
+            using Super = TrampolineBackupInvoker<L, decltype(&L::template operator()<L>)>;
+
+        public:
+            using Super::Super;
+        };
+
+        template </*hk::LambdaNoCaptureDeduceThisType*/ typename L, typename Return, typename Self, typename Orig, typename Flag, typename... Args>
+            requires(util::ctIsSame<Flag, TrampolineStaticFlag>)
+        class TrampolineBackupInvoker<L, Return (*)(Self, Orig, Flag, Args...)> : hk::util::FunctionTraits<Return (*)(Args...)> {
+            using Super = hk::util::FunctionTraits<Return (*)(Args...)>;
+            using FuncPtr = typename Super::FuncPtrTypeStatic;
+
+        public:
+            TrampolineBackupInvoker(const L&) { }
+
+            hk_alwaysinline static Return invoke(Args... args) {
+                FuncPtr func = pun<FuncPtr>(&TrampolineStaticBackup<L>::orig);
+                return func(forward<Args>(args)...);
             }
 
-            mBackup = detail::sTrampolinePool.allocate();
-            HK_ABORT_UNLESS(mBackup != nullptr, "TrampolinePool full! Current size: 0x%x", HK_HOOK_TRAMPOLINE_POOL_SIZE);
-            mBackup->make(mOrigInstr, getAt());
+            hk_alwaysinline Return operator()(Args... args) const { return invoke(forward<Args>(args)...); }
+        };
 
-            orig = getBackupFuncPtr();
+        template <hk::LambdaNoCaptureDeduceThisType L, typename...>
+        struct TrampolineFunc : TrampolineFunc<L, decltype(&L::template operator()<L>)> { };
 
-            return ResultSuccess();
-        }
+        template <hk::LambdaNoCaptureDeduceThisType L, typename Return, typename Self, typename Orig, typename Flag, typename... Args>
+            requires(util::ctIsSame<Flag, TrampolineStaticFlag>)
+        struct TrampolineFunc<L, Return (*)(Self, Orig, Flag, Args...)> {
+            static Return invoke(Args... args) {
+                const ptr pc = ptr(invoke);
 
-        Result uninstall() override {
-            HK_UNLESS(Rp::isInstalled(), ResultNotInstalled());
+                return L()({ L() }, TrampolineStaticFlag(), forward<Args>(args)...);
+            }
+        };
 
-            mBackup->clear();
-            detail::sTrampolinePool.free(mBackup);
-            mBackup = nullptr;
-
-            HK_TRY(Rp::mModule->writeRo(mOffset, mOrigInstr));
-            mModule = nullptr;
-            mOffset = 0;
-            mOrigInstr = 0;
-
-            return ResultSuccess();
-        }
-
-        Func orig = nullptr;
-    };
+    } // namespace detail
 
     template <typename L>
-    typename std::enable_if<!util::LambdaHasCapture<L>::value, TrampolineHook<typename util::FunctionTraits<L>::FuncPtrTypeStatic>>::type trampoline(L func) {
+    concept TrampolineStaticLambdaType = detail::IsTrampolineLambdaWithFlag<1, L>::cValue;
+
+    class TrampolineStaticBase : public HookNInstr<detail::cHookMaxOverwriteSize> {
+    protected:
+        constexpr static size N = detail::cHookMaxOverwriteSize;
+
+        Result installAtOffset(const ro::RoModule* module, ptr offset, ptr to, detail::TrampolineBackup* backup);
+    };
+
+    template <typename...>
+    class Trampoline;
+
+    template <TrampolineStaticLambdaType L>
+    class Trampoline<L> : public TrampolineStaticBase, public HookOperations<Trampoline<L>> {
+        using TrampolineStaticBase::installAtOffset;
+
+    public:
+        const static inline auto orig = detail::TrampolineBackupInvoker<L>::invoke;
+
+        Trampoline(const L& func) { }
+
+        hk_alwaysinline Result installAtOffset(const ro::RoModule* module, ptr offset) {
+            return installAtOffset(module, offset, ptr(detail::TrampolineFunc<L>::invoke), detail::TrampolineStaticBackup<L>::orig.getRw());
+        }
+    };
+
+    template <typename Return, typename... Args>
+    class Trampoline<Return, Args...> : public TrampolineStaticBase, public HookOperations<Trampoline<Return, Args...>> {
+        using TrampolineStaticBase::installAtOffset;
+        using FuncPtr = Return (*)(Args...);
+
+        const FuncPtr mFunc;
+
+        detail::TrampolineBackup* getBackup() { return cast<detail::TrampolineBackup*>(orig)->getRw(); }
+
+    public:
+        const FuncPtr orig;
+
+        template <LambdaNoCaptureType L>
+        [[deprecated("see README.md for new static trampoline syntax")]] Trampoline(L func)
+            : mFunc(util::FunctionTraits<L>::fromLambda(forward<L>(func)))
+            , orig(pun<FuncPtr>(&detail::TrampolineStaticBackup<L>::orig)) { }
+
+        hk_alwaysinline Result installAtOffset(const ro::RoModule* module, ptr offset) {
+            return installAtOffset(module, offset, ptr(mFunc), getBackup());
+        }
+    };
+
+    template <TrampolineStaticLambdaType L>
+    Trampoline(const L&) -> Trampoline<L>;
+
+    namespace detail {
+
+        template <typename>
+        struct LegacyTrampolineFromLambda;
+
+        template <LambdaNoCaptureType L>
+        struct LegacyTrampolineFromLambda<L> : LegacyTrampolineFromLambda<decltype(&L::operator())> { };
+
+        template <typename Class, typename Return, typename... Args>
+        struct LegacyTrampolineFromLambda<Return (Class::*)(Args...) const> {
+            using Trampoline = Trampoline<Return, Args...>;
+        };
+
+    } // namespace detail
+
+    template <LambdaNoCaptureType L>
+    [[deprecated("see README.md for new static trampoline syntax")]] typename detail::LegacyTrampolineFromLambda<L>::Trampoline trampoline(L func) {
         using Traits = util::FunctionTraits<L>;
-        return { Traits::fromLambda(forward<L>(func)) };
+        return { forward<L>(func) };
     }
 
 } // namespace hk::hook
 
-template <typename Ret, typename... Args>
-using HkTrampoline = hk::hook::TrampolineHook<Ret (*)(Args...)>;
-template <typename Ret, typename... Args>
-using HkTrampolineVarArgs = hk::hook::TrampolineHook<Ret (*)(Args..., ...)>;
+#define TrampolineStatic(...) this auto &&_hk_trampoline_func_self, ::hk::hook::detail::TrampolineBackupInvoker<::hk::util::tRemoveQualifiers<decltype(_hk_trampoline_func_self)>> orig, ::hk::hook::detail::TrampolineStaticFlag
+
+template <typename... Args>
+using HkTrampoline = hk::hook::Trampoline<Args...>;

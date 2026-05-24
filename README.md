@@ -92,7 +92,10 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `MODULE_BINARY`: ExeFS slot for your output module (can be sdk, or subsdk0-subsdk9)
 * `SDK_PAST_1900`: Enable if RTLD version of target program is from SDK 19.0.0 or later, usually the case with titles updated in or later than late 2024
 * `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
-* `TRAMPOLINE_POOL_SIZE`: Maximum amount of trampoline hooks
+* `TRAMPOLINE_LEVEL`: Level for trampoline hook.
+    * 0: only basic backups (no b.cond, cbz/cbnz, tbz/tbnz), +-128MB branch range
+    * 1: all backups, +-128MB branch range
+    * 2: all backups, infinite branch range
 * `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols with hashes, reducing binary size at the expense of harder debugging
 * `HAKKUN_ADDONS`: List of Hakkun addons to enable
 #### Sail
@@ -184,11 +187,11 @@ Symbols can be accessed directly through linking, or through hk::util::lookupSym
 using namespace hk;
 
 // trampoline hook
-HkTrampoline<int, void*> myHook = hook::trampoline([](void* something) -> int {
-    int value = myHook.orig(something); // call original function
+HkTrampoline myHook = [](TrampolineStatic(), void* something) -> int /* don't forget the return type! */ {
+    int value = orig(something); // call original function
     // do something ...
     return value;
-});
+};
 
 static void test() { }
 

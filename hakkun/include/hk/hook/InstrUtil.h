@@ -16,7 +16,7 @@ namespace hk::hook {
 #ifdef __aarch64__
     using Instr = u32;
 
-    constexpr Instr cNop = 0x1F2003D5;
+    constexpr Instr cNop = 0xd503201f;
 
     namespace detail {
 
@@ -93,11 +93,10 @@ namespace hk::hook {
             return MAKE_RESULT(ResultMismatchedInstruction());
         return ResultSuccess();
     }
-
 #elif __arm__
     using Instr = u32;
 
-    constexpr Instr cNop = 0x00F020E3;
+    constexpr Instr cNop = 0xe320f000;
 
     namespace detail {
 
