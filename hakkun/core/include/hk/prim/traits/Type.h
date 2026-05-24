@@ -5,6 +5,8 @@ constexpr T&& declval();
 
 namespace hk {
 
+    // TODO: make all the traits concepts
+
     template <typename T>
     concept AddableType = requires(T v) { v + v; };
     template <typename A, typename B>
@@ -350,8 +352,8 @@ namespace hk::util {
         template <int Index, typename... Types>
         struct TypeIndexer;
 
-        template <int Index, typename T>
-        struct TypeIndexer<Index, T> {
+        template <typename T, typename... Rest>
+        struct TypeIndexer<0, T, Rest...> {
             using Type = T;
         };
 

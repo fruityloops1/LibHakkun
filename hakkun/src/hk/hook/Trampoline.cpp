@@ -1,168 +1,176 @@
 #include "hk/hook/Trampoline.h"
 #include "hk/container/Array.h"
+#include "hk/container/FixedVec.h"
+#include "hk/container/VecSpan.h"
+#include "hk/diag/diag.h"
 #include "hk/hook/MapUtil.h"
+#include "hk/prim/iterator/WithIndex.h"
+
+#if __aarch64__
 #include "hk/hook/a64/Assembler.h"
 #include "hk/hook/a64/Instrs.h"
+#endif
 
 namespace hk::hook {
 
+    Result TrampolineStaticBase::installAtOffset(const ro::RoModule* module, ptr offset, ptr to, detail::TrampolineBackup* backup) {
+        const ptr at = module->range().start() + offset;
+
+        Instr instrs[N] { 0 };
+
+#if __aarch64__
+        hk::VecSpan outInstrs(instrs, N);
+        a64::PseudoInstructionEmitter<false> emitter(outInstrs, at);
+
+        emitter.emitB(to);
+        const size numInstrs = outInstrs.size();
+        const Span<const Instr> orig = { cast<const Instr*>(at), numInstrs };
+        backup->make(orig, at, at + numInstrs * sizeof(Instr));
+
+        return HookNInstr::installAtOffset(module, offset, outInstrs);
+#else
+        instrs[0] = makeB(at, to);
+        backup->make(orig, at, at + sizeof(Instr));
+        return HookNInstr::installAtOffset(module, offset, { instrs, 1 });
+#endif
+    }
+
     namespace detail {
 
-        static ptr sRwAddr = 0;
-        section(.text) static constinit TrampolineBackup sTrampolinePoolData[HK_HOOK_TRAMPOLINE_POOL_SIZE];
+        const ptr cTrampolineRwMap = ([]() -> ptr { return HK_UNWRAP(mapRoToRw(cTrampolinesBeginRx, cTrampolinePoolSize)); })();
 
-        static void* mapRw() {
-            sRwAddr = HK_UNWRAP(mapRoToRw(ptr(sTrampolinePoolData), sizeof(sTrampolinePoolData)));
-            return cast<void*>(sRwAddr);
-        }
+        size makeTrampolineBackup(
+            Span<const Instr> orig,
+            ptr origAddr,
+            ptr origReturnAddr,
+            VecSpan<Instr> out,
+            ptr trampolineRx) {
 
-        util::PoolAllocator<TrampolineBackup, HK_HOOK_TRAMPOLINE_POOL_SIZE> sTrampolinePool { cast<TrampolineBackup*>(mapRw()) };
-
-        ptr TrampolineBackup::getRx() const {
-            ptr rw = ptr(this);
-
-            return ptr(sTrampolinePoolData) + (rw - sRwAddr);
-        }
-
-        void TrampolineBackup::make(Instr orig, ptr origAddr) {
-            const ptr meRx = getRx();
-
-            size numInstrs = 0;
-
-            const auto calcCurOffset = [&]() -> size { return sizeof(Instr) * numInstrs; };
-            const auto calcCurRxAddr = [&]() -> ptr { return meRx + calcCurOffset(); };
-
-            const auto emitN = [&]<size N>(Array<Instr, N> instrs) {
-                HK_ABORT_UNLESS(numInstrs + N - 1 < cMaxNumInstrs, "exceeded TrampolineBackup size");
-                util::copy(this->instrs + numInstrs, instrs.data(), N);
-                numInstrs += N;
-            };
-
-            const auto emit = [&](Instr instr) {
-                HK_ABORT_UNLESS(numInstrs < cMaxNumInstrs, "exceeded TrampolineBackup size");
-                this->instrs[numInstrs++] = instr;
-            };
-
-            const auto emitBranch = [&](ptr from, ptr to, bool link) {
-                const s64 gap = to - from;
-                HK_ABORT_UNLESS(abs(gap) <= cMaxBranchDistance, "Trampoline: Branch exceeded max branch distance (%zd > %zu)", abs(gap), cMaxBranchDistance);
-                emit(link ? makeBL(from, to) : makeB(from, to));
-            };
-
-            const auto emitB = [&](ptr from, ptr to) { emitBranch(from, to, false); };
-            const auto emitBL = [&](ptr from, ptr to) { emitBranch(from, to, true); };
-
-            const auto emitReturn = [&]() { emitB(calcCurRxAddr(), origAddr + sizeof(Instr)); };
-
-            defer { svc::clearCache(meRx, sizeof(Instr) * numInstrs); };
-
+            HK_ASSERT((origAddr - origReturnAddr) % sizeof(Instr) == 0);
 #if __aarch64__
             using namespace a64;
 
-            const auto emitMovImmediate64 = [&](IRegType reg, u64 value) {
-                const ptr pc = calcCurRxAddr();
-                const u64 upper = value & ~bits(12);
-                const u64 lower = value & bits(12);
+            PseudoInstructionEmitter<true> emitter(out, trampolineRx);
+#endif
 
-                constexpr auto expr = assemble<R"(
-                    adrp (), {}
-                    add (), (), {}
-                    )">();
-
-                emitN(expr.arg(reg, upper, reg, reg, lower).assemble(pc));
+            const auto emitReturn = [&]() {
+#ifdef __aarch64__
+                emitter.emitB(origReturnAddr);
+#else
+                out.add(makeB(trampolineRx + out.size() * sizeof(Instr), origReturnAddr));
+#endif
             };
 
-            const auto emitAbsBranchWithReturn = [&](ptr addr) {
-                constexpr Instr cBr = assemble<"br ip">().assembleOne(0, 0);
+            const auto calcRxAddr = [&](size idx) -> ptr { return trampolineRx + idx * sizeof(Instr); };
+            const auto calcCurRxAddr = [&]() -> ptr { return calcRxAddr(out.size()); };
 
-                emitMovImmediate64(IP0, addr);
-                emit(cBr);
-                emitReturn();
-            };
+            defer { svc::clearCache(trampolineRx, sizeof(Instr) * out.size()); };
 
-            const bool isAdr = cwAdr.test(orig);
-            const bool isAdrp = cwAdrp.test(orig);
+            bool skipReturn = false;
 
-            if (isAdr or isAdrp) {
-                const IRegType rd = grabRd(orig);
-                const ptr addr = grabAdrAdrpAddr(orig, origAddr);
+            const auto reconstruct = [&](Instr orig, ptr origAddr, bool isLast) {
+#if __aarch64__
+                if (cwAdr.test(orig) or cwAdrp.test(orig)) {
+                    const IRegType rd = grabRd(orig);
+                    const ptr addr = grabAdrAdrpAddr(orig, origAddr);
 
-                constexpr auto adrExpr = assemble<"adr (), {}">();
-                constexpr auto adrpExpr = assemble<"adrp (), {}">();
+                    emitter.emitMovImmediate64(rd, addr);
+                    return;
+                }
 
-                const ptr pc = calcCurRxAddr();
+                const bool isB = cwB.test(orig);
+                const bool isBL = cwBL.test(orig);
 
-                emit(isAdr
-                        ? adrExpr.arg(rd, addr).assembleOne(0, pc)
-                        : adrpExpr.arg(rd, addr).assembleOne(0, pc));
-                emitReturn();
-                return;
-            }
+                if (isB or isBL) {
+                    const ptr addr = grabBBLAddr(orig, origAddr);
 
-            const bool isB = cwB.test(orig);
-            const bool isBL = cwBL.test(orig);
+                    if (isB) {
+                        HK_ABORT_UNLESS(isLast, "cannot return from this situation");
+                        skipReturn = true;
+                    }
+                    emitter.emitBranch(addr, isBL);
+                    return;
+                }
 
-            if (isB or isBL) {
-                const ptr addr = grabBBLAddr(orig, origAddr);
+                if (cwBcond.test(orig)) {
+                    HK_ABORT_UNLESS(isLast, "cannot return from this situation");
 
-                emitBranch(calcCurRxAddr(), addr, isBL);
-                if (isBL)
-                    emitReturn();
-                return;
-            }
+                    const ptr addr = grabBcondCbzCbnzLdrRelativeAddr(orig, origAddr);
+                    const u8 condInv = grabBcondCond(orig) ^ 0b1;
 
-            if (cwBcond.test(orig)) {
-                const ptr addr = grabBcondCbzCbnzLdrRelativeAddr(orig, origAddr);
-                const u8 condInv = grabBcondCond(orig) ^ 0b1;
+                    constexpr auto bcondExpr = assemble<"b.() #{}">();
 
-                constexpr auto bcondExpr = assemble<"b.() #16">();
+                    const size bcondIdx = out.size();
+                    const ptr bcondPc = calcRxAddr(bcondIdx);
+                    out.add(0);
+                    emitter.emitBranch(addr, false);
 
-                emit(bcondExpr.arg(condInv).assembleOne(0, calcCurRxAddr()));
-                emitAbsBranchWithReturn(addr);
-                return;
-            }
+                    const ptr returnPc = calcCurRxAddr();
+                    out[bcondIdx] = bcondExpr.arg(condInv, returnPc).assembleOne(0, bcondPc);
+                    return;
+                }
 
-            const bool isCbz = cwCbz.test(orig);
-            const bool isCbnz = cwCbnz.test(orig);
+                const bool isCbz = cwCbz.test(orig);
+                const bool isCbnz = cwCbnz.test(orig);
 
-            if (isCbz or isCbnz) {
-                const IRegType rt = grabRd(orig);
-                const ptr addr = grabBcondCbzCbnzLdrRelativeAddr(orig, origAddr);
+                if (isCbz or isCbnz) {
+                    HK_ABORT_UNLESS(isLast, "cannot return from this situation");
 
-                constexpr auto cbzExpr = assemble<"cbz (), #16">();
-                constexpr auto cbnzExpr = assemble<"cbnz (), #16">();
+                    const IRegType rt = grabRd(orig);
+                    const ptr addr = grabBcondCbzCbnzLdrRelativeAddr(orig, origAddr);
 
-                const ptr pc = calcCurRxAddr();
+                    constexpr auto cbzExpr = assemble<"cbz (), #{}">();
+                    constexpr auto cbnzExpr = assemble<"cbnz (), #{}">();
 
-                emit(isCbnz ? /* invert */ cbzExpr.arg(rt).assembleOne(0, pc) : cbnzExpr.arg(rt).assembleOne(0, pc));
-                emitAbsBranchWithReturn(addr);
-                return;
-            }
+                    const size cbzCbnzIdx = out.size();
+                    const ptr cbzCbnzPc = calcRxAddr(cbzCbnzIdx);
+                    out.add(0);
+                    emitter.emitBranch(addr, false);
 
-            const bool isTbz = cwTbz.test(orig);
-            const bool isTbnz = cwTbnz.test(orig);
+                    const ptr returnPc = calcCurRxAddr();
+                    out[cbzCbnzIdx] = isCbnz ? /* invert */
+                        cbzExpr.arg(rt, returnPc).assembleOne(0, cbzCbnzPc)
+                                             : cbnzExpr.arg(rt, returnPc).assembleOne(0, cbzCbnzPc);
+                    return;
+                }
 
-            if (isTbz or isTbnz) {
-                const IRegType rt = grabRd(orig);
-                const ptr addr = grabTbzTbnzAddr(orig, origAddr);
-                const u8 bitIdx = grabTbzTbnzBitIndex(orig);
+                const bool isTbz = cwTbz.test(orig);
+                const bool isTbnz = cwTbnz.test(orig);
 
-                constexpr auto tbzExpr = assemble<"tbz (), {}, #16">();
-                constexpr auto tbnzExpr = assemble<"tbnz (), {}, #16">();
+                if (isTbz or isTbnz) {
+                    HK_ABORT_UNLESS(isLast, "cannot return from this situation");
 
-                const ptr pc = calcCurRxAddr();
+                    const IRegType rt = grabRd(orig);
+                    const ptr addr = grabTbzTbnzAddr(orig, origAddr);
+                    const u8 bitIdx = grabTbzTbnzBitIndex(orig);
 
-                emit(isTbnz ? /* invert */ tbzExpr.arg(rt, bitIdx).assembleOne(0, pc) : tbnzExpr.arg(rt, bitIdx).assembleOne(0, pc));
-                emitAbsBranchWithReturn(addr);
-                return;
-            }
+                    constexpr auto tbzExpr = assemble<"tbz (), {}, #{}">();
+                    constexpr auto tbnzExpr = assemble<"tbnz (), {}, #{}">();
 
-            HK_ABORT_UNLESS(!cwLdrLiteral.test(orig), "LDR(literal) not supported");
+                    const size tbzTbnzIdx = out.size();
+                    const ptr tbzTbnzPc = calcRxAddr(tbzTbnzIdx);
+                    out.add(0);
+                    emitter.emitBranch(addr, false);
+
+                    const ptr returnPc = calcCurRxAddr();
+                    out[tbzTbnzIdx] = isTbnz ? /* invert */
+                        tbzExpr.arg(rt, bitIdx, returnPc).assembleOne(0, tbzTbnzPc)
+                                             : tbnzExpr.arg(rt, bitIdx, returnPc).assembleOne(0, tbzTbnzPc);
+                    return;
+                }
+
+                HK_ABORT_UNLESS(!cwLdrLiteral.test(orig), "LDR(literal) not supported");
 
 #endif // no specific ilp32 stuff
+                out.add(orig);
+            };
 
-            emit(orig);
-            emitReturn();
+            for (auto [i, origInstr] : util::iterateWithIdx(orig))
+                reconstruct(origInstr, origAddr + i * sizeof(Instr), i == orig.size() - 1);
+            if (!skipReturn)
+                emitReturn();
+
+            return out.size();
         }
 
     } // namespace detail

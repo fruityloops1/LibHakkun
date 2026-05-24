@@ -20,7 +20,13 @@ SECTIONS
         __text_start__ = .;
         KEEP (*(.text.modulestart))
         KEEP (*(.text.crt0))
+
+        __static_trampolines_begin__ = .;
+        *(.text .text.trampolines_static)
+        __static_trampolines_end__ = .;
+
         *(.text .text.*)
+
         *(.plt .plt.*)
         __text_end__ = .;
     } :text
