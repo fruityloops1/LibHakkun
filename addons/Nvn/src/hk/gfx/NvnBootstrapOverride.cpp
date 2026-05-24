@@ -112,8 +112,8 @@ namespace hk::gfx {
         { "nvnWindowSetCrop", (void*)nvnWindowSetCrop },
     };
 
-    HkTrampoline<void*, const char*> nvnBootstrap = hook::trampoline([](const char* symbol) -> void* {
-        void* func = nvnBootstrap.orig(symbol);
+    HkTrampoline nvnBootstrap = [](TrampolineStatic(), const char* symbol) -> void* {
+        void* func = orig(symbol);
 
         for (int i = 0; i < util::arraySize(sNvnOverrides); i++) {
             auto& override = sNvnOverrides[i];
@@ -123,7 +123,7 @@ namespace hk::gfx {
             }
         }
         return func;
-    });
+    };
 
     nvn::GenericFuncPtrFunc nvnDeviceGetProcAddress(nvn::Device* device, const char* symbol) {
         nvn::GenericFuncPtrFunc func = sNvnOverrides[1].getOrigFunc<nvn::DeviceGetProcAddressFunc>()(device, symbol);
