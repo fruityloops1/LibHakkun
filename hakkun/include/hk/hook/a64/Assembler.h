@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hk/container/Array.h"
+#include "hk/container/VecSpan.h"
 #include "hk/diag/diag.h"
 #include "hk/hook/InstrUtil.h"
 #include "hk/hook/a64/Instrs.h"
@@ -202,7 +203,7 @@ namespace hk::hook::a64 {
 
     private:
     public:
-        constexpr Instr assemble(ptr addr, const ArgGetter* args) const {
+        constexpr Instr hk_alwaysinline assemble(ptr addr, const ArgGetter* args) const {
             const u64 rdImm = this->rd.resolve(args);
             const u64 rnImm = this->rn.resolve(args);
             const u64 rmImm = this->rm.resolve(args);
@@ -1054,7 +1055,7 @@ namespace hk::hook::a64 {
 
         constexpr AsmBlock(const AsmBlock& other) = default;
 
-        constexpr void assemble(ptr startAddr, Instr* out) const {
+        hk_alwaysinline constexpr void assemble(ptr startAddr, Instr* out) const {
             const ArgGetter args(mArgs.data());
             for (const auto& instr : mInstrs) {
                 *(out++) = instr.assemble(startAddr, &args);
@@ -1062,7 +1063,7 @@ namespace hk::hook::a64 {
             }
         }
 
-        constexpr Array<Instr, NumInstrs> assemble(ptr startAddr) const {
+        hk_alwaysinline constexpr Array<Instr, NumInstrs> assemble(ptr startAddr) const {
             Array<Instr, NumInstrs> outInstrs;
             const ArgGetter args(mArgs.data());
             for (const auto [i, instr] : util::iterateWithIdx(mInstrs))
@@ -1070,7 +1071,7 @@ namespace hk::hook::a64 {
             return outInstrs;
         }
 
-        constexpr Instr assembleOne(size idx, ptr addr) const {
+        hk_alwaysinline constexpr Instr assembleOne(size idx, ptr addr) const {
             const ArgGetter args(mArgs.data());
             {
                 size i = 0;
@@ -1204,6 +1205,120 @@ namespace hk::hook::a64 {
         return AsmBlock<Uninstallable, N>(result);
     }
 
-    // constexpr u32 d = __builtin_bswap32(assemble<"mov w0, #0">().assembleOne(0, 0x1000));
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    template <bool CanUseInstrAsData = false>
+    class PseudoInstructionEmitter {
+        VecSpan<Instr>& mOut;
+        const ptr mRx = 0;
+
+        size calcCurOffset() const { return sizeof(Instr) * mOut.size(); }
+        size calcCurRxAddr() const { return mRx + calcCurOffset(); }
+
+    public:
+        constexpr PseudoInstructionEmitter(VecSpan<Instr>& out, ptr rx)
+            : mOut(out)
+            , mRx(rx) { }
+
+        size emit(Instr instr) {
+            mOut.add(instr);
+            return 1;
+        }
+
+        size emit(Span<const Instr> instrs) {
+            mOut.append(instrs);
+            return instrs.size();
+        }
+
+        size /* max when CanUseInstrAsData: 2 or 1 + 2 at the end, when !CanUseInstrAsData: 4 */ emitMovImmediate64(IRegType reg, u64 value) {
+            const ptr pc = calcCurRxAddr();
+            const ptr pcUpper = pc & ~bits(12);
+            const u64 upper = value & ~bits(12);
+            const u64 lower = value & bits(12);
+
+            constexpr size adrAdrpMaxDiff = bit(21) / 2 - 1;
+            constexpr auto adrExpr = assemble<"adr (), {}">();
+
+            if (abs(pc - value) <= adrAdrpMaxDiff) {
+                emit(adrExpr.arg(reg, value).assemble(pc));
+                return 1;
+            } else if ((abs(pcUpper - upper) / cPageSize) <= adrAdrpMaxDiff) {
+                constexpr auto adrpExpr = assemble<"adrp (), {}">();
+                constexpr auto addExpr = assemble<"add (), (), {}">();
+
+                emit(adrpExpr.arg(reg, upper).assemble(pc));
+                if (upper != value) {
+                    emit(addExpr.arg(reg, reg, lower).assemble(pc + sizeof(Instr)));
+                    return 2;
+                }
+                return 1;
+            } else {
+                if constexpr (CanUseInstrAsData) {
+                    constexpr auto ldrExpr = assemble<"ldr (), {}">();
+
+                    HK_ASSERT(mOut.capacity() - mOut.size() >= 3);
+                    const size addrOffs = mOut.capacity() - 2 - 1;
+
+                    emit(ldrExpr.arg(reg, mRx + addrOffs * sizeof(Instr)).assemble(pc));
+
+                    mOut.data()[addrOffs] = Instr(value & bits(32));
+                    mOut.data()[addrOffs + 1] = Instr((value >> 32) & bits(32));
+                    mOut.set(mOut.data(), mOut.size(), mOut.capacity() - 2);
+                    return 1;
+                }
+
+                // !CanUseInstrAsData
+                const size startSize = mOut.size();
+
+                const u16 val16[4] {
+                    u16(value & bits(16)),
+                    u16((value >> 16) & bits(16)),
+                    u16((value >> 32) & bits(16)),
+                    u16((value >> 48) & bits(16))
+                };
+
+                const u16 pc16[4] {
+                    u16(pc & bits(16)),
+                    u16((pc >> 16) & bits(16)),
+                    u16((pc >> 32) & bits(16)),
+                    u16((pc >> 48) & bits(16))
+                };
+
+                const bool match[4] { val16[0] == pc16[0], val16[1] == pc16[1], val16[2] == pc16[2], val16[3] == pc16[3] };
+                const bool anyMatch = Span(match).includes(true);
+
+                if (anyMatch) {
+                    emit(adrExpr.arg(reg, pc).assemble(pc));
+                }
+
+                for (const auto [i, match] : util::iterateWithIdx(Span(match)))
+                    if (!match) {
+                        constexpr auto movkExpr = assemble<"movk (), {}, lsl #{}">();
+                        emit(movkExpr.arg(reg, val16[i], i * 16).assemble((mOut.size() - startSize) * sizeof(Instr)));
+                    }
+
+                return mOut.size() - startSize;
+            }
+        }
+
+        size /* max when CanUseInstrAsData: 3 or 2 + 2 at the end, when !CanUseInstrAsData: 5 */ emitBranch(ptr to, bool link) {
+            const ptr from = calcCurRxAddr();
+            const s64 gap = to - from;
+            if (abs(gap) <= cMaxBranchDistance) {
+                mOut.add(link ? makeBL(from, to) : makeB(from, to));
+                return 1;
+            }
+
+            constexpr Instr cBr = assemble<"br ip">().assembleOne(0, 0);
+            constexpr Instr cBlr = assemble<"blr ip">().assembleOne(0, 0);
+
+            size movSize = emitMovImmediate64(IP0, to);
+            mOut.add(link ? cBlr : cBr);
+            return movSize + 1;
+        }
+
+        size emitB(ptr to) { return emitBranch(to, false); }
+        size emitBL(ptr to) { return emitBranch(to, true); }
+    };
 
 } // namespace hk::hook::a64
