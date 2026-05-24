@@ -1,15 +1,14 @@
 #pragma once
 
+#include "hk/prim/traits/Type.h"
 #include "hk/types.h"
 
 namespace hk {
 
     namespace util {
 
-        template <typename L>
-        struct LambdaHasCapture {
-            constexpr static bool value = sizeof(L) != 1;
-        };
+        template <typename...>
+        struct FunctionTraits;
 
         /**
          * @brief Traits of lambda function
@@ -19,15 +18,55 @@ namespace hk {
          *
          * @tparam L
          */
-        template <typename L>
-        struct FunctionTraits : FunctionTraits<decltype(&L::operator())> {
+        template <LambdaType L>
+        struct FunctionTraits<L> : FunctionTraits<decltype(&L::operator())> {
         private:
             using Super = FunctionTraits<decltype(&L::operator())>;
 
         public:
             static Super::FuncPtrTypeStatic fromLambda(L&& func) {
-                static_assert(!LambdaHasCapture<L>::value);
+                static_assert(!ctLambdaHasCapture<L>);
                 return (typename Super::FuncPtrTypeStatic)func;
+            }
+        };
+
+        template <LambdaDeduceThisType L>
+        struct FunctionTraits<L> : FunctionTraits<L, decltype(&L::template operator()<L>)> { };
+
+        template <typename L, typename Return, typename Self, typename... Args>
+        struct FunctionTraits<L, Return (*)(Self, Args...)> : FunctionTraits<Return (*)(Args...)> {
+            using Super = FunctionTraits<Return (*)(Args...)>;
+
+            static hk_noinline Return invoke(Args... args) {
+                using FuncPtrTypeStatic = typename Super::FuncPtrTypeStatic;
+                return L()(forward<Args>(args)...);
+            }
+        };
+
+        template <typename L, typename Return, typename Self, typename... Args>
+        struct FunctionTraits<L, Return (*)(Self, Args..., ...)> : FunctionTraits<Return (*)(Args..., ...)> {
+            using Super = FunctionTraits<Return (*)(Args..., ...)>;
+
+            static hk_noinline Return invoke(Args... args) {
+                return L()(forward<Args>(args)...);
+            }
+        };
+
+        template <typename L, typename Class, typename Return, typename Self, typename... Args>
+        struct FunctionTraits<L, Return (Class::*)(Self, Args...)> : FunctionTraits<Return (Class::*)(Args...)> {
+            using Super = FunctionTraits<Return (Class::*)(Args...)>;
+
+            static hk_noinline Return invoke(Args... args) {
+                return L()(forward<Args>(args)...);
+            }
+        };
+
+        template <typename L, typename Class, typename Return, typename Self, typename... Args>
+        struct FunctionTraits<L, Return (Class::*)(Self, Args..., ...)> : FunctionTraits<Return (Class::*)(Args..., ...)> {
+            using Super = FunctionTraits<Return (Class::*)(Args..., ...)>;
+
+            static hk_noinline Return invoke(Args... args) {
+                return L()(forward<Args>(args)...);
             }
         };
 
@@ -88,20 +127,5 @@ namespace hk {
         struct FunctionTraits<Return (_Class::*)(Args..., ...) const> : FunctionTraits<tRemoveConst<Return (_Class::*)(Args..., ...)>> { };
 
     } // namespace util
-
-    template <typename T>
-    concept FunctionType = util::ctIsFunction<T>;
-
-    template <typename T>
-    concept FunctionPointerType = util::ctIsFunctionPointer<T>;
-
-    template <typename T>
-    concept MemberFunctionPointerType = util::ctIsMemberFunctionPointer<T>;
-
-    template <typename T>
-    concept AnyFunctionType = util::ctIsFunction<T> or util::ctIsFunctionPointer<T> or util::ctIsMemberFunctionPointer<T>;
-
-    template <typename T>
-    concept AnyFunctionPointerType = util::ctIsFunctionPointer<T> or util::ctIsMemberFunctionPointer<T>;
 
 } // namespace hk
