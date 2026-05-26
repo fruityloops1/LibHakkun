@@ -68,7 +68,7 @@ namespace hk::hook {
 
             bool skipReturn = false;
 
-            const auto reconstruct = [&](Instr orig, ptr origAddr, bool isLast) {
+            const auto relocate = [&](Instr orig, ptr origAddr, bool isLast) {
 #if __aarch64__
                 if (cwAdr.test(orig) or cwAdrp.test(orig)) {
                     const IRegType rd = grabRd(orig);
@@ -166,7 +166,7 @@ namespace hk::hook {
             };
 
             for (auto [i, origInstr] : util::iterateWithIdx(orig))
-                reconstruct(origInstr, origAddr + i * sizeof(Instr), i == orig.size() - 1);
+                relocate(origInstr, origAddr + i * sizeof(Instr), i == orig.size() - 1);
             if (!skipReturn)
                 emitReturn();
 
