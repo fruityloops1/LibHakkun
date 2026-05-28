@@ -58,6 +58,8 @@ namespace hk {
                 pointer mCur;
 
             public:
+                constexpr ConstIterator()
+                    : mCur(nullptr) { }
                 constexpr ConstIterator(pointer cur)
                     : mCur(cur) { }
 
@@ -65,7 +67,10 @@ namespace hk {
                     mCur++;
                     return *this;
                 }
-                constexpr ConstIterator operator++(s32) { ++*this; }
+                constexpr ConstIterator operator++(s32) {
+                    mCur++;
+                    return { mCur - 1 };
+                }
 
                 constexpr bool operator==(const ConstIterator& other) const { return mCur == other.mCur; }
                 constexpr bool operator!=(const ConstIterator& other) const { return !(*this == other); }
@@ -223,12 +228,19 @@ namespace hk {
             pointer mCur;
 
         public:
+            constexpr Iterator()
+                : mCur(nullptr) { }
             constexpr Iterator(pointer cur)
                 : mCur(cur) { }
 
             constexpr Iterator& operator++() {
                 mCur++;
                 return *this;
+            }
+
+            constexpr Iterator operator++(s32) {
+                mCur++;
+                return { mCur - 1 };
             }
 
             constexpr bool operator==(const Iterator& other) const { return mCur == other.mCur; }

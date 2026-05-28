@@ -1,7 +1,73 @@
 #pragma once
 
+#include "hk/prim/Reflect.h"
+
 namespace hk {
 
+#if HK_REFLECTION
+    namespace detail {
+
+        template <typename... Types>
+        consteval void makeTupleTypeAlphabetic(Reflect type) {
+            const int numTypes = sizeof...(Types);
+            ReflectInfo members[numTypes];
+            static_assert(numTypes <= 26);
+
+            for (int i = 0; ReflectInfo type : { reflexpr(Types...) }) {
+                const char name[2] { char('a' + i), '\0' };
+                members[i++] = hk::Reflect(type).makeDataMemberDescription(name);
+            }
+
+            hk::Reflect(type).defineAggregate(members);
+        }
+
+        template <typename... Types>
+        struct TupleImpl {
+            struct Type;
+
+            consteval { makeTupleTypeAlphabetic<Types...>(reflexpr(Type)); }
+        };
+
+    } // namespace detail
+
+    template <typename... Types>
+    // using Tuple = typename TupleImpl<Types...>::Type;
+    struct Tuple : detail::TupleImpl<Types...>::Type {
+        using Super = detail::TupleImpl<Types...>::Type;
+    };
+
+    namespace detail {
+
+        template <typename... Types>
+        struct OutTupleImpl {
+            struct Storage;
+
+            consteval { makeTupleTypeAlphabetic<Types&...>(reflexpr(Storage)); }
+        };
+
+    } // namespace detail
+
+    template <typename... Types>
+    struct OutTuple : detail::OutTupleImpl<Types...>::Storage {
+    private:
+        using Storage = detail::OutTupleImpl<Types...>::Storage;
+
+    public:
+        constexpr OutTuple& operator=(const Tuple<Types...>& value) {
+            constexpr static auto tupleMembers = Reflect(reflexpr(typename Tuple<Types...>::Super)).getNonStaticDataMembers();
+            constexpr static auto outTupleMembers = Reflect(reflexpr(Storage)).getNonStaticDataMembers();
+
+            template for (constexpr const Reflect& member : tupleMembers) {
+                constexpr int i = &member - tupleMembers.begin();
+                constexpr Reflect outMember = outTupleMembers[i];
+
+                (*this).[:outMember:] = value.[:member:];
+            }
+
+            return *this;
+        }
+    };
+#else
     /**
      * @brief Object to hold multiple values of different types.
      *
@@ -216,6 +282,7 @@ namespace hk {
             return *this;
         }
     };
+#endif
 
 } // namespace hk
 
@@ -233,6 +300,6 @@ namespace hk {
  * @return hk::OutTuple<Args...>
  */
 template <typename... Args>
-constexpr hk::OutTuple<Args...> tie(Args&&... args) {
+constexpr hk::OutTuple<Args...> tie(Args&... args) {
     return { args... };
 }

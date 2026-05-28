@@ -2,6 +2,7 @@
 
 #include "hk/prim/traits/Integer.h"
 #include "hk/prim/traits/Type.h"
+#include "hk/util/Algorithm.h"
 #include <array>
 
 namespace hk::util {
@@ -13,14 +14,13 @@ namespace hk::util {
         template <typename T>
         struct TypeNameExtractor {
             constexpr static /* breaks when consteval is used? */ const auto& getTypeNameData() {
-#ifdef __clang__
                 constexpr static const char* cPrettyFunctionData = __PRETTY_FUNCTION__;
                 constexpr static size cPrettyFunctionDataLen = __builtin_strlen(cPrettyFunctionData);
                 constexpr static auto dataArr = ([]() {
                     std::array<char, cPrettyFunctionDataLen + 1> data { '\0' };
 
                     const char* start = cPrettyFunctionData;
-                    while (__builtin_strncmp(++start, "T = ", 4) != 0)
+                    while (!isEqualString(++start, "T = ", 4))
                         ;
                     start += 4;
 
@@ -30,12 +30,11 @@ namespace hk::util {
 
                     size len = end - start;
 
-                    __builtin_memcpy(data.data(), start, len);
+                    util::copy(data.data(), start, len);
                     return data;
                 })();
 
                 return dataArr;
-#endif
             }
         };
 
@@ -71,8 +70,12 @@ namespace hk::util {
         return value;
     }
 
-    static_assert(__builtin_strcmp("int", getTypeName<int>()) == 0);
-    static_assert(__builtin_strcmp("const char *", getTypeName<const char*>()) == 0);
-    static_assert(__builtin_strcmp("std::array<int, 4>", getTypeName<std::array<int, 4>>()) == 0);
+    static_assert(isEqualString("int", getTypeName<int>()));
+    static_assert(isEqualString("std::array<int, 4>", getTypeName<std::array<int, 4>>()));
+#ifdef __clang__
+    static_assert(isEqualString("const char *", getTypeName<const char*>()));
+#else
+    static_assert(isEqualString("const char*", getTypeName<const char*>()));
+#endif
 
 } // namespace hk::util

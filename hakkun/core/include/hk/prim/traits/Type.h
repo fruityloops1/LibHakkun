@@ -39,6 +39,12 @@ namespace hk {
     template <typename L>
     concept LambdaNoCaptureDeduceThisType = LambdaDeduceThisType<L> and sizeof(L) == 1;
 
+    template <typename T>
+    concept IteratorType = requires(T it) { *it; ++it; };
+
+    template <typename T>
+    concept IterableType = requires(T container) { { container.begin() } -> IteratorType; { container.end() } -> IteratorType; };
+
     struct NonType;
 
 } // namespace hk
@@ -62,9 +68,7 @@ namespace hk::util {
         using False = Bool<false>;
 
         template <typename C>
-        struct Same : False { };
-        template <>
-        struct Same<T> : True { };
+        struct Same;
 
         template <typename Derived>
         struct BaseOf : Bool<__is_base_of(T, Derived)> { };
@@ -114,8 +118,8 @@ namespace hk::util {
         };
 
         struct RemoveReference;
-        struct RemovePointer : _Type<__remove_pointer(T)> { };
-        struct RemoveConst : _Type<__remove_const(T)> { };
+        struct RemovePointer;
+        struct RemoveConst;
         struct RemoveQualifiers : TypeTraits<typename TypeTraits<typename RemovePointer::Type>::RemoveConst::Type>::RemoveReference { };
 
         struct Sum;
@@ -382,6 +386,24 @@ namespace hk::util {
     template <template <typename> typename Trait, typename... Types>
     constexpr static bool ctAllSatisfied = TypeTraits<Types...>::template all<Trait>();
 
+    namespace detail {
+
+        template <typename A, typename B>
+        struct Same {
+            constexpr static bool cValue = false;
+        };
+
+        template <typename T>
+        struct Same<T, T> {
+            constexpr static bool cValue = true;
+        };
+
+    } // namespace detail
+
+    template <typename T>
+    template <typename C>
+    struct TypeTraits<T>::Same : detail::Same<T, C> { };
+
     template <typename T>
     template <typename Rhs>
     struct TypeTraits<T>::Addable : Bool<AddableType<T>> { };
@@ -496,10 +518,34 @@ namespace hk::util {
             using Type = T;
         };
 
+        template <typename T>
+        struct RemovePointer {
+            using Type = T;
+        };
+
+        template <typename T>
+        struct RemovePointer<T*> : RemovePointer<T> { };
+
+        template <typename T>
+        struct RemoveConst {
+            using Type = T;
+        };
+
+        template <typename T>
+        struct RemoveConst<const T> {
+            using Type = T;
+        };
+
     } // namespace detail
 
     template <typename T>
     struct TypeTraits<T>::RemoveReference : detail::RemoveReference<T> { };
+
+    template <typename T>
+    struct TypeTraits<T>::RemovePointer : detail::RemovePointer<T> { };
+
+    template <typename T>
+    struct TypeTraits<T>::RemoveConst : detail::RemoveConst<T> { };
 
     namespace detail {
 

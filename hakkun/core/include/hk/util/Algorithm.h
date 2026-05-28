@@ -231,4 +231,28 @@ namespace hk::util {
         }
     }
 
+    template <typename C = char>
+    constexpr bool isEqualString(const C* a, const C* b) {
+        while (*a == *b) {
+            if (*a == C(0))
+                return true;
+
+            a++;
+            b++;
+        }
+
+        return false;
+    }
+
+    template <typename C = char>
+    constexpr bool isEqualString(const C* a, const C* b, size length) {
+        for (size i = 0; i < length; i++) {
+            if (*a == C(0))
+                return true;
+            if (a[i] != b[i])
+                return false;
+        }
+        return true;
+    }
+
 } // namespace hk::util
