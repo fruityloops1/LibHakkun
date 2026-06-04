@@ -34,8 +34,6 @@ namespace hk::diag {
     }
 
     void dumpStackTrace() {
-        ptr address = -1;
-        int level = 1;
         if (getCurrentThreadName()
                 .map([](const char* threadName) {
                     logLine("Stack Trace on Thread[%s]:", threadName);
@@ -43,18 +41,18 @@ namespace hk::diag {
                 .failed())
             logLine("Stack Trace:");
 
-        while ((address = util::getReturnAddress(level++)) != 0) {
+        util::visitReturnAddresses([](ptr address, int level) {
             auto* module = ro::getModuleContaining(address);
             if (module != nullptr) {
                 const ptr offset = address - module->range().start();
                 if (module->getModuleName())
-                    logLine("\tReturn[%02d]: %016zX (%s + 0x%zx)", level - 1, address, module->getModuleName(), offset);
+                    logLine("\tReturn[%02d]: %016zX (%s + 0x%zx)", level, address, module->getModuleName(), offset);
 
                 else {
                     const u8* d = module->getBuildId();
 
                     static_assert(ro::cBuildIdSize == 0x10);
-                    logLine("\tReturn[%02d]: %016zX ([%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x] + 0x%zx)", level - 1, address,
+                    logLine("\tReturn[%02d]: %016zX ([%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x] + 0x%zx)", level, address,
                         d[0], d[1], d[2], d[3],
                         d[4], d[5], d[6], d[7],
                         d[8], d[9], d[10], d[11],
@@ -62,8 +60,8 @@ namespace hk::diag {
                         offset);
                 }
             } else
-                logLine("\tReturn[%02d]: %016zX", level - 1, address);
-        }
+                logLine("\tReturn[%02d]: %016zX", level, address);
+        });
     }
 
     static void* setAbortMsg(const ro::RoModule* module, const char* msg, int idx) {

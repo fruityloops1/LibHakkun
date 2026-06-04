@@ -32,6 +32,14 @@ namespace hk::util {
 #endif
     }
 
+    namespace detail {
+
+        using VisitReturnAddrFuncPtr = void (*)(void*, ptr, int);
+
+        hk_noinline void visitReturnAddressesImpl(VisitReturnAddrFuncPtr func, void* userData, int n = IntegerTraits<int>::cMax);
+
+    } // namespace detail
+
     /**
      * @brief Get nth return address from stack frame.
      *
@@ -39,5 +47,15 @@ namespace hk::util {
      * @return ptr
      */
     hk_noinline ptr getReturnAddress(int n);
+
+    template <LambdaType L>
+    hk_alwaysinline void visitReturnAddresses(L&& func) {
+        detail::visitReturnAddressesImpl([](void* userData, ptr addr, int level) {
+            L& func = *cast<L*>(userData);
+
+            func(addr, level);
+        },
+            &func);
+    }
 
 } // namespace hk::util
