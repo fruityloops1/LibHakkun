@@ -75,6 +75,8 @@ namespace hk {
         friend Super::Super::Super;
         friend Super::Super::Super::Super;
         friend Super::Super::Super::Super::Super;
+
+        constexpr bool full() const { return Super::size() == Capacity; }
     };
 
     template <typename T, size N>
