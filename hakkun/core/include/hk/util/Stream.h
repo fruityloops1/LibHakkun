@@ -38,8 +38,8 @@ namespace hk::util {
             : mBuffer(ptr(buffer))
             , mSize(maxSize) { }
 
-        Stream(Span<BufferType> span)
-            : mBuffer(span.data())
+        Stream(Span<u8> span)
+            : mBuffer(ptr(span.data()))
             , mSize(span.size()) { }
 
         void seek(size cursor) {
