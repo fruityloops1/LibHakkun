@@ -173,13 +173,13 @@ namespace hk::diag {
         }                                                                                 \
     } while (0)
 
-#define HK_DUMP(RESULT, ...)                                                                              \
-    ({                                                                                                    \
-        auto&& _value_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                           \
-        ::hk::Result _result_temp = _value_temp;                                                          \
-        if (_result_temp.failed())                                                                        \
-            ::hk::diag::dumpImpl(_result_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__); \
-        ::move(_value_temp);                                                                              \
+#define HK_DUMP(RESULT, ...)                                                                                                 \
+    ({                                                                                                                       \
+        auto&& _value_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                                              \
+        ::hk::Result _result_temp = MAKE_RESULT_IMPL(_value_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__); \
+        if (_result_temp.failed())                                                                                           \
+            ::hk::diag::dumpImpl(_result_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__);                    \
+        ::move(_value_temp);                                                                                                 \
     })
 
 #define HK_TODO(...) \
