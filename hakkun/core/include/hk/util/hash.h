@@ -322,6 +322,16 @@ namespace hk::util {
         return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str));
     }
 
+#ifdef HK_ADDON_Sead
+    constexpr u32 hashMurmur(const sead::SafeString& str, u32 seed = 0) {
+        return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str.cstr(), str.calcLength(), seed);
+    }
+
+    constexpr u64 hashMurmur64(const sead::SafeString& str) {
+        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.cstr(), str.calcLength());
+    }
+#endif
+
     template <typename T>
     constexpr u32 hashMurmur(const T* data, const fu32 len, const u32 seed = 0) {
         static_assert(sizeof(T) == 1);
