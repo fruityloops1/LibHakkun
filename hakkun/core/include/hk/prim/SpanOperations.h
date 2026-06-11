@@ -276,13 +276,15 @@ namespace hk {
                 func(at(i));
         }
 
-        constexpr void sort() {
-            std::sort(getData(), getData() + getSize());
+        constexpr auto sort(this auto&& self) {
+            std::sort(self.getData(), self.getData() + self.getSize());
+            return self;
         }
 
         template <typename Compare>
-        constexpr void sort(Compare comp) {
-            std::sort(getData(), getData() + getSize(), comp);
+        constexpr auto sort(this auto&& self, Compare comp) {
+            std::sort(self.getData(), self.getData() + self.getSize(), comp);
+            return self;
         }
 
         constexpr void reverse() {
