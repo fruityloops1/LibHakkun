@@ -23,7 +23,7 @@ namespace hk::util {
             return addr;
 
         if constexpr (sail::sUsePrecalcHashes) {
-            constinit static const u32 symMurmur = util::hashMurmur(Symbol.value);
+            constexpr u32 symMurmur = util::hashMurmur(Symbol.value);
             addr = sail::lookupSymbolFromDb<true>(&symMurmur);
         } else {
             addr = sail::lookupSymbolFromDb<false>(Symbol.value);

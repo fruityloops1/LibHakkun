@@ -105,4 +105,17 @@ namespace hk::hook {
         Result installAtOffset(const ro::RoModule* module, ptr offset, Instr instr) { return HookNInstr::installAtOffset(module, offset, { &instr, 1 }); }
     };
 
+    template <util::TemplateString ClassVtableSym, MemberFunctionPointerType Dest, AnyFunctionPointerType Hook>
+    Result writeVftHook(Dest dest, Hook hook) {
+        HK_UNLESS(util::FunctionTraits<decltype(dest)>::getAddress(dest) == 0, hk::ResultInvalidAddress()); // dest is not a virtual PTMF
+
+        const ptr loc = util::lookupSymbol<ClassVtableSym>() + sizeof(void*) * 2 + pun<ptr>(dest);
+
+        const ptr hookAddr = util::FunctionTraits<decltype(hook)>::getAddress(hook);
+        HK_UNLESS(hookAddr != 0, ResultInvalidAddress());
+        *cast<ptr*>(loc) = hookAddr;
+
+        return ResultSuccess();
+    }
+
 } // namespace hk::hook
