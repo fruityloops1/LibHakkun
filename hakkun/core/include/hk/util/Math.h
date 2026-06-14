@@ -5,35 +5,6 @@
 
 namespace hk::util {
 
-    // Misc
-
-    template <typename T>
-    constexpr T min(T first) {
-        return first;
-    }
-
-    template <typename T, typename... Args>
-    constexpr T min(T first, Args... args) {
-        T minOfRest = min(args...);
-        return (first < minOfRest) ? first : minOfRest;
-    }
-
-    template <typename T>
-    constexpr T max(T first) {
-        return first;
-    }
-
-    template <typename T, typename... Args>
-    constexpr T max(T first, Args... args) {
-        T maxOfRest = max(args...);
-        return (first > maxOfRest) ? first : maxOfRest;
-    }
-
-    template <typename T, size N>
-    constexpr size arraySize(T (&array)[N]) {
-        return N;
-    }
-
     // Vectors
 
     template <typename T>

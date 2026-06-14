@@ -9,6 +9,33 @@ using std::move;
 
 namespace hk::util {
 
+    template <typename T>
+    constexpr T min(T first) {
+        return first;
+    }
+
+    template <typename T, typename... Args>
+    constexpr T min(T first, Args... args) {
+        T minOfRest = min(args...);
+        return (first < minOfRest) ? first : minOfRest;
+    }
+
+    template <typename T>
+    constexpr T max(T first) {
+        return first;
+    }
+
+    template <typename T, typename... Args>
+    constexpr T max(T first, Args... args) {
+        T maxOfRest = max(args...);
+        return (first > maxOfRest) ? first : maxOfRest;
+    }
+
+    template <typename T, size N>
+    constexpr size arraySize(T (&array)[N]) {
+        return N;
+    }
+
     /**
      * @brief Binary search algorithm.
      *
@@ -178,6 +205,15 @@ namespace hk::util {
             dest[i].~T();
             construct_at(dest + i, value);
         }
+    }
+
+    template <typename T>
+    constexpr void copyFromNullTerminated(T* dest, const T* src, size max = -1) {
+        size i = 0;
+        for (; i < max && src[i] != T(0); i++)
+            dest[i] = src[i];
+        if (i == max - 1)
+            dest[i] = T(0);
     }
 
     template <typename T>
