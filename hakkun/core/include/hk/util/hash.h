@@ -386,7 +386,7 @@ namespace hk::util {
 #ifdef HK_ADDON_Sead
     template <Derived<sead::SafeString> T>
     struct MurmurHash3<T> {
-        constexpr static size hash(const T& str) {
+        static size hash(const T& str) {
             return MurmurHash3<const char*>::hash(str.cstr());
         }
     };

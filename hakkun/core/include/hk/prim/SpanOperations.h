@@ -78,30 +78,26 @@ namespace hk {
             hk_alwaysinline constexpr ConstIterator begin() const { return { getDataConst() }; }
             hk_alwaysinline constexpr ConstIterator end() const { return { getDataConst() + getSize() }; }
 
-            hk_alwaysinline constexpr Span<const T> slice(::size offset, ::size amount = 0) const {
+            hk_alwaysinline constexpr Span<const T> slice(::size offset, ::size amount = 0, diag::SourceLocation loc = diag::SourceLocation::current()) const {
                 if (amount == 0)
                     amount = getSize() - offset;
-                HK_ABORT_UNLESS(amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
                 return Span<const T>(getDataConst() + offset, amount);
             }
 
-            hk_alwaysinline constexpr Span<const T> operator[](::size offset, ::size amount) const {
-                return slice(offset, amount);
+            hk_alwaysinline constexpr Span<const T> operator[](::size offset, ::size amount, diag::SourceLocation loc = diag::SourceLocation::current()) const {
+                return slice(offset, amount, loc);
             }
 
             hk_alwaysinline constexpr operator Span<const T>() const { return Span<const T>(getDataConst(), getSize()); }
 
-            constexpr const T& operator[](::size index) const {
-                if not consteval {
-                    HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
-                }
+            constexpr const T& operator[](::size index, diag::SourceLocation loc = diag::SourceLocation::current()) const {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 return getDataConst()[index];
             }
 
-            constexpr const T& at(::size index) const {
-                if not consteval {
-                    HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
-                }
+            constexpr const T& at(::size index, diag::SourceLocation loc = diag::SourceLocation::current()) const {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 return getDataConst()[index];
             }
 
@@ -113,13 +109,13 @@ namespace hk {
                     0, getSize() - 1, searchValue, findBetween);
             }
 
-            constexpr const T& first() const {
-                HK_ABORT_UNLESS(!empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+            constexpr const T& first(diag::SourceLocation loc = diag::SourceLocation::current()) const {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, !empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return getDataConst()[0];
             }
 
-            constexpr const T& last() const {
-                HK_ABORT_UNLESS(!empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+            constexpr const T& last(diag::SourceLocation loc = diag::SourceLocation::current()) const {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, !empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return getDataConst()[getSize() - 1];
             }
 
@@ -173,26 +169,26 @@ namespace hk {
         hk_alwaysinline constexpr operator Span<T>() { return Span<T>(getData(), getSize()); }
 
         using Super::operator[];
-        constexpr T& operator[](::size index) {
-            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+        constexpr T& operator[](::size index, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::operator[%zu]: out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             return getData()[index];
         }
 
         using Super::at;
-        constexpr T& at(::size index) {
-            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+        constexpr T& at(::size index, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::at(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             return getData()[index];
         }
 
-        constexpr T& set(::size index, const T& value) {
-            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+        constexpr T& set(::size index, const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             T* dest = getData() + index;
             dest->~T();
             return *construct_at(dest, value);
         }
 
-        constexpr T& set(::size index, T&& value) {
-            HK_ABORT_UNLESS(index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+        constexpr T& set(::size index, T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::set(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
             T* dest = getData() + index;
             dest->~T();
             return *construct_at(dest, forward<T>(value));
@@ -245,10 +241,10 @@ namespace hk {
         constexpr Iterator end() { return { getData() + getSize() }; }
 
         using Super::slice;
-        hk_alwaysinline constexpr Span<T> slice(::size offset, ::size amount = 0) {
+        hk_alwaysinline constexpr Span<T> slice(::size offset, ::size amount = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (amount == 0)
                 amount = getSize() - offset;
-            HK_ABORT_UNLESS(amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, amount <= getSize() - offset, "%s<%s>::slice(%zu, %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), offset, amount, getSize());
             return Span<T>(getData() + offset, amount);
         }
 
@@ -259,14 +255,14 @@ namespace hk {
         using Super::empty;
 
         using Super::first;
-        constexpr T& first() {
-            HK_ABORT_UNLESS(!empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+        constexpr T& first(diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, !empty(), "%s<%s>::first(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
             return at(0);
         }
 
         using Super::last;
-        constexpr T& last() {
-            HK_ABORT_UNLESS(!empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+        constexpr T& last(diag::SourceLocation loc = diag::SourceLocation::current()) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, !empty(), "%s<%s>::last(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
             return at(getSize() - 1);
         }
 
@@ -291,11 +287,11 @@ namespace hk {
             util::reverseMove(getData(), getSize());
         }
 
-        constexpr void fill(size dstIdx, size amount, const T& value = T()) {
+        constexpr void fill(size dstIdx, size amount, const T& value = T(), diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (amount == 0)
                 return;
-            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx + (amount - 1) < getSize(), "%s<%s>::fill(%zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, amount, getSize());
 
             util::fill(getData() + dstIdx, amount, value);
         }
@@ -305,14 +301,14 @@ namespace hk {
         }
 
         using Super::copy;
-        constexpr void copy(size dstIdx, size srcIdx, size amount) {
+        constexpr void copy(size dstIdx, size srcIdx, size amount, diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (dstIdx == srcIdx or amount == 0)
                 return;
 
-            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, srcIdx < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, srcIdx + (amount - 1) < getSize(), "%s<%s>::copy(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
 
             util::copyOverlapping(getData() + dstIdx, getData() + srcIdx, amount);
         }
@@ -335,14 +331,14 @@ namespace hk {
         using Super::getData;
         using Super::getSize;
 
-        constexpr void move(size dstIdx, size srcIdx, size amount) {
+        constexpr void move(size dstIdx, size srcIdx, size amount, diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (dstIdx == srcIdx or amount == 0)
                 return;
 
-            HK_ABORT_UNLESS(dstIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(dstIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
-            HK_ABORT_UNLESS(srcIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, srcIdx < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, dstIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): destination out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, srcIdx + (amount - 1) < getSize(), "%s<%s>::move(%zu, %zu, %zu): source out of bounds (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), dstIdx, srcIdx, amount, getSize());
 
             util::constructMoveOverlapping<true>(getData() + dstIdx, getData() + srcIdx, amount);
         }

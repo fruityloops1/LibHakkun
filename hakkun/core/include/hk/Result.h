@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hk/diag/SourceLocation.h"
 #include "hk/types.h"
 #include "hk/util/TemplateString.h"
 #include "hk/util/Tuple.h"
@@ -18,7 +19,8 @@ namespace hk {
 
             const char* sourceFile = nullptr;
             const char* expr = nullptr;
-            u32 sourceLine : 22 = 0;
+            u32 sourceLine : 26 = 0;
+            u16 sourceColumn : 12 = 0;
             Ref parentRef : 10 = 0;
 
             const ResultDebugReference* getParent() const { return this->parentRef != 0 ? &get(this->parentRef) : nullptr; }
@@ -153,8 +155,8 @@ namespace hk {
         using ResultBase::succeeded;
 
 #if HK_RESULT_ADVANCED
-        hk_noinline constexpr Result(ResultBase value, const char* expr, const char* sourceFile, int line)
-            : ResultBase(ResultBase::makeWithInfo(value, { .sourceFile = sourceFile, .expr = expr, .sourceLine = u32(line) })) { }
+        hk_noinline constexpr Result(ResultBase value, const char* expr, const char* sourceFile, u32 line, u16 column)
+            : ResultBase(ResultBase::makeWithInfo(value, { .sourceFile = sourceFile, .expr = expr, .sourceLine = u32(line), .sourceColumn = column })) { }
 
         const detail::ResultDebugReference* getInfo() const { return this->getDebugRef() != 0 ? &detail::ResultDebugReference::get(this->getDebugRef()) : nullptr; }
 
@@ -168,9 +170,14 @@ namespace hk {
             return info != nullptr ? info->sourceFile : nullptr;
         }
 
-        int getLine() const {
+        u32 getLine() const {
             const auto* info = getInfo();
             return info != nullptr ? info->sourceLine : -1;
+        }
+
+        u16 getColumn() const {
+            const auto* info = getInfo();
+            return info != nullptr ? info->sourceColumn : -1;
         }
 #endif
     };
@@ -181,10 +188,10 @@ namespace hk {
         : value(other.value) { }
 
 #if HK_RESULT_ADVANCED
-#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE), EXPR, FILE, LINE)
-#define MAKE_RESULT(VALUE, ...) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE __VA_OPT__(, ) __VA_ARGS__), #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__)
+#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE, COLUMN) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE), EXPR, FILE, LINE, COLUMN)
+#define MAKE_RESULT(VALUE, ...) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE __VA_OPT__(, ) __VA_ARGS__), #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, ::hk::diag::SourceLocation::current().column())
 #else
-#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE))
+#define MAKE_RESULT_IMPL(VALUE, EXPR, FILE, LINE, COLUMN) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE))
 #define MAKE_RESULT(VALUE, ...) ::hk::Result(::hk::ResultBase(::hk::ResultBase::NoMask(), VALUE __VA_OPT__(, ) __VA_ARGS__))
 #endif
 
@@ -246,18 +253,18 @@ namespace hk {
 
     namespace detail {
 
-        template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, int Line>
+        template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, u32 Line, u16 Col>
         struct ResultChecker {
-            hk_alwaysinline static constexpr Result check(T&& value) { return MAKE_RESULT_IMPL(Result(value), Expr.value, File.value, Line); }
+            hk_alwaysinline static constexpr Result check(T&& value) { return MAKE_RESULT_IMPL(Result(value), Expr.value, File.value, Line, Col); }
         };
 
-        template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, int Line>
-        struct ResultChecker<Result, T*, Expr, File, Line> {
+        template <typename Result, typename T, util::TemplateString Expr, util::TemplateString File, u32 Line, u16 Col>
+        struct ResultChecker<Result, T*, Expr, File, Line, Col> {
             hk_alwaysinline static constexpr Result check(T* value) {
                 if (value != nullptr)
-                    return MAKE_RESULT_IMPL(ResultSuccess(), Expr.value, File.value, Line);
+                    return MAKE_RESULT_IMPL(ResultSuccess(), Expr.value, File.value, Line, Col);
                 else
-                    return MAKE_RESULT_IMPL(ResultNoValue(), Expr.value, File.value, Line);
+                    return MAKE_RESULT_IMPL(ResultNoValue(), Expr.value, File.value, Line, Col);
             }
         };
 
@@ -280,31 +287,31 @@ namespace hk {
  * If expression is pointer, return ResultNoValue() if it is nullptr.
  * Function must return Result.
  */
-#define HK_TRY(VALUE, ...)                                                                                                                                                             \
-    ({                                                                                                                                                                                 \
-        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                           \
-        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
-                                                                                                                                                                                       \
-        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \
-        if (_result_temp.failed())                                                                                                                                                     \
-            return _result_temp;                                                                                                                                                       \
-        ::move(_value_temp);                                                                                                                                                           \
+#define HK_TRY(VALUE, ...)                                                                                                                                                                                                             \
+    ({                                                                                                                                                                                                                                 \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                                                         \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                                                                           \
+        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                                                                   \
+                                                                                                                                                                                                                                       \
+        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>::check(::forward<_ValueT>(_value_temp)); \
+        if (_result_temp.failed())                                                                                                                                                                                                     \
+            return _result_temp;                                                                                                                                                                                                       \
+        ::move(_value_temp);                                                                                                                                                                                                           \
     })
 
 /**
  * @brief Return if Result within expression is unsuccessful.
  * Function must return Result.
  */
-#define HK_CHECK(VALUE, ...)                                                                                                                                                           \
-    {                                                                                                                                                                                  \
-        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                         \
-        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                           \
-        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                   \
-                                                                                                                                                                                       \
-        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__>::check(::forward<_ValueT>(_value_temp)); \
-        if (_result_temp.failed())                                                                                                                                                     \
-            return _result_temp;                                                                                                                                                       \
+#define HK_CHECK(VALUE, ...)                                                                                                                                                                                                           \
+    {                                                                                                                                                                                                                                  \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                                                         \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                                                                           \
+        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                                                                   \
+                                                                                                                                                                                                                                       \
+        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>::check(::forward<_ValueT>(_value_temp)); \
+        if (_result_temp.failed())                                                                                                                                                                                                     \
+            return _result_temp;                                                                                                                                                                                                       \
     }
 
 /**

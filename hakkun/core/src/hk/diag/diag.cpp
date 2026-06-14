@@ -117,7 +117,7 @@ namespace hk::diag {
             if (info == nullptr)
                 continue;
 
-            logLine("\t%s:%d: from %s", info->sourceFile, info->sourceLine, info->expr);
+            logLine("\t%s:%d:%d: from %s", info->sourceFile, info->sourceLine, info->sourceColumn, info->expr);
         }
     }
 #endif
@@ -125,13 +125,13 @@ namespace hk::diag {
     constexpr char cDumpFormat[] = R"(
 ~~~ HakkunDump ~~~)";
 
-    void dumpImpl(Result result, const char* expr, const char* file, int line) {
+    void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column) {
         logLine(cDumpFormat);
         const auto dumpSimple = [=]() {
             const char* resultName = getResultName(result);
 
-            resultName ? logLine("File: %s:%d\n%s [from %s]\n", file, line, resultName, expr)
-                       : logLine("File: %s:%d\n%04d-%04d/0x%x [from %s]\n", file, line, result.getModule() + 2000, result.getDescription(), result.getValue(), expr);
+            resultName ? logLine("File: %s:%u:%u\n%s [from %s]\n", file, line, column, resultName, expr)
+                       : logLine("File: %s:%u:%u\n%04d-%04d/0x%x [from %s]\n", file, line, column, result.getModule() + 2000, result.getDescription(), result.getValue(), expr);
         };
 
         if (!HK_RESULT_ADVANCED or result.succeeded()
@@ -148,18 +148,18 @@ namespace hk::diag {
 
     constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~
-File: %s:%d
+File: %s:%u:%u
 )";
 
-    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...) {
+    hk_noreturn void abortImpl(HAS_NNSDK(svc::BreakReason reason, ) Result result, const char* file, u32 line, u16 column, const char* msgFmt, ...) {
         va_list arg;
         va_start(arg, msgFmt);
-        abortImpl(HAS_NNSDK(reason, ) result, file, line, msgFmt, arg);
+        abortImpl(HAS_NNSDK(reason, ) result, file, line, column, msgFmt, arg);
         va_end(arg);
     }
 
 #if NNSDK
-    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
+    hk_noreturn void abortImpl(svc::BreakReason reason, Result result, const char* file, u32 line, u16 column, const char* msgFmt, std::va_list arg) {
         ResultNN abortResult = result;
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
@@ -172,9 +172,9 @@ File: %s:%d
         userMsgBuf[vsnprintf(userMsgBuf + 1, cMsgBufSize - 1, msgFmt, arg)] = '\n';
 
         char headerMsgBuf[cMsgBufSize] { '\0' };
-        snprintf(headerMsgBuf, cMsgBufSize, cAbortFormat, file, line);
+        snprintf(headerMsgBuf, cMsgBufSize, cAbortFormat, file, line, column);
 
-        log(cAbortFormat, file, line);
+        log(cAbortFormat, file, line, column);
         logLineImpl(msgFmt, listCopy);
 
         dumpResultTrace(result);

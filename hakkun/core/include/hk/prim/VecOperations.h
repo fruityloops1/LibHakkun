@@ -25,14 +25,14 @@ namespace hk {
                     clear();
             }
 
-            constexpr T& add(const T& value) {
-                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+            constexpr T& add(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
                 setSize(getSize() + 1);
                 return *construct_at(getData() + getSize() - 1, value);
             }
 
-            constexpr T& add(T&& value) {
-                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+            constexpr T& add(T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
 
                 setSize(getSize() + 1);
                 return *construct_at(getData() + getSize() - 1, forward<T>(value));
@@ -46,29 +46,29 @@ namespace hk {
                 return *construct_at(getData() + getSize() - 1, forward<Args>(args)...);
             }
 
-            constexpr T& pushBack(const T& value) { return add(value); }
-            constexpr T& pushBack(T&& value) { return add(forward<T>(value)); }
+            constexpr T& pushBack(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return add(value, loc); }
+            constexpr T& pushBack(T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return add(forward<T>(value), loc); }
             template <typename... Args>
             constexpr T& emplaceBack(Args&&... args) { return emplace(forward<Args>(args)...); }
 
-            constexpr T& pushFront(const T& value) { return insert(value, 0); }
-            constexpr T& pushFront(T&& value) { return insert(forward<T>(value), 0); }
+            constexpr T& pushFront(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return insert(value, 0, loc); }
+            constexpr T& pushFront(T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return insert(forward<T>(value), 0, loc); }
             template <typename... Args>
             constexpr T& emplaceFront(Args&&... args) { return emplaceAt(0, forward<Args>(args)...); }
 
             using Super::move;
 
-            constexpr T& insert(const T& value, size index = 0) {
-                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
-                HK_ABORT_UNLESS(index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+            constexpr T& insert(const T& value, size index = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 setSize(getSize() + 1);
                 move(index + 1, index, getSize() - 1 - index);
                 return *construct_at(getData() + index, value);
             }
 
-            constexpr T& insert(T&& value, size index = 0) {
-                HK_ABORT_UNLESS(getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
-                HK_ABORT_UNLESS(index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+            constexpr T& insert(T&& value, size index = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() < getCapacity(), "%s<%s>::add: Full (capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getCapacity());
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index <= getSize(), "%s<%s>::insert(index: %zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
                 setSize(getSize() + 1);
                 move(index + 1, index, getSize() - 1 - index);
                 return *construct_at(getData() + index, forward<T>(value));
@@ -83,16 +83,16 @@ namespace hk {
                 return *construct_at(getData() + index, forward<Args>(args)...);
             }
 
-            constexpr T* append(Span<const T> data) {
-                HK_ABORT_UNLESS(getSize() + data.size() <= getCapacity(), "%s<%s>::append(%zu): Full (size: %zu capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), data.size(), getSize(), getCapacity());
+            constexpr T* append(Span<const T> data, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() + data.size() <= getCapacity(), "%s<%s>::append(%zu): Full (size: %zu capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), data.size(), getSize(), getCapacity());
                 util::constructCopy(getData() + getSize(), data.data(), data.size());
                 T* ptr = getData() + getSize();
                 setSize(getSize() + data.size());
                 return ptr;
             }
 
-            constexpr T remove(size index) {
-                HK_ABORT_UNLESS(index < getSize(), "%s<%s>::remove(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
+            constexpr T remove(size index, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index < getSize(), "%s<%s>::remove(%zu): out of range (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), index, getSize());
 
                 T removedValue = T(::move(getData()[index]));
                 getData()[index].~T();
@@ -105,9 +105,9 @@ namespace hk {
                 return T(::move(removedValue));
             }
 
-            constexpr T removeByValue(const T& value) {
+            constexpr T removeByValue(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
                 size index = findIndex(value);
-                HK_ABORT_UNLESS(index != -1, "%s<%s>::remove(const T&): value not found (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getSize());
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, index != -1, "%s<%s>::remove(const T&): value not found (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), getSize());
 
                 return T(::move(remove(index)));
             }
@@ -121,38 +121,38 @@ namespace hk {
                 return true;
             }
 
-            constexpr T popBack() {
-                HK_ABORT_UNLESS(getSize() > 0, "%s<%s>::popBack(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+            constexpr T popBack(diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() > 0, "%s<%s>::popBack(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return T(::move(remove(getSize() - 1)));
             }
 
-            constexpr T popFront() {
-                HK_ABORT_UNLESS(getSize() > 0, "%s<%s>::popFront(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
+            constexpr T popFront(diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, getSize() > 0, "%s<%s>::popFront(): empty", util::getTypeName<Storage>(), util::getTypeName<T>());
                 return T(::move(remove(0)));
             }
 
-            constexpr void extend(size newSize, const T& extendValue = T()) {
-                HK_ABORT_UNLESS(newSize >= getSize() && newSize <= getCapacity(), "%s<%s>::extend(%zu): out of range (size: %zu, capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), newSize, getSize(), getCapacity());
+            constexpr void extend(size newSize, const T& extendValue = T(), diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, newSize >= getSize() && newSize <= getCapacity(), "%s<%s>::extend(%zu): out of range (size: %zu, capacity: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), newSize, getSize(), getCapacity());
                 util::fill(getData() + getSize(), newSize - getSize(), extendValue);
 
                 setSize(newSize);
             }
 
-            constexpr void truncate(size newSize) {
-                HK_ABORT_UNLESS(newSize <= getSize(), "%s<%s>::truncate(%zu): newSize larger than size (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), newSize, getSize());
+            constexpr void truncate(size newSize, diag::SourceLocation loc = diag::SourceLocation::current()) {
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, newSize <= getSize(), "%s<%s>::truncate(%zu): newSize larger than size (size: %zu)", util::getTypeName<Storage>(), util::getTypeName<T>(), newSize, getSize());
                 util::destroy(getData() + newSize, getSize() - newSize);
 
                 setSize(newSize);
             }
 
-            constexpr void resize(size newSize, const T& extendValue = T()) {
+            constexpr void resize(size newSize, const T& extendValue = T(), diag::SourceLocation loc = diag::SourceLocation::current()) {
                 if (getSize() == newSize)
                     return;
 
                 if (getSize() > newSize)
-                    truncate(newSize);
+                    truncate(newSize, loc);
                 else
-                    extend(newSize, extendValue);
+                    extend(newSize, extendValue, loc);
             }
 
             constexpr void clear() {
@@ -347,8 +347,8 @@ namespace hk {
         constexpr VecOperationsOnHeap(std::initializer_list<T> data)
             : VecOperationsOnHeap(data.begin(), data.size()) { }
 
-        constexpr T& set(size index, const T& value) { return set(index, value); }
-        constexpr T& set(size index, T&& value) { return set(index, forward<T>(value)); }
+        constexpr T& set(size index, const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return set(index, value, loc); }
+        constexpr T& set(size index, T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return set(index, forward<T>(value), loc); }
 
         constexpr void setCopy(Span<const T> data, size capacity = -1) {
             if (capacity == -1)
@@ -384,24 +384,24 @@ namespace hk {
             setCapacity(capacity);
         }
 
-        constexpr void extend(size newSize, const T& extendValue = T()) {
+        constexpr void extend(size newSize, const T& extendValue = T(), diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(newSize);
-            Super::extend(newSize, extendValue);
+            Super::extend(newSize, extendValue, loc);
         }
 
-        constexpr void resize(size newSize, const T& extendValue = T()) {
+        constexpr void resize(size newSize, const T& extendValue = T(), diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(newSize);
-            Super::resize(newSize, extendValue);
+            Super::resize(newSize, extendValue, loc);
         }
 
-        constexpr T& add(const T& valueAt) {
+        constexpr T& add(const T& valueAt, diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(getSize() + 1);
-            return Super::add(valueAt);
+            return Super::add(valueAt, loc);
         }
 
-        constexpr T& add(T&& valueAt) {
+        constexpr T& add(T&& valueAt, diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(getSize() + 1);
-            return Super::add(forward<T>(valueAt));
+            return Super::add(forward<T>(valueAt), loc);
         }
 
         template <typename... Args>
@@ -416,29 +416,29 @@ namespace hk {
             return Super::emplaceAt(index, forward<Args>(args)...);
         }
 
-        constexpr T& pushBack(const T& value) { return add(value); }
-        constexpr T& pushBack(T&& value) { return add(forward<T>(value)); }
+        constexpr T& pushBack(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return add(value, loc); }
+        constexpr T& pushBack(T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return add(forward<T>(value), loc); }
         template <typename... Args>
         constexpr T& emplaceBack(Args&&... args) { return emplace(forward<Args>(args)...); }
 
-        constexpr T& pushFront(const T& value) { return insert(value, 0); }
-        constexpr T& pushFront(T&& value) { return insert(forward<T>(value), 0); }
+        constexpr T& pushFront(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return insert(value, 0, loc); }
+        constexpr T& pushFront(T&& value, diag::SourceLocation loc = diag::SourceLocation::current()) { return insert(forward<T>(value), 0, loc); }
         template <typename... Args>
         constexpr T& emplaceFront(Args&&... args) { return emplaceAt(0, forward<Args>(args)...); }
 
-        constexpr T& insert(const T& value, size index = 0) {
+        constexpr T& insert(const T& value, size index = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(getSize() + 1);
-            return Super::insert(value, index);
+            return Super::insert(value, index, loc);
         }
 
-        constexpr T& insert(T&& value, size index = 0) {
+        constexpr T& insert(T&& value, size index = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(getSize() + 1);
-            return Super::insert(forward<T>(value), index);
+            return Super::insert(forward<T>(value), index, loc);
         }
 
-        constexpr T* append(Span<const T> data) {
+        constexpr T* append(Span<const T> data, diag::SourceLocation loc = diag::SourceLocation::current()) {
             reserve(getSize() + data.size());
-            return Super::append(data);
+            return Super::append(data, loc);
         }
 
     protected:

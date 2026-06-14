@@ -8,7 +8,7 @@
 #endif
 
 namespace hk::diag {
-    hk_noreturn void abortImpl(HAS_NNSDK(hk::svc::BreakReason reason, ) Result result, const char* file, int line, const char* msgFmt, ...);
+    hk_noreturn void abortImpl(HAS_NNSDK(hk::svc::BreakReason reason, ) Result result, const char* file, u32 line, u16 column, const char* msgFmt, ...);
 } // namespace hk::diag
 
 struct ResultNameEntry {
@@ -24,7 +24,7 @@ template <hk::Derived<hk::ResultBase> Result>
 struct AddResultName {
     AddResultName() {
         if (cNumResultNames >= cMaxNames)
-            hk::diag::abortImpl(HAS_NNSDK(hk::svc::BreakReason_Assert, ) 0, __FILE__, __LINE__, "ResultName buffer is full (size: 0x%zx)", cMaxNames);
+            hk::diag::abortImpl(HAS_NNSDK(hk::svc::BreakReason_Assert, ) 0, __FILE__, __LINE__, hk::diag::SourceLocation::current().column(), "ResultName buffer is full (size: 0x%zx)", cMaxNames);
         cResultNames[cNumResultNames++] = { Result(), hk::util::getTypeName<Result>() };
     }
 };
