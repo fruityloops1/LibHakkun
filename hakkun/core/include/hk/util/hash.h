@@ -210,27 +210,28 @@ namespace hk::util {
             constexpr static fu64 nblocks(fu64 len) { return len / 8; }
             constexpr fu64 nblocks() const { return nblocks(mLen); }
 
-            constexpr static u64 cMurmur64Constant = 0xc6a4a7935bd1e995;
-            constexpr static u64 cMurmur64Seed = 0xa9f63e6017234875;
+            constexpr static u64 cConstant = 0xc6a4a7935bd1e995;
             constexpr static u64 cShift = 47;
 
             constexpr static u64 finalMix64(u64 h) {
-                h = (h ^ (h >> cShift)) * cMurmur64Constant;
+                h = (h ^ (h >> cShift)) * cConstant;
                 return (h ^ (h >> cShift));
             }
 
         public:
-            constexpr HashMurmur64Impl(const T* data, const fu64 len, void* userData = nullptr)
+            constexpr static u64 cDefaultSeed = 0xa9f63e6017234875;
+
+            constexpr HashMurmur64Impl(const T* data, const fu64 len, const u64 seed = cDefaultSeed, void* userData = nullptr)
                 : mData(data)
                 , mLen(len)
                 , mUserData(userData) {
-                mHashValue = (len * cMurmur64Constant) ^ cMurmur64Seed;
+                mHashValue = (len * cConstant) ^ seed;
             }
 
             constexpr __attribute__((noinline)) void feed(const T* fedData, const fu64 fedLen) {
                 for (fu64 i = 0; i < nblocks(fedLen); i++) {
                     u64 value = getBlock64<T, ReadDefault<T>>(fedData, i, nullptr);
-                    mHashValue = (((((value * cMurmur64Constant) ^ ((value * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ mHashValue) * cMurmur64Constant;
+                    mHashValue = (((((value * cConstant) ^ ((value * cConstant) >> cShift)) * cConstant)) ^ mHashValue) * cConstant;
                 }
             }
 
@@ -263,7 +264,7 @@ namespace hk::util {
             constexpr void calcWithCallback() {
                 for (fu64 i = 0; i < nblocks(); i++) {
                     u64 value = getBlock64<T, Read>(mData, i, mUserData);
-                    mHashValue = (((((value * cMurmur64Constant) ^ ((value * cMurmur64Constant) >> cShift)) * cMurmur64Constant)) ^ mHashValue) * cMurmur64Constant;
+                    mHashValue = (((((value * cConstant) ^ ((value * cConstant) >> cShift)) * cConstant)) ^ mHashValue) * cConstant;
                 }
             }
 
@@ -289,7 +290,7 @@ namespace hk::util {
                     h1 ^= u64(read(mData, tail + 1, mUserData)) << 8;
                 case 1:
                     h1 ^= read(mData, tail + 0, mUserData);
-                    h1 *= cMurmur64Constant;
+                    h1 *= cConstant;
                 }
 
                 return finalMix64(h1);
@@ -306,8 +307,8 @@ namespace hk::util {
         }
 
         template <typename T, class Read>
-        constexpr u64 hashMurmur64Impl(const T* data, const fu64 len, void* userData = nullptr) {
-            HashMurmur64Impl<T, Read> hash(data, len, userData);
+        constexpr u64 hashMurmur64Impl(const T* data, const fu64 len, const u64 seed = HashMurmur64Impl<T, Read>::cDefaultSeed, void* userData = nullptr) {
+            HashMurmur64Impl<T, Read> hash(data, len, seed, userData);
             hash.calcWithCallback();
             return hash.finalize();
         }
@@ -318,8 +319,8 @@ namespace hk::util {
         return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str), seed);
     }
 
-    constexpr u64 hashMurmur64(const char* str) {
-        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str));
+    constexpr u64 hashMurmur64(const char* str, u64 seed = detail::HashMurmur64Impl<char, detail::ReadDefault<char>>::cDefaultSeed) {
+        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str, __builtin_strlen(str), seed);
     }
 
 #ifdef HK_ADDON_Sead
@@ -327,8 +328,8 @@ namespace hk::util {
         return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str.cstr(), str.calcLength(), seed);
     }
 
-    constexpr u64 hashMurmur64(const sead::SafeString& str) {
-        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.cstr(), str.calcLength());
+    constexpr u64 hashMurmur64(const sead::SafeString& str, u64 seed = detail::HashMurmur64Impl<char, detail::ReadDefault<char>>::cDefaultSeed) {
+        return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.cstr(), str.calcLength(), seed);
     }
 #endif
 
@@ -339,9 +340,9 @@ namespace hk::util {
     }
 
     template <typename T>
-    constexpr u64 hashMurmur64(const T* data, const fu64 len) {
+    constexpr u64 hashMurmur64(const T* data, const fu64 len, const u64 seed = detail::HashMurmur64Impl<char, detail::ReadDefault<char>>::cDefaultSeed) {
         static_assert(sizeof(T) == 1);
-        return detail::hashMurmur64Impl<T, detail::ReadDefault<T>>(data, len);
+        return detail::hashMurmur64Impl<T, detail::ReadDefault<T>>(data, len, seed);
     }
 
     // Not sure how to make constexpr type-punning work
@@ -355,12 +356,12 @@ namespace hk::util {
     }
 
     template <typename T>
-    hk_alwaysinline u64 hashMurmur64T(const T& value) {
+    hk_alwaysinline u64 hashMurmur64T(const T& value, const u64 seed = detail::HashMurmur64Impl<char, detail::ReadDefault<char>>::cDefaultSeed) {
         struct {
             u8 data[sizeof(T)];
         } data = pun<typeof(data)>(value);
 
-        return hashMurmur64(data.data, sizeof(T));
+        return hashMurmur64(data.data, sizeof(T), seed);
     }
 
     template <typename T>

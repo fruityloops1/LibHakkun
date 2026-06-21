@@ -153,8 +153,8 @@ namespace hk {
             return detail::hashMurmurImpl<char, detail::ReadDefault<char>>(str.data(), str.length(), seed);
         }
 
-        constexpr u64 hashMurmur64(StringView str) {
-            return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.data(), str.length());
+        constexpr u64 hashMurmur64(StringView str, u64 seed = detail::HashMurmur64Impl<char, detail::ReadDefault<char>>::cDefaultSeed) {
+            return detail::hashMurmur64Impl<char, detail::ReadDefault<char>>(str.data(), str.length(), seed);
         }
 
         template <typename T>
