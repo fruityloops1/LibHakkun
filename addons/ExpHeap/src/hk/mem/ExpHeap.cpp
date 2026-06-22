@@ -33,6 +33,8 @@ namespace hk::mem {
     }
 
     void* ExpHeap::reallocate(void* oldPtr, size size) {
+        if (!oldPtr)
+            return allocate(size)
         auto resizedSize = ams::lmem::ResizeExpHeapMemoryBlock(getHeapHandle(), oldPtr, size);
         if (resizedSize > 0)
             return oldPtr;
