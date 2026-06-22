@@ -17,7 +17,7 @@ namespace hk::hook {
         Replace(Func func)
             : mFunc(func) { }
 
-        template <typename L>
+        template <LambdaNoCaptureType L>
         Replace(L func)
             : mFunc(hk::util::FunctionTraits<L>::fromLambda(forward<L>(func))) { }
 
@@ -45,13 +45,28 @@ namespace hk::hook {
         }
     };
 
+    template <typename Return, typename... Args>
+    Replace(Return (*func)(Args...)) -> Replace<Return (*)(Args...)>;
+
+    template <typename Return, typename... Args>
+    Replace(Return (*func)(Args..., ...)) -> Replace<Return (*)(Args..., ...)>;
+
     template <LambdaNoCaptureType L>
-    Replace<typename util::FunctionTraits<L>::FuncPtrTypeStatic> replace(L func) {
+    [[deprecated("use syntax without call to hk::hook::replace")]] Replace<typename util::FunctionTraits<L>::FuncPtrTypeStatic> replace(L func) {
         using Traits = util::FunctionTraits<L>;
         return { Traits::fromLambda(forward<L>(func)) };
+    }
+
+    template <AnyFunctionPointerType F>
+    [[deprecated("use syntax without call to hk::hook::replace")]] Replace<typename util::FunctionTraits<F>::FuncPtrTypeStatic> replace(F func) {
+        using Traits = util::FunctionTraits<F>;
+        return Replace<F>(func);
     }
 
 } // namespace hk::hook
 
 template <typename Ret, typename... Args>
 using HkReplace = hk::hook::Replace<Ret (*)(Args...)>;
+
+template <typename Ret, typename... Args>
+using HkReplaceVarArgs = hk::hook::Replace<Ret (*)(Args..., ...)>;
