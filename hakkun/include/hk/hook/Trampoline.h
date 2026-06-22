@@ -153,9 +153,32 @@ namespace hk::hook {
     };
 
     template <typename Return, typename... Args>
-    class Trampoline<Return, Args...> : public TrampolineStaticBase, public HookOperations<Trampoline<Return, Args...>> {
+    class Trampoline<Return, Args...> : public Trampoline<Return (*)(Args...)> {
+        using Super = Trampoline<Return (*)(Args...)>;
+
+    public:
+        using Super::Super;
+    };
+
+    template <typename Return, typename... Args>
+    class Trampoline<Return(Args...)> : public Trampoline<Return (*)(Args...)> {
+        using Super = Trampoline<Return (*)(Args...)>;
+
+    public:
+        using Super::Super;
+    };
+
+    template <typename Return, typename... Args>
+    class Trampoline<Return(Args..., ...)> : public Trampoline<Return (*)(Args..., ...)> {
+        using Super = Trampoline<Return (*)(Args..., ...)>;
+
+    public:
+        using Super::Super;
+    };
+
+    template <FunctionPointerType FuncPtr>
+    class Trampoline<FuncPtr> : public TrampolineStaticBase, public HookOperations<Trampoline<FuncPtr>> {
         using TrampolineStaticBase::installAtOffset;
-        using FuncPtr = Return (*)(Args...);
 
         const FuncPtr mFunc;
 
@@ -165,9 +188,14 @@ namespace hk::hook {
         const FuncPtr orig;
 
         template <LambdaNoCaptureType L>
-        [[deprecated("see README.md for new static trampoline syntax")]] Trampoline(L func)
+        [[deprecated("see README.md for new static trampoline syntax")]] hk_alwaysinline Trampoline(L func)
             : mFunc(util::FunctionTraits<L>::fromLambda(forward<L>(func)))
             , orig(pun<FuncPtr>(&detail::TrampolineStaticBackup<L>::orig)) { }
+
+        template <typename... Unique>
+        hk_alwaysinline Trampoline(FuncPtr func, Unique...)
+            : mFunc(func)
+            , orig(pun<FuncPtr>(&detail::TrampolineStaticBackup<Unique...>::orig)) { }
 
         hk_alwaysinline Result installAtOffset(const ro::RoModule* module, ptr offset) {
             return installAtOffset(module, offset, ptr(mFunc), getBackup());
@@ -201,6 +229,7 @@ namespace hk::hook {
 } // namespace hk::hook
 
 #define TrampolineStatic(...) this auto &&_hk_trampoline_func_self, ::hk::hook::detail::TrampolineBackupInvoker<::hk::util::tRemoveQualifiers<decltype(_hk_trampoline_func_self)>> orig, ::hk::hook::detail::TrampolineStaticFlag
+#define AllocateTrampolineStatic(FUNC) ::hk::hook::Trampoline<decltype(FUNC)>(FUNC, ::hk::util::TemplateString(__FILE__), __LINE__, ::hk::util::TemplateString(#FUNC))
 
 template <typename... Args>
 using HkTrampoline = hk::hook::Trampoline<Args...>;
