@@ -12,7 +12,7 @@ namespace hk {
                 T mData[Capacity];
                 mutable T* mDataPtrForConsteval;
             };
-            size mSize = 0;
+            SmallestUnsignedInteger<Capacity> mSize = 0;
 
         public:
             constexpr FixedVecStorage() {

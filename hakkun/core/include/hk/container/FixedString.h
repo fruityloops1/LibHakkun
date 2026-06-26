@@ -14,7 +14,7 @@ namespace hk {
     // TODO: StringOperations
     template <typename T, size Capacity>
     class FixedStringBase {
-        size mLength = 0; // always less than Capacity, excludes null terminator
+        SmallestUnsignedInteger<Capacity> mLength = 0; // always less than Capacity, excludes null terminator
         Array<T, Capacity> mData;
 
         using MutableStringView = MutableStringViewBase<T>;
