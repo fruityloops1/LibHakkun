@@ -22,11 +22,11 @@ namespace hk::util {
         if (addr)
             return addr;
 
-        if constexpr (sail::sUsePrecalcHashes) {
+        if constexpr (cHasDebInfo)
+            addr = sail::lookupSymbolFromDb<false>(Symbol.value);
+        else {
             constexpr u32 symMurmur = util::hashMurmur(Symbol.value);
             addr = sail::lookupSymbolFromDb<true>(&symMurmur);
-        } else {
-            addr = sail::lookupSymbolFromDb<false>(Symbol.value);
         }
         return addr;
 #endif

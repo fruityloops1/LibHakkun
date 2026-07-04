@@ -29,4 +29,24 @@
 #define ralwaysinline
 #endif
 
+namespace hk {
+
+    constexpr bool cIsRelease =
+#if HK_RELEASE
+        true
+#else
+        false
+#endif
+        ;
+
+    constexpr bool cHasDebInfo =
+#if HK_RELEASE_DEBINFO or !HK_RELEASE
+        true
+#else
+        false
+#endif
+        ;
+
+} // namespace hk
+
 #undef INCLUDE_HK_DETAIL_MACROS

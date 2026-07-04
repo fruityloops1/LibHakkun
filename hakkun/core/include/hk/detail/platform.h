@@ -14,4 +14,20 @@
 #define HAS_NNSDK_TERNARY(DOES, DOESNT) DOESNT
 #endif
 
+namespace hk {
+
+    constexpr bool is32Bit() {
+        return
+#ifdef __aarch64__
+            false
+#else
+            true
+#endif
+            ;
+    }
+
+    constexpr bool is64Bit() { return !is32Bit(); }
+
+} // namespace hk
+
 #undef INCLUDE_HK_DETAIL_PLATFORM

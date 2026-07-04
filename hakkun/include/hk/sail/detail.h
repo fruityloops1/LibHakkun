@@ -207,7 +207,7 @@ namespace hk::sail {
         return out;
     }
 
-    constexpr bool sUsePrecalcHashes =
+    constexpr bool cUsePrecalcHashes =
 #ifdef HK_USE_PRECALCULATED_SYMBOL_DB_HASHES
         true
 #else

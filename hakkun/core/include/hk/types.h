@@ -49,18 +49,6 @@ hk_alwaysinline To pun(From val) {
 
 namespace hk {
 
-    constexpr bool is32Bit() {
-        return
-#ifdef __aarch64__
-            false
-#else
-            true
-#endif
-            ;
-    }
-
-    constexpr bool is64Bit() { return !is32Bit(); }
-
     struct Handle {
         u32 value = 0;
 
