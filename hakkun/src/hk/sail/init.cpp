@@ -40,7 +40,7 @@ namespace hk::sail {
                 if (sym.st_name) {
                     bool abort = ELF_ST_BIND(sym.st_info) != STB_WEAK;
 
-                    if constexpr (sail::sUsePrecalcHashes)
+                    if constexpr (sail::cUsePrecalcHashes)
                         *ptr = lookupSymbolFromDb<true>(cast<const u32*>(data.dynstr + sym.st_name), abort);
                     else
                         *ptr = lookupSymbolFromDb<false>(data.dynstr + sym.st_name, abort);
