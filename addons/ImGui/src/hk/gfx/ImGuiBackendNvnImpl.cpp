@@ -215,6 +215,10 @@ namespace hk::gfx {
 
             const auto dispSize = ImGui::GetIO().DisplaySize;
 
+
+            Shader* defaultShaderSlop = mShader.get();
+            Shader* lastBoundShader = nullptr;
+
             for (int i = 0; i < drawData.CmdListsCount; ++i) {
                 const ImDrawList* cmdList = drawData.CmdLists[i];
 
@@ -232,11 +236,15 @@ namespace hk::gfx {
                 for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
                     const ImDrawCmd* cmd = &cmdList->CmdBuffer[j];
 
-                    if (cmd->UserCallbackData != nullptr) {
-                        Shader* data = (Shader*)cmd->UserCallbackData;
-                        data->use(cmdBuffer);
-                    } else {
-                        mShader.get()->use(cmdBuffer);
+                    if (cmd->UserCallback == nullptr) {
+                        if (cmd->UserCallbackData != nullptr and cmd->UserCallbackData != lastBoundShader) {
+                            Shader* data = (Shader*)cmd->UserCallbackData;
+                            data->use(cmdBuffer);
+                            lastBoundShader = data;
+                        } else if (lastBoundShader != defaultShaderSlop) {
+                            defaultShaderSlop->use(cmdBuffer);
+                            lastBoundShader = defaultShaderSlop;
+                        }
                     }
 
                     const ImVec4& clipRec = cmd->ClipRect;
@@ -246,11 +254,11 @@ namespace hk::gfx {
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
 
-#if IMGUI_VERSION_NUM >= 19200
+                    #if IMGUI_VERSION_NUM>=19200
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
-#else
+                    #else
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
-#endif
+                    #endif
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {
