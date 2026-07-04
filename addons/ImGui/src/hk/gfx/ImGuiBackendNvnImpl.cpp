@@ -195,7 +195,6 @@ namespace hk::gfx {
             bindTexture(cmdBuffer, mFontTexture.get()->getTextureHandle());
 
             auto& dispSize = ImGui::GetIO().DisplaySize;
-            mShader.get()->use(cmdBuffer);
         }
 
         void update() { }
@@ -232,6 +231,13 @@ namespace hk::gfx {
 
                 for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
                     const ImDrawCmd* cmd = &cmdList->CmdBuffer[j];
+
+                    if (cmd->UserCallbackData != nullptr) {
+                        Shader* data = (Shader*)cmd->UserCallbackData;
+                        data->use(cmdBuffer);
+                    } else {
+                        mShader.get()->use(cmdBuffer);
+                    }
 
                     const ImVec4& clipRec = cmd->ClipRect;
                     const util::Vector2f min { clipRec.x, clipRec.y };
