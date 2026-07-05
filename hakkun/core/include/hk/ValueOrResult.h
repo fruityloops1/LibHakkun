@@ -47,11 +47,7 @@ namespace hk {
         };
 
         constexpr T disown() {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::disown(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T>(),
-                mResult.getModule() + 2000,
-                mResult.getDescription(),
-                mResult.getValue());
+            HK_ABORT_UNLESS_R(mResult);
             mResult = MAKE_RESULT(diag::ResultValueDisowned());
 
             return move(mValue);
@@ -122,11 +118,7 @@ namespace hk {
          * @return const T&
          */
         constexpr const T& getInnerValue() const {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::getInnerValue(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T>(),
-                mResult.getModule() + 2000,
-                mResult.getDescription(),
-                mResult.getValue());
+            HK_ABORT_UNLESS_R(mResult);
             return mValue;
         }
 
@@ -161,11 +153,7 @@ namespace hk {
         T* mValueReference = nullptr;
 
         constexpr T& get() {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::get(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T&>(),
-                mResult.getModule() + 2000,
-                mResult.getDescription(),
-                mResult.getValue());
+            HK_ABORT_UNLESS_R(mResult);
 
             return *mValueReference;
         }
@@ -233,11 +221,7 @@ namespace hk {
          * @return T&
          */
         constexpr T& getInnerValue() const {
-            HK_ABORT_UNLESS(hasValue(), "hk::ValueOrResult<%s>::getInnerValue(): No value (%04d-%04d/0x%x)",
-                util::getTypeName<T&>(),
-                mResult.getModule() + 2000,
-                mResult.getDescription(),
-                mResult.getValue());
+            HK_ABORT_UNLESS_R(mResult);
             return get();
         }
 
