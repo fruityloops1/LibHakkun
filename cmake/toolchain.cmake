@@ -3,6 +3,8 @@ message(STATUS "Current working directory: ${CMAKE_BINARY_DIR}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostartfiles -Wno-unused-command-line-argument")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostartfiles -Wno-unused-command-line-argument")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fuse-ld=lld")
 
 if (CMAKE_SOURCE_DIR MATCHES "TryCompile") # There is no Better way to eliminate this Parasite
     return()
