@@ -195,7 +195,6 @@ namespace hk::gfx {
             bindTexture(cmdBuffer, mFontTexture.get()->getTextureHandle());
 
             auto& dispSize = ImGui::GetIO().DisplaySize;
-            mShader.get()->use(cmdBuffer);
         }
 
         void update() { }
@@ -216,6 +215,9 @@ namespace hk::gfx {
 
             const auto dispSize = ImGui::GetIO().DisplaySize;
 
+
+            Shader* lastBoundShader = nullptr;
+
             for (int i = 0; i < drawData.CmdListsCount; ++i) {
                 const ImDrawList* cmdList = drawData.CmdLists[i];
 
@@ -233,6 +235,17 @@ namespace hk::gfx {
                 for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
                     const ImDrawCmd* cmd = &cmdList->CmdBuffer[j];
 
+                    Shader* defaultShader = mShader.get();
+
+                    if (cmd->UserCallback == nullptr and cmd->UserCallbackData != nullptr and cmd->UserCallbackData != lastBoundShader) {
+                        Shader* data = (Shader*)cmd->UserCallbackData;
+                        data->use(cmdBuffer);
+                        lastBoundShader = data;
+                    } else if (lastBoundShader != defaultShader) {
+                        defaultShader->use(cmdBuffer);
+                        lastBoundShader = defaultShader;
+                    }
+
                     const ImVec4& clipRec = cmd->ClipRect;
                     const util::Vector2f min { clipRec.x, clipRec.y };
                     const util::Vector2f max { clipRec.z, clipRec.w };
@@ -240,11 +253,11 @@ namespace hk::gfx {
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
 
-#if IMGUI_VERSION_NUM >= 19200
+                    #if IMGUI_VERSION_NUM>=19200
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
-#else
+                    #else
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
-#endif
+                    #endif
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {
