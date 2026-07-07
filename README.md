@@ -234,5 +234,7 @@ Please note trampoline hooks do not relocate instructions at the moment, which s
 * tetraxile
 * GLOSHSEP
 
-## License
-The LICENSE file applies to all parts of the project except the addons/ExpHeap subdirectory
+## [License](LICENSE)
+This project is licensed under the [2-Clause BSD License](LICENSE.BSD2) in LICENSE.BSD2, as well as under the [custom license](LICENSE.TDM) in LICENSE.TDM.
+
+The 2 licenses named above do not apply to the addons/ExpHeap subdirectory, it is individually licensed under the [GNU GENERAL PUBLIC LICENSE Version 2](addons/ExpHeap/LICENSE) in addons/ExpHeap/LICENSE.
