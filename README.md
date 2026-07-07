@@ -225,7 +225,6 @@ extern "C" void hkMain() {
         .uninstall();
 }
 ```
-Please note trampoline hooks do not relocate instructions at the moment, which should not be a problem as long as you hook at instructions that do not need to be relocated (avoid branches, adrp, etc.)
 
 ## Credits:
 * shadowninja108
