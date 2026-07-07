@@ -234,6 +234,9 @@ Please note trampoline hooks do not relocate instructions at the moment, which s
 * tetraxile
 * GLOSHSEP
 
+## Code of conduct
+Read the [code of conduct](CODE_OF_CONDUCT.md) for rules in engaging with this project.
+
 ## [License](LICENSE)
 This project is licensed under the [2-Clause BSD License](LICENSE.BSD2) in LICENSE.BSD2, as well as under the [custom license](LICENSE.TDM) in LICENSE.TDM.
 
