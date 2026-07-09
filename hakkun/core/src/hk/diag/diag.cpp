@@ -190,9 +190,9 @@ File: %s:%u:%u
             svc::Break(reason, &abortResult, sizeof(abortResult));
     }
 #else
-    hk_noreturn void abortImpl(Result result, const char* file, int line, const char* msgFmt, std::va_list arg) {
+    hk_noreturn void abortImpl(Result result, const char* file, u32 line, u16 column, const char* msgFmt, std::va_list arg) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-        log(cAbortFormat, file, line);
+        log(cAbortFormat, file, line, column);
         logLineImpl(msgFmt, arg);
         dumpResultTrace(result);
 #endif
