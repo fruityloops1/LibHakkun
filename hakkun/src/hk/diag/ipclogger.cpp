@@ -5,15 +5,20 @@
 
 namespace hk::diag::ipclogger {
     IpcLogger IpcLogger::sInstance = IpcLogger();
+    __attribute__((weak)) bool IpcLogger::mInitializeManually = false;
 
-    ValueOrResult<Handle> initialize() {
+    Result IpcLogger::initialize() {
         // UserBuffer syscalls can't have their buffers on the stack :(
         alignas(cPageSize) static std::array<u8, cPageSize> messageBuffer;
+        bool failed = true;
 
         auto handle = HK_TRY(svc::ConnectToNamedPort("hklog"));
 
         // application processes are only permitted to have one port open at a time
         defer { svc::CloseHandle(handle); };
+        defer_if(failed) {
+            sInstance.mSession = cInvalidSession;
+        };
 
         util::Stream stream(messageBuffer.data(), messageBuffer.size());
         stream.write(sf::hipc::Header { .tag = 2, .dataWords = 4 });
@@ -30,7 +35,9 @@ namespace hk::diag::ipclogger {
         HK_ASSERT(special.moveHandleCount == 1);
         auto sessionHandle = HK_UNWRAP(stream.read<Handle>());
 
-        return sessionHandle;
+        failed = false;
+        sInstance.mSession.store(sessionHandle, std::memory_order_release);
+        return ResultSuccess();
     }
 
     IpcLogger* IpcLogger::instance() {
@@ -42,10 +49,6 @@ namespace hk::diag::ipclogger {
                 return &sInstance;
 
             auto result = initialize();
-
-            sInstance.mSession.store(result.hasValue() ? result.getInnerValue()
-                                                       : sInstance.mSession = cInvalidSession,
-                std::memory_order_release);
         }
 
         return &sInstance;

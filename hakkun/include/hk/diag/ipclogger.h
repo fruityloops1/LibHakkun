@@ -12,6 +12,7 @@ namespace hk::diag::ipclogger {
         static constexpr Handle cInvalidSession = std::numeric_limits<u32>::max();
         static IpcLogger sInstance;
         std::atomic<Handle> mSession = Handle();
+        static bool mInitializeManually;
 
         bool isDisconnected() const {
             auto session = mSession.load(std::memory_order_acquire);
@@ -32,6 +33,7 @@ namespace hk::diag::ipclogger {
 
     public:
         static IpcLogger* instance();
+        static Result initialize();
 
         void logWithLine(Span<const u8> buffer) {
             logImpl(buffer, 0);
