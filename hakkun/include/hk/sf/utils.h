@@ -4,7 +4,6 @@
 #include "hk/diag/diag.h"
 #include "hk/sf/sf.h"
 #include "hk/types.h"
-#include "hk/util/Math.h"
 #include "hk/util/TypeName.h"
 #include <type_traits>
 
@@ -29,7 +28,7 @@ namespace hk::sf {
 
     template <typename... Args>
     Array<u8, calcParamsSize<Args...>()> packInput(const Args&... args) {
-        Array<u8, calcParamsSize<Args...>()> array = { };
+        Array<u8, calcParamsSize<Args...>()> array = {};
         ptr offset = 0;
         ([&] {
             offset = alignUp(offset, alignof(Args));
@@ -57,6 +56,10 @@ namespace hk::sf {
 
     constexpr auto handleExtractor() {
         return [](sf::Response& response) -> Handle { return response.nextCopyHandle(); };
+    }
+
+    constexpr auto moveHandleExtractor() {
+        return [](sf::Response& response) -> Handle { return response.nextMoveHandle(); };
     }
 
     template <typename T = void, bool enableDebug = false, typename... Args>

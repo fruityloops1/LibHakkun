@@ -418,7 +418,7 @@ namespace hk {
 #undef HK_TRY
 #define HK_TRY(VALUE, ...)                                                                                                                                                                      \
     ({                                                                                                                                                                                          \
-        constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - __builtin_strlen(#VALUE __VA_OPT__(",") #__VA_ARGS__);                                                  \
+        constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - u16(__builtin_strlen(#VALUE __VA_OPT__(",") #__VA_ARGS__));                                             \
                                                                                                                                                                                                 \
         auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                  \
         using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                                    \

@@ -220,7 +220,7 @@ File: %s:%u:%u
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     __attribute__((weak)) void logBuffer(const char* buf, size length) {
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length }));
+        HAS_NNSDK(ipclogger::IpcLogger::instance().logWithoutLine({ cast<const u8*>(buf), length }));
         hkLogSink(buf, length);
     }
 
@@ -231,7 +231,7 @@ File: %s:%u:%u
         char buf[len + 1];
         vsnprintf(buf, len + 1, fmt, listCopy);
 
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), len }));
+        HAS_NNSDK(ipclogger::IpcLogger::instance().logWithoutLine({ cast<const u8*>(buf), len }));
         buf[len] = '\0';
         hkLogSink(buf, len);
     }
@@ -249,7 +249,7 @@ File: %s:%u:%u
         size len = vsnprintf(nullptr, 0, fmt, list);
         char buf[len + 2];
         vsnprintf(buf, len + 2, fmt, listCopy);
-        HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithLine({ cast<const u8*>(buf), len }));
+        HAS_NNSDK(ipclogger::IpcLogger::instance().logWithLine({ cast<const u8*>(buf), len }));
 
         buf[len] = '\n';
         buf[len + 1] = '\0';

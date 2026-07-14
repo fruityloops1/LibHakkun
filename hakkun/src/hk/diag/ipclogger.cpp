@@ -1,53 +1,52 @@
 #include "hk/diag/ipclogger.h"
 #include "hk/ValueOrResult.h"
-#include "hk/os/Mutex.h"
-#include <atomic>
+#include "hk/diag/results.h"
+#include "hk/ro/RoUtil.h"
+#include "hk/services/sm.h"
+#include "hk/sf/sf.h"
 
 namespace hk::diag::ipclogger {
-    IpcLogger IpcLogger::sInstance = IpcLogger();
+    IpcLogger IpcLogger::sInstance = {};
 
-    ValueOrResult<Handle> initialize() {
-        // UserBuffer syscalls can't have their buffers on the stack :(
-        alignas(cPageSize) static std::array<u8, cPageSize> messageBuffer;
+    Result IpcLogger::initialize() {
+        if (!sInstance.isDisconnected())
+            return ResultSuccess();
+        bool failed = true;
 
-        auto handle = HK_TRY(svc::ConnectToNamedPort("hklog"));
+        auto symbol = hk::ro::lookupSymbol("_ZN2nn2sf4hipc20ConnectToHipcServiceEPNS_3svc6HandleEPKc");
+        Handle sessionHandle;
+        if (symbol) {
+            auto func = cast<hk::Result (*)(svc::Handle*, const char*)>(symbol);
+            HK_ABORT_UNLESS_R(func(&sessionHandle, "hk:log"));
+        } else {
+            if (!hk::sm::ServiceManager::instance())
+                return MAKE_RESULT(ResultMissingServiceManager());
 
-        // application processes are only permitted to have one port open at a time
-        defer { svc::CloseHandle(handle); };
-
-        util::Stream stream(messageBuffer.data(), messageBuffer.size());
-        stream.write(sf::hipc::Header { .tag = 2, .dataWords = 4 });
-        auto res = svc::SendSyncRequestWithUserBuffer(std::span<u8>(messageBuffer), handle);
-        if (res.failed())
-            svc::Break(svc::BreakReason_User, nullptr, res.getValue());
-
-        stream.seek(0);
-        auto header = HK_UNWRAP(stream.read<sf::hipc::Header>());
-        if (header.tag == 1)
-            return MAKE_RESULT(ResultSessionMoveFailed());
-
-        auto special = HK_UNWRAP(stream.read<sf::hipc::SpecialHeader>());
-        HK_ASSERT(special.moveHandleCount == 1);
-        auto sessionHandle = HK_UNWRAP(stream.read<Handle>());
-
-        return sessionHandle;
-    }
-
-    IpcLogger* IpcLogger::instance() {
-        if (!sInstance.mSession.load(std::memory_order_relaxed)) {
-            static os::Mutex initLock;
-            auto guard = initLock.lockScoped();
-
-            if (sInstance.mSession.load(std::memory_order_acquire))
-                return &sInstance;
-
-            auto result = initialize();
-
-            sInstance.mSession.store(result.hasValue() ? result.getInnerValue()
-                                                       : sInstance.mSession = cInvalidSession,
-                std::memory_order_release);
+            sessionHandle = HK_TRY(hk::sm::ServiceManager::instance()->getServiceHandle<"hk:log">().map([](sf::Service service) {
+                return service.toHandle();
+            }));
         }
 
-        return &sInstance;
+        failed = false;
+        sInstance.mSession.store(sessionHandle, std::memory_order_release);
+
+        return ResultSuccess();
     }
+
+    void IpcLogger::logImpl(Span<const u8> buffer, u16 tag) {
+        if (isDisconnected())
+            return;
+
+        util::Stream stream(svc::getTLS()->ipcMessageBuffer, sf::cTlsBufferSize);
+        stream.write(sf::hipc::Header {
+            .tag = tag,
+            .sendBufferCount = 1,
+            .dataWords = 0,
+        });
+        stream.write(sf::hipc::Buffer(sf::hipc::BufferMode::Normal, u64(buffer.data()), buffer.size()));
+        auto res = svc::SendSyncRequest(mSession);
+        if (res.failed())
+            svc::Break(svc::BreakReason_Assert, (void*)0x20001, res.getValue());
+    }
+
 } // namespace hk::diag::ipclogger

@@ -111,6 +111,14 @@ namespace hk::sf {
         // Domain objects allow a session to multiplex accesses to interfaces, saving on session handles.
         Result convertToDomain();
 
+        Handle toHandle() {
+            Handle handle = mSession;
+            mOwnedHandle = false;
+            mObject = std::nullopt;
+            mSession = 0;
+            return handle;
+        }
+
         template <typename ResponseExtractor>
         inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> invokeRequest(Request&& request, ResponseExtractor extractor) {
             return invoke(cmif::MessageTag::Request, std::forward<Request>(request), extractor);
@@ -364,7 +372,7 @@ namespace hk::sf {
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
                 .dataWords = u16(alignUp(hipcDataSize, 4) / 4),
-                .recv_static_mode = mHipcReceiveStatics.size() ? 2u + u8(mHipcReceiveStatics.size()) : 0,
+                .recvStaticMode = mHipcReceiveStatics.size() ? 2u + u8(mHipcReceiveStatics.size()) : 0,
                 .hasSpecialHeader = hasSpecialHeader,
             });
 
