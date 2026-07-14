@@ -14,12 +14,4 @@ namespace hk::diag {
         svc::Break(reason, &result, sizeof(result));
     }
 
-#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    void debugLog(const char* msg, ...) { // no format
-        const size len = strlen(msg);
-
-        svc::OutputDebugString(msg, len);
-    }
-#endif
-
 } // namespace hk::diag

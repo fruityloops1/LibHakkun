@@ -37,7 +37,8 @@ namespace hk::sm {
 
             char nameBuf[9] = { };
             std::memcpy(nameBuf, Name.value, sizeof(Name));
-            return invokeRequest(sf::Request(this, 1, Span(nameBuf, 8)), [](sf::Response& response) {
+            auto request = sf::Request(this, 1, Span(nameBuf, 8));
+            return invokeRequest(move(request), [](sf::Response& response) {
                 return sf::Service::fromHandle(response.hipcMoveHandles[0]);
             });
         }
