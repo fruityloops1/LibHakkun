@@ -31,11 +31,11 @@ namespace hk::socket {
 
         template <util::TemplateString Name = "bsd:u">
         static ValueOrResult<Socket*> initialize(const ServiceConfig& config, const Span<u8> socketBuffer) {
-            sf::Service mainService = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<Name>()),
-                        monitorService = HK_TRY(sm::ServiceManager::instance()->getServiceHandle<Name>());
+            sf::Service mainService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
+            sf::Service monitorService = HK_UNWRAP(sm::ServiceManager::instance()->getServiceHandle<Name>());
             createInstance(move(mainService), move(monitorService));
-            instance()->registerClient(config, socketBuffer);
-            instance()->startMonitoring();
+            HK_TRY(instance()->registerClient(config, socketBuffer));
+            HK_TRY(instance()->startMonitoring());
             return instance();
         }
 

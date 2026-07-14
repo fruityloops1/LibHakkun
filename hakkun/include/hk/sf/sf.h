@@ -15,7 +15,6 @@
 #include <cstddef>
 #include <cstring>
 #include <optional>
-#include <span>
 
 /*
 Untested:
@@ -144,6 +143,7 @@ namespace hk::sf {
             bool mPrintRequest : 1 = false;
             bool mAbortAfterRequest : 1 = false;
             bool mPrintResponse : 1 = false;
+            bool mAbortAfterResponse : 1 = false;
 #endif
             bool mSendPid : 1 = false;
         };
@@ -162,7 +162,7 @@ namespace hk::sf {
         FixedVec<hipc::Buffer, 8> mHipcExchangeBuffers;
         FixedVec<hipc::ReceiveStatic, 8> mHipcReceiveStatics;
         FixedVec<u16, 8> mHipcOutPointerSizes;
-        Span<const u8> mData = { };
+        Span<const u8> mData = {};
 
         friend class Service;
         // dedicated constructor for cmif::QueryPointerSize
@@ -199,6 +199,13 @@ namespace hk::sf {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             mPrintRequest = true;
             mAbortAfterRequest = true;
+#endif
+        }
+
+        constexpr void debugAbortAfterResponse() {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+            mPrintResponse = true;
+            mAbortAfterResponse = true;
 #endif
         }
 
@@ -279,6 +286,7 @@ namespace hk::sf {
                     mode,
                     u64(nullptr),
                     0));
+                mHipcOutPointerSizes.add(size);
             } else {
                 mHipcReceiveStatics.add(hipc::ReceiveStatic());
                 mHipcReceiveBuffers.add(hipc::Buffer(
@@ -336,28 +344,18 @@ namespace hk::sf {
             util::Stream writer(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
             bool hasSpecialHeader = mSendPid || !mHipcCopyHandles.empty() || !mHipcMoveHandles.empty();
 
-            struct Sizes {
-                u16 hipcDataSize;
-                u16 cmifDataSize;
-            } sizes = [this, service]() {
-                u16 hipcDataSize = 16;
-                u16 cmifDataSize = sizeof(cmif::InHeader) + mData.size_bytes();
+            u16 hipcDataSize = 16;
+            u16 cmifDataSize = sizeof(cmif::InHeader) + mData.size_bytes();
 
-                if (service->isDomain()) {
-                    hipcDataSize += sizeof(cmif::DomainInHeader);
-                    hipcDataSize += sizeof(u32) * mObjects.size();
-                }
+            if (service->isDomain()) {
+                hipcDataSize += sizeof(cmif::DomainInHeader);
+                hipcDataSize += sizeof(u32) * mObjects.size();
+            }
 
-                hipcDataSize += sizeof(u16) * mHipcOutPointerSizes.size();
-                hipcDataSize = alignUp(hipcDataSize, sizeof(u16));
+            hipcDataSize += cmifDataSize;
+            hipcDataSize = alignUp(hipcDataSize, sizeof(u16));
 
-                hipcDataSize += cmifDataSize;
-
-                return Sizes {
-                    .hipcDataSize = hipcDataSize,
-                    .cmifDataSize = cmifDataSize
-                };
-            }();
+            hipcDataSize += sizeof(u16) * mHipcOutPointerSizes.size();
 
             writer.write(hipc::Header {
                 .tag = u16(tag),
@@ -365,8 +363,8 @@ namespace hk::sf {
                 .sendBufferCount = u8(mHipcSendBuffers.size()),
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
-                .dataWords = u16(alignUp(sizes.hipcDataSize, 4) / 4),
-                .recv_static_mode = mHipcReceiveStatics.empty() ? 0 : 2u + u8(mHipcReceiveStatics.size()),
+                .dataWords = u16(alignUp(hipcDataSize, 4) / 4),
+                .recv_static_mode = mHipcReceiveStatics.size() ? 2u + u8(mHipcReceiveStatics.size()) : 0,
                 .hasSpecialHeader = hasSpecialHeader,
             });
 
@@ -394,7 +392,7 @@ namespace hk::sf {
                 writer.write(cmif::DomainInHeader {
                     .tag = mDomainTag,
                     .objectCount = u8(mObjects.size()),
-                    .dataSize = sizes.cmifDataSize,
+                    .dataSize = cmifDataSize,
                     .objectId = *service->mObject,
                     .token = mToken,
                 });
@@ -412,7 +410,7 @@ namespace hk::sf {
             if (service->isDomain())
                 writer.writeIterator<u32>(mObjects);
 
-            writer.seek(alignUp(writer.tell(), 16));
+            writer.seek(alignUp(writer.tell(), 2));
             writer.writeIterator<u16>(mHipcOutPointerSizes);
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
@@ -509,6 +507,8 @@ namespace hk::sf {
 
             diag::dumpImpl(result, "PrintResponseResult", __FILE__, __LINE__, 13);
         }
+        if (request.mAbortAfterResponse)
+            HK_ABORT("Aborted after response (debug) %05x", result.getValue());
 #endif
         HK_TRY(result);
 

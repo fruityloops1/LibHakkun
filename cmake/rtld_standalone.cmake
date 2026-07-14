@@ -7,6 +7,7 @@ function(add_rtld_standalone)
         ${PROJECT_SOURCE_DIR}/sys/hakkun/src/rtld/standalone/diag.cpp
         ${PROJECT_SOURCE_DIR}/sys/hakkun/src/rtld/standalone/main.cpp
         ${PROJECT_SOURCE_DIR}/sys/hakkun/src/rtld/standalone/module.cpp
+        ${PROJECT_SOURCE_DIR}/sys/hakkun/src/hk/diag/ipclogger.cpp
     )
     
     target_include_directories(rtld PRIVATE
