@@ -42,9 +42,9 @@ namespace hk::util {
             : mBuffer(ptr(span.data()))
             , mSize(span.size()) { }
 
-        void seek(size cursor) {
+        void seek(size cursor, diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (hasSize())
-                HK_ABORT_UNLESS(cursor <= mSize, "hk::util::Stream::seek: out of range (%zu/%zu)", cursor, mSize);
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, cursor <= mSize, "hk::util::Stream::seek: out of range (%zu/%zu)", cursor, mSize);
 
             mCursor = cursor;
         }
@@ -71,11 +71,11 @@ namespace hk::util {
             return hk::ResultSuccess();
         }
 
-        void write(const void* data, size dataSize) {
+        void write(const void* data, size dataSize, diag::SourceLocation loc = diag::SourceLocation::current()) {
             checkReadOnly();
 
             if (hasSize())
-                HK_ABORT_UNLESS(mCursor + dataSize <= mSize, "hk::util::Stream::write: out of range (%zu/%zu)", mCursor + dataSize, mSize);
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, mCursor + dataSize <= mSize, "hk::util::Stream::write: out of range (%zu/%zu)", mCursor + dataSize, mSize);
 
             memcpy(cast<void*>(mBuffer + mCursor), data, dataSize);
             mCursor += dataSize;
@@ -87,13 +87,13 @@ namespace hk::util {
         }
 
         template <typename T>
-        void write(const T& value) {
-            write(&value, sizeof(T));
+        void write(const T& value, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            write(&value, sizeof(T), loc);
         }
 
-        void writeString(const char* value, size length) {
-            write(length);
-            write(static_cast<const void*>(value), length);
+        void writeString(const char* value, size length, diag::SourceLocation loc = diag::SourceLocation::current()) {
+            write(length, loc);
+            write(static_cast<const void*>(value), length, loc);
         }
 
         void writeString(StringView value) {
@@ -125,17 +125,17 @@ namespace hk::util {
         }
 
         template <typename CT, typename T>
-        void writeIterator(const T& container) {
+        void writeIterator(const T& container, diag::SourceLocation loc = diag::SourceLocation::current()) {
             for (CT ct : container)
-                write(ct);
+                write(ct, loc);
         }
 
-        void align(size alignment, u8 c = 0) {
+        void align(size alignment, u8 c = 0, diag::SourceLocation loc = diag::SourceLocation::current()) {
             size alignedCursor = alignUp(mCursor, alignment);
             size toZero = alignedCursor - mCursor;
 
             for (size i = 0; i < toZero; i++)
-                write(c);
+                write(c, loc);
         }
 
         hk::Result tryRead(void* out, size dataSize) {
@@ -147,9 +147,9 @@ namespace hk::util {
             return hk::ResultSuccess();
         }
 
-        void read(void* out, size dataSize) {
+        void read(void* out, size dataSize, diag::SourceLocation loc = diag::SourceLocation::current()) {
             if (hasSize())
-                HK_ABORT_UNLESS(mCursor + dataSize <= mSize, "hk::util::Stream::write: out of range (%zu/%zu)", mCursor + dataSize, mSize);
+                HK_ABORT_UNLESS_WITH_LOCATION(loc, mCursor + dataSize <= mSize, "hk::util::Stream::write: out of range (%zu/%zu)", mCursor + dataSize, mSize);
 
             memcpy(out, cast<const void*>(mBuffer + mCursor), dataSize);
             mCursor += dataSize;
