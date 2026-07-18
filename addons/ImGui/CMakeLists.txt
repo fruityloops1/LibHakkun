@@ -31,5 +31,5 @@ embed_file(ImGui ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader 0x1000 TRUE)
 
 apply_config(ImGui)
 
-target_compile_definitions(ImGui PRIVATE IMGUI_DISABLE_DEFAULT_ALLOCATORS IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/include/hk/gfx/ImGuiConfig.h")
+target_compile_definitions(ImGui PRIVATE IMGUI_DISABLE_TIME_FUNCTIONS IMGUI_DISABLE_DEFAULT_ALLOCATORS IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/include/hk/gfx/ImGuiConfig.h")
 target_include_directories(ImGui PRIVATE include/hk ${CMAKE_CURRENT_BINARY_DIR} ${IMGUI_DIR})
