@@ -29,12 +29,16 @@ namespace hk::diag {
     hk_noreturn hk_noinline void abortReleaseImpl(Result result, ...) { __builtin_trap(); }
 #endif
 
-#if HK_RESULT_ADVANCED
+#if HK_RESULT_ADVANCED and (!defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO))
     void dumpResultTrace(Result result);
-    void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column);
 #else
     inline hk_alwaysinline void dumpResultTrace(Result result) { }
-    inline void dumpImpl(Result result, const char* file, u32 line, u16 column) { }
+#endif
+
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+    void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column);
+#else
+    inline void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column) { }
 #endif
 
     constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
