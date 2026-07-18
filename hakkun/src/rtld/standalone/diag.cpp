@@ -15,11 +15,14 @@ namespace hk::diag {
     }
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    void debugLog(const char* msg, ...) { // no format
-        const size len = strlen(msg);
+    // no format
 
-        svc::OutputDebugString(msg, len);
-    }
+    void logBuffer(const char* buf, size length) { svc::OutputDebugString(buf, length); }
+    void logImpl(const char* fmt, std::va_list list) { svc::OutputDebugString(fmt, strlen(fmt)); }
+    void log(const char* fmt, ...) { svc::OutputDebugString(fmt, strlen(fmt)); }
+    void logLineImpl(const char* fmt, std::va_list list) { svc::OutputDebugString(fmt, strlen(fmt)); }
+    void logLine(const char* fmt, ...) { svc::OutputDebugString(fmt, strlen(fmt)); }
+    void debugLog(const char* msg, ...) { svc::OutputDebugString(msg, strlen(msg)); }
 #endif
 
 } // namespace hk::diag
