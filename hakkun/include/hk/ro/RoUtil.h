@@ -17,9 +17,11 @@ namespace hk::ro {
 
     hk_const RoModule* getMainModule();
     hk_const RoModule* getSelfModule();
+#if HK_HOMEBREW_TYPE != HK_HOMEBREW_HBLOADER
     hk_const RoModule* getRtldModule();
-#ifndef TARGET_IS_STATIC
+#if !defined(TARGET_IS_STATIC)
     hk_const RoModule* getSdkModule();
+#endif
 #endif
 
     hk_pure RoModule* getModuleContaining(ptr addr);

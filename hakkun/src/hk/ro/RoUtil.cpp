@@ -90,10 +90,12 @@ namespace hk::ro {
     }
 
     hk_alwaysinline RoModule* getSelfModule() { return getModuleByIndex(sSelfModuleIdx); }
+    hk_alwaysinline RoModule* getMainModule() { return getModuleByIndex(HK_HOMEBREW_TYPE == HK_HOMEBREW_HBLOADER ? 0 : 1); }
+#if HK_HOMEBREW_TYPE != HK_HOMEBREW_HBLOADER
     hk_alwaysinline RoModule* getRtldModule() { return getModuleByIndex(0); }
-    hk_alwaysinline RoModule* getMainModule() { return getModuleByIndex(1); }
-#ifndef TARGET_IS_STATIC
+#if !defined(TARGET_IS_STATIC)
     hk_alwaysinline RoModule* getSdkModule() { return getModuleByIndex(sNumModules - 1); }
+#endif
 #endif
 
     RoModule* getModuleContaining(ptr addr) {

@@ -6,6 +6,7 @@
 #include "hk/svc/cpu.h"
 #include "hk/svc/types.h"
 #include "rtld/RoModule.h"
+#include "rtld/RoModuleList.h"
 
 #ifdef HK_ADDON_HeapSourceBss
 #include "hk/mem/BssHeap.h"
@@ -22,7 +23,18 @@ namespace hk::init {
 
     extern "C" void hkMain();
 
+#if HK_HOMEBREW_TYPE == HK_HOMEBREW_HBLOADER
+    static nn::ro::detail::RoModuleList g_AutoLoadForHomebrew;
+#endif
+
     extern "C" void __module_entry__(void* x0, void* x1) {
+#if HK_HOMEBREW_TYPE == HK_HOMEBREW_HBLOADER
+        initializeSelfModule();
+
+        g_AutoLoadForHomebrew.pushFront(&hkRtldModule);
+        nn::ro::detail::g_pAutoLoadList = &g_AutoLoadForHomebrew;
+#endif
+
         diag::logLine("Hakkun __module_entry__");
 
         ro::RoUtil::initModuleList();
@@ -36,14 +48,14 @@ namespace hk::init {
 #endif
         callInitializers();
 
-#ifndef HK_STANDALONE
+#if HK_TARGET == HK_TARGET_MODULE or HK_TARGET == HK_TARGET_MODULE_DLL
         hkMain();
 #endif
     }
 
 } // namespace hk::init
 
-#ifdef HK_STANDALONE
+#if HK_TARGET == HK_TARGET_MODULE_STANDALONE
 extern "C" void hkMain();
 
 namespace nn::init {

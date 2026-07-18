@@ -121,7 +121,6 @@ namespace hk::ro {
                     iter += sizeof(UnknownRodataAttribute);
                     break;
                 default:
-                    *(ptr*)iter = ptr(mModule);
                     HK_ABORT("Unknown RodataAttribute: %d %p", current, mModule);
                 }
 
