@@ -9,7 +9,8 @@ namespace hk::sf {
     u16 Service::pointerBufferSize() {
         if (mPointerBufferSize != std::numeric_limits<u16>::max())
             return mPointerBufferSize;
-        return mPointerBufferSize = HK_UNWRAP(invokeControl(Request(nullptr, this, 3), inlineDataExtractor<u16>()));
+        Request req = Request(nullptr, this, 3);
+        return mPointerBufferSize = HK_UNWRAP(invokeControl(forward<Request>(req), inlineDataExtractor<u16>()));
     }
 
     Result Service::convertToDomain() {
@@ -19,10 +20,14 @@ namespace hk::sf {
     }
 
     Result Service::release() {
-        HK_ASSERT(mObject.has_value());
+        if (mObject.has_value()) {
+            auto request = sf::Request(this, 0);
+            request.setDomainClose();
+            return invokeRequest(move(request));
+        }
+
         auto request = sf::Request(this, 0);
-        request.setDomainClose();
-        return invokeControl(move(request), inlineDataExtractor<void>());
+        return invoke(cmif::MessageTag::Close, move(request));
     }
 
 } // namespace hk::sf

@@ -29,7 +29,7 @@ namespace hk::fsp {
             ASSERT_PATH_LEN(path);
             auto input = sf::packInput(flags, size);
             auto request = sf::Request(this, 0, &input);
-            request.addInPointer<char>(path);
+            request.addInPointer(path);
             return invokeRequest(move(request));
         }
 

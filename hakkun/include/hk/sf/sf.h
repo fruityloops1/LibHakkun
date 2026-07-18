@@ -8,6 +8,7 @@
 #include "hk/sf/cmif.h"
 #include "hk/sf/hipc.h"
 #include "hk/svc/api.h"
+#include "hk/svc/cpu.h"
 #include "hk/svc/types.h"
 #include "hk/types.h"
 #include "hk/util/Stream.h"
@@ -80,11 +81,13 @@ namespace hk::sf {
         }
 
         ~Service() {
-            if (mOwnedHandle) {
-                svc::CloseHandle(mSession);
-            } else if (mSession != 0) {
-                HK_ABORT_UNLESS_R(release());
+            if (mOwnedHandle or mObject.has_value()) {
+                release();
+                svc::SendSyncRequest(mSession);
             }
+
+            if (mOwnedHandle)
+                svc::CloseHandle(mSession);
         }
 
         Handle handle() const {
@@ -118,11 +121,30 @@ namespace hk::sf {
         }
     };
 
+    namespace detail {
+
+        constexpr void printIpcMessageBuffer(const char* header = "\n", size size = cTlsBufferSize) {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+            const u8* buf = svc::getTLS()->ipcMessageBuffer;
+            diag::log("%s", header);
+            for (::size i = 0; i < size; i += 16)
+                diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                    buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
+                    buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
+                    buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
+                    buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
+#endif
+        }
+
+    } // namespace detail
+
     class Request {
         struct {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             bool mPrintRequest : 1 = false;
             bool mAbortAfterRequest : 1 = false;
             bool mPrintResponse : 1 = false;
+#endif
             bool mSendPid : 1 = false;
         };
         u8 mHipcStaticIdx = 0;
@@ -167,13 +189,17 @@ namespace hk::sf {
         }
 
         constexpr void enableDebug(bool before = true, bool after = true) {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             mPrintRequest = before;
             mPrintResponse = after;
+#endif
         }
 
         constexpr void debugAbortAfterRequest() {
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             mPrintRequest = true;
             mAbortAfterRequest = true;
+#endif
         }
 
         constexpr void setToken(u32 token) {
@@ -340,7 +366,7 @@ namespace hk::sf {
                 .recvBufferCount = u8(mHipcReceiveBuffers.size()),
                 .exchBufferCount = u8(mHipcExchangeBuffers.size()),
                 .dataWords = u16(alignUp(sizes.hipcDataSize, 4) / 4),
-                .recv_static_mode = 2u + u8(mHipcReceiveStatics.size()),
+                .recv_static_mode = mHipcReceiveStatics.empty() ? 0 : 2u + u8(mHipcReceiveStatics.size()),
                 .hasSpecialHeader = hasSpecialHeader,
             });
 
@@ -389,22 +415,13 @@ namespace hk::sf {
             writer.seek(alignUp(writer.tell(), 16));
             writer.writeIterator<u16>(mHipcOutPointerSizes);
 
-#if !defined(HK_RELEASE)
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             if (mPrintRequest) {
-                u8 buf[256] = { };
-                memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-                diag::logLine("");
-                for (int i = 0; i < writer.tell(); i += 16)
-                    diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                        buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
-                        buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
-                        buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
-                        buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
-                memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
+                detail::printIpcMessageBuffer("Request:\n", writer.tell());
             }
 
             if (mAbortAfterRequest)
-                HK_ABORT("Aborted after response (debug)");
+                HK_ABORT("Aborted after request (debug)");
 #endif
         }
     };
@@ -467,6 +484,7 @@ namespace hk::sf {
 
             auto outHeader = HK_UNWRAP(reader.read<cmif::OutHeader>());
             dataWordsLeft -= sizeof(cmif::OutHeader) / 4;
+
             response.result = outHeader.result;
             response.data = Span(svc::getTLS()->ipcMessageBuffer + reader.tell(), hardcodedDataBytes ?: dataWordsLeft * 4);
             reader.seek(reader.tell() + response.data.size_bytes());
@@ -479,48 +497,37 @@ namespace hk::sf {
         }
     };
 
-    inline void printResponse(bool printResponse, u32 wordCount) {
-#if !defined(HK_RELEASE)
-        if (printResponse) {
-            util::Stream reader(svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-            u8 buf[256] = { };
-            memcpy(buf, svc::getTLS()->ipcMessageBuffer, cTlsBufferSize);
-            diag::logLine("");
-            for (int i = 0; i < wordCount * 4; i += 16)
-                diag::logLine("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                    buf[i + 0], buf[i + 1], buf[i + 2], buf[i + 3],
-                    buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7],
-                    buf[i + 8], buf[i + 9], buf[i + 10], buf[i + 11],
-                    buf[i + 12], buf[i + 13], buf[i + 14], buf[i + 15]);
-            memcpy(svc::getTLS()->ipcMessageBuffer, buf, cTlsBufferSize);
-        }
-#endif
-    }
-
     template <typename ResponseExtractor>
     inline ValueOrResult<typename util::FunctionTraits<ResponseExtractor>::ReturnType> Service::invoke(cmif::MessageTag tag, Request&& request, ResponseExtractor extractor) {
         using Return = typename util::FunctionTraits<ResponseExtractor>::ReturnType;
 
         request.writeToTls(this, tag);
         Result result = svc::SendSyncRequest(mSession);
-        printResponse(request.mPrintResponse, 32);
-        HK_TRY(result);
-        auto response = Response::readFromTls(this, request.mHardcodedDataSize);
-        HK_TRY(response.result);
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
+        if (request.mPrintResponse) {
+            detail::printIpcMessageBuffer("Response:\n");
 
-        if constexpr (std::is_same_v<Return, void>)
-            return ResultSuccess();
-        else
-            return extractor(response);
+            diag::dumpImpl(result, "PrintResponseResult", "", 0, 0);
+        }
+#endif
+        HK_TRY(result);
+
+        constexpr bool hasReturnValue = !util::ctIsSame<Return, void>;
+        const bool parseResponse = request.mDomainTag != cmif::DomainTag::Close;
+
+        if (parseResponse) {
+            Response response = Response::readFromTls(this, request.mHardcodedDataSize);
+            HK_TRY(response.result);
+
+            if constexpr (hasReturnValue)
+                return extractor(response);
+        }
+
+        return ResultSuccess();
     }
 
     inline Result Service::invoke(cmif::MessageTag tag, Request&& request) {
-        request.writeToTls(this, tag);
-        Result result = svc::SendSyncRequest(mSession);
-        printResponse(request.mPrintResponse, 32);
-        HK_TRY(result);
-        auto response = Response::readFromTls(this, request.mHardcodedDataSize);
-        return response.result;
+        return invoke(tag, forward<Request>(request), [](sf::Response& response) -> void { });
     }
 
 } // namespace hk::sf

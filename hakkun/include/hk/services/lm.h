@@ -37,7 +37,7 @@ namespace hk::lm {
         }
 
     public:
-        Result log(const char* text) {
+        Result log(StringView text) {
             struct LogPacketHeader {
                 u64 processId;
                 u64 threadId;
@@ -48,9 +48,8 @@ namespace hk::lm {
                 u32 payloadSize;
             };
 
-            size len = strlen(text);
-            auto sizeBytes = encodeUleb128(len);
-            auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + len));
+            auto sizeBytes = encodeUleb128(text.size_bytes());
+            auto logData = cast<u8*>(alloca(sizeof(LogPacketHeader) + 1 + sizeBytes.size() + text.size_bytes()));
             util::Stream stream(logData);
             stream.write(LogPacketHeader {
                 .processId = 0,
@@ -59,12 +58,12 @@ namespace hk::lm {
                 .padding = 0,
                 .severity = 4, // "fatal"
                 .verbosity = 0,
-                .payloadSize = u32(1 + sizeBytes.size() + len),
+                .payloadSize = u32(1 + sizeBytes.size() + text.size_bytes()),
             });
             // chunk key text log
             stream.write(u8(2));
             stream.writeIterator<u8>(sizeBytes);
-            stream.writeIterator<char>(Span<const char>(text, len));
+            stream.writeIterator<char>(text);
 
             auto request = sf::Request(this, 0);
             request.addInAutoselect(logData, stream.tell());
