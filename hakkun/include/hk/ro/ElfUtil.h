@@ -130,6 +130,17 @@ namespace hk::ro {
                 });
             }
 
+            void relocate(ptr moduleBase) {
+                forEachRel([&](const Elf_Rel& entry) {
+                    Elf_Addr* ptr = cast<Elf_Addr*>(moduleBase + entry.r_offset);
+                    *ptr += moduleBase;
+                });
+
+                forEachRela([&](const Elf_Rela& entry) {
+                    Elf_Addr* ptr = cast<Elf_Addr*>(moduleBase + entry.r_offset);
+                    *ptr = moduleBase + entry.r_addend;
+                });
+            }
 #undef _HK_RO_DETAIL_DYNAMICDATA_FILTERABSOLUTE
         };
 
