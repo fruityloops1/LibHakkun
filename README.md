@@ -4,7 +4,7 @@ Modular C++ toolchain and set of libraries for userspace Nintendo Switch process
 
 ## Features
 * Clang/LLVM toolchain, linking musl libc + LLVM libc++
-* Can be used for standalone programs, or for modification of existing ones
+* Can be used for standalone programs, modification of existing ones, NROs, and homebrews
 * Compatible with RTLD
 * Bundled with RTLD reimplementation [WIP]
 * Compatible with programs that statically link RTLD into their main executable
@@ -54,15 +54,17 @@ With a CMakeLists.txt setup similar to the [example repository](https://github.c
 ## Deploy
 Hakkun provides 2 ways of deploying the built files into a usable structure, besides manually copying from the build folder:
 #### SD
-By default, module files are output into the `sd` folder in the build folder in Atmosphère's LayeredFS structure:
+By default, binaries are output into the `sd` folder in the build folder in Atmosphère's LayeredFS structure/the switch folder:
 ```
 sd
-└── atmosphere
-    └── contents
-        └── 0100000000010000
-            └── exefs
-                ├── main.npdm
-                └── subsdk4
+├── atmosphere
+│   └── contents
+│       └── 0100000000010000
+│           └── exefs
+│               ├── main.npdm
+│               └── subsdk4
+└───switch
+    └── YourProject.nro
 ```
 #### FTP
 If following environment variables are set, Hakkun will automatically attempt to upload files to an FTP server after linking:
@@ -76,6 +78,7 @@ A GitHub workflow template can be found in .github/workflow_templates/build.yml.
 ## Configuration
 #### config.cmake
 Hakkun provides various options that you can configure from `config/config.cmake` within your repository:
+##### Common options
 * `LINKFLAGS`: Flags passed to compiler linking command
 * `LLDFLAGS`: Flags passed to linker
 * `OPTIMIZE_OPTIONS_DEBUG`: Optimization options for Debug mode
@@ -85,19 +88,27 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `INCLUDES`: Include directories
 * `ASM_OPTIONS`, `C_OPTIONS`, `CXX_OPTIONS`: Various compiler options
 * `USE_ADVANCED_RESULT`: Whether to enable stack trace building in hk::Result. Use hk::ResultNN to mask out extra data for compatibility with nn::Result
-* `IS_32_BIT`: Whether or not target is 32-bit 
-* `TARGET_IS_STATIC`: Whether or not target program has statically linked rtld/sdk. Usually sysmodules or applets do this, Applications do not. Enabling this will also add a dummy RTLD module, to work around an unfortunate decision in `loader`
-* `MODULE_NAME`: Name of your output RTLD module
-* `TITLE_ID`: Title ID of the target program
-* `MODULE_BINARY`: ExeFS slot for your output module (can be sdk, or subsdk0-subsdk9)
-* `SDK_PAST_1900`: Enable if RTLD version of target program is from SDK 19.0.0 or later, usually the case with titles updated in or later than late 2024
-* `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
 * `TRAMPOLINE_LEVEL`: Level for trampoline hook.
     * 0: only basic backups (no b.cond, cbz/cbnz, tbz/tbnz), +-128MB branch range
     * 1: all backups, +-128MB branch range
     * 2: all backups, infinite branch range
-* `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols with hashes, reducing binary size at the expense of harder debugging
 * `HAKKUN_ADDONS`: List of Hakkun addons to enable
+* `IS_32_BIT`: Whether or not target is 32-bit
+* `HAKKUN_TARGET`: Type of program, MODULE by default
+    * `MODULE`: Default RTLD module (e.g. for game mods)
+    * `MODULE_STANDALONE`: Standalone main module providing nn::init::Start + rtld module, packs an exefs.nsp (e.g. for sysmodules)
+    * `MODULE_DLL`: Outputs as a dynamic-link module (NRO) (e.g. for homebrews)
+* `HOMEBREW_TYPE`: Type of homebrew loader to target
+    * `NONE`: Default
+    * `HBLOADER`: Target nx-hbloader (libnx)
+##### `MODULE`/`MODULE_STANDALONE` options
+* `MODULE_NAME`: Name of your output RTLD module
+* `TITLE_ID`: Title ID of the target program
+* `MODULE_BINARY`: ExeFS slot for your output module (can be sdk, or subsdk0-subsdk9)
+* `SDK_PAST_1900`: Enable if RTLD version of target program is from SDK 19.0.0 or later, usually the case with titles updated in or later than late 2024
+* `TARGET_IS_STATIC`: Whether or not target program has statically linked rtld/sdk. Usually sysmodules or applets do this, Applications do not. Enabling this will also add a dummy RTLD module, to work around an unfortunate decision in `loader`
+* `USE_SAIL`: Whether or not to use sail. If disabled, you can dynamic link normally
+* `BAKE_SYMBOLS`: Whether or not to 'bake' symbols provided by sail. Baking will replace all string references to symbols with hashes, reducing binary size at the expense of harder debugging
 #### Sail
 Sail reads the following configuration file:
 ##### VersionList.sym
