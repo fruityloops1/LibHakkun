@@ -6,30 +6,47 @@ import subprocess
 
 build_dir = sys.argv[1]
 project_name = sys.argv[2]
-title_id = int(sys.argv[3].removeprefix('0x'), 16)
-module_binary = sys.argv[4]
-has_rtld = sys.argv[5] == 'TRUE'
-is_standalone = len(sys.argv) == 7 and sys.argv[6] == 'TRUE'
-layeredfs_dir = f"atmosphere/contents/{title_id:016X}"
-exefs_dir = f"{layeredfs_dir}/exefs"
-sd_exefs_dir = f"{build_dir}/sd/{exefs_dir}"
-sd_layeredfs_dir = f'{build_dir}/sd/{layeredfs_dir}'
+is_hbloader_homebrew = sys.argv[3] == "HBLOADER"
+if is_hbloader_homebrew:
+    switch_dir = "switch"
+    nro_path = f"{switch_dir}/{project_name}.nro"
+    sd_switch_dir = f"{build_dir}/sd/{switch_dir}"
+    sd_nro_path = f"{build_dir}/sd/{nro_path}"
+else:
+    title_id = int(sys.argv[4].removeprefix('0x'), 16)
+    module_binary = sys.argv[5]
+    has_rtld = sys.argv[6] == 'TRUE'
+    is_standalone = len(sys.argv) == 7 and sys.argv[7] == 'TRUE'
+    layeredfs_dir = f"atmosphere/contents/{title_id:016X}"
+    exefs_dir = f"{layeredfs_dir}/exefs"
+    sd_exefs_dir = f"{build_dir}/sd/{exefs_dir}"
+    sd_layeredfs_dir = f'{build_dir}/sd/{layeredfs_dir}'
 
 def deploy_sd():
     print("-- Deploying to SD folder")
-    try:
-        shutil.rmtree(sd_exefs_dir)
-    except FileNotFoundError:
-        pass
-    os.makedirs(sd_exefs_dir, exist_ok=True)
 
-    if not is_standalone:
-        shutil.copyfile(f"{build_dir}/main.npdm", f"{sd_exefs_dir}/main.npdm")
-        shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{sd_exefs_dir}/{module_binary}")
-        if has_rtld:
-            shutil.copyfile(f"{build_dir}/rtld.nso", f"{sd_exefs_dir}/rtld")
+    if is_hbloader_homebrew:
+        try:
+            shutil.rmtree(sd_switch_dir)
+        except FileNotFoundError:
+            pass
+        os.makedirs(sd_switch_dir, exist_ok=True)
+
+        shutil.copyfile(f"{build_dir}/{project_name}.nro", sd_nro_path)
     else:
-        shutil.copyfile(f"{build_dir}/exefs.nsp", f"{sd_layeredfs_dir}/exefs.nsp")
+        try:
+            shutil.rmtree(sd_exefs_dir)
+        except FileNotFoundError:
+            pass
+        os.makedirs(sd_exefs_dir, exist_ok=True)
+
+        if not is_standalone:
+            shutil.copyfile(f"{build_dir}/main.npdm", f"{sd_exefs_dir}/main.npdm")
+            shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{sd_exefs_dir}/{module_binary}")
+            if has_rtld:
+                shutil.copyfile(f"{build_dir}/rtld.nso", f"{sd_exefs_dir}/rtld")
+        else:
+            shutil.copyfile(f"{build_dir}/exefs.nsp", f"{sd_layeredfs_dir}/exefs.nsp")
 
 def deploy_ftp():
     ftp_ip = os.environ['HAKKUN_FTP_IP']
@@ -59,24 +76,28 @@ def deploy_ftp():
                 print(f'-- Could not upload file: {str(e).split(None, 1)}')
                 sys.exit(1)
 
-    if is_standalone:
-        upload(f"{build_dir}/exefs.nsp", f"{layeredfs_dir}/exefs.nsp")
+    if is_hbloader_homebrew:
+        upload(f"{build_dir}/{project_name}.nro", nro_path)
     else:
-        upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
-        upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
-        if has_rtld:
-            upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
+        if is_standalone:
+            upload(f"{build_dir}/exefs.nsp", f"{layeredfs_dir}/exefs.nsp")
+        else:
+            upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
+            upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
+            if has_rtld:
+                upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
 
-# build/exefs
-shutil.copyfile(f"{build_dir}/main.npdm", f"{build_dir}/exefs/main.npdm")
-shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{build_dir}/exefs/{module_binary}")
-if has_rtld:
-    shutil.copyfile(f"{build_dir}/rtld.nso", f"{build_dir}/exefs/rtld")
+if not is_hbloader_homebrew:
+    # build/exefs
+    shutil.copyfile(f"{build_dir}/main.npdm", f"{build_dir}/exefs/main.npdm")
+    shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{build_dir}/exefs/{module_binary}")
+    if has_rtld:
+        shutil.copyfile(f"{build_dir}/rtld.nso", f"{build_dir}/exefs/rtld")
 
-# build/exefs.nsp
-if is_standalone:
-    print('-- Building exefs.nsp')
-    subprocess.check_output(['python', f'{os.path.dirname(os.path.abspath(__file__))}/senobi/build_pfs0.py', f"{build_dir}/exefs/", f"{build_dir}/exefs.nsp"])
+    # build/exefs.nsp
+    if is_standalone:
+        print('-- Building exefs.nsp')
+        subprocess.check_output(['python', f'{os.path.dirname(os.path.abspath(__file__))}/senobi/build_pfs0.py', f"{build_dir}/exefs/", f"{build_dir}/exefs.nsp"])
 
 deploy_sd()
 if (os.environ.get('HAKKUN_FTP_IP') is not None):
