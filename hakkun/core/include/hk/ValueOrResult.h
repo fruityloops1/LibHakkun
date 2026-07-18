@@ -51,7 +51,9 @@ namespace hk {
             HK_ABORT_UNLESS_R(Result(*this));
 
             T value = move(mValue);
-            mResult = MAKE_RESULT(diag::ResultValueDisowned());
+            mValue.~T();
+            mHasValue = false;
+            construct_at(&mResult, MAKE_RESULT(diag::ResultValueDisowned()));
             return move(value);
         }
 

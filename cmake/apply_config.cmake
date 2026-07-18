@@ -12,11 +12,14 @@ function(apply_config project)
             message(WARNING "HAKKUN_TARGET not set; defaulting to MODULE, please set HAKKUN_TARGET")
             set(HAKKUN_TARGET MODULE)
         endif()
+
+        set(HAKKUN_TARGET ${HAKKUN_TARGET} PARENT_SCOPE)
     endif()
 
     target_compile_definitions(${project} PRIVATE HK_HOMEBREW_NONE=0 HK_HOMEBREW_HBLOADER=1)
     if (NOT HOMEBREW_TYPE)
         set(HOMEBREW_TYPE NONE)
+        set(HOMEBREW_TYPE ${HOMEBREW_TYPE} PARENT_SCOPE)
     endif()
 
     if (HAKKUN_TARGET STREQUAL MODULE)
@@ -64,6 +67,7 @@ function(apply_config project)
     if(NOT TRAMPOLINE_LEVEL)
         message(WARNING "TRAMPOLINE_LEVEL not set; using 1")
         set(TRAMPOLINE_LEVEL 1)
+        set(TRAMPOLINE_LEVEL ${TRAMPOLINE_LEVEL} PARENT_SCOPE)
     endif()
     
     target_compile_definitions(${project} PRIVATE NNSDK HK_HOOK_TRAMPOLINE_LEVEL=${TRAMPOLINE_LEVEL} MODULE_NAME=${MODULE_NAME})
