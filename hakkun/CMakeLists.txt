@@ -12,7 +12,7 @@ set(SOURCES
     src/hk/hook/Trampoline.cpp
 
     src/hk/init/mod0.S
-    src/hk/init/moduleEntry.S
+    src/hk/init/crt0.S
 
     src/hk/os/Libcxx.cpp
     src/hk/os/Thread.cpp
