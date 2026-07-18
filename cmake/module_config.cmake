@@ -30,7 +30,6 @@ function(apply_module_config module useLinkerScript init)
     apply_config(${module})
 
     target_link_libraries(${module} PRIVATE LibHakkun)
-    target_include_directories(${module} PRIVATE sys/hakkun/include)
 
     clear_visibility()
 endfunction()
