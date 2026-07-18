@@ -49,13 +49,13 @@ namespace hk::util {
     hk_noinline ptr getReturnAddress(int n);
 
     template <LambdaType L>
-    hk_alwaysinline void visitReturnAddresses(L&& func) {
+    hk_alwaysinline void visitReturnAddresses(L&& func, int n = IntegerTraits<int>::cMax) {
         detail::visitReturnAddressesImpl([](void* userData, ptr addr, int level) {
             L& func = *cast<L*>(userData);
 
             func(addr, level);
         },
-            &func);
+            &func, n);
     }
 
 } // namespace hk::util

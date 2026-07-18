@@ -61,7 +61,8 @@ namespace hk::diag {
                 }
             } else
                 logLine("\tReturn[%02d]: %016zX", level, address);
-        });
+        },
+            64);
     }
 
     static void* setAbortMsg(const ro::RoModule* module, const char* msg, int idx) {
@@ -209,12 +210,12 @@ File: %s:%u:%u
     }
 
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
-    void logBuffer(const char* buf, size length) {
+    __attribute__((weak)) void logBuffer(const char* buf, size length) {
         HAS_NNSDK(ipclogger::IpcLogger::instance()->logWithoutLine({ cast<const u8*>(buf), length }));
         hkLogSink(buf, length);
     }
 
-    void logImpl(const char* fmt, std::va_list list) {
+    __attribute__((weak)) void logImpl(const char* fmt, std::va_list list) {
         std::va_list listCopy;
         va_copy(listCopy, list);
         size len = vsnprintf(nullptr, 0, fmt, list);
@@ -226,14 +227,14 @@ File: %s:%u:%u
         hkLogSink(buf, len);
     }
 
-    void log(const char* fmt, ...) {
+    __attribute__((weak)) void log(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
         logImpl(fmt, args);
         va_end(args);
     }
 
-    void logLineImpl(const char* fmt, std::va_list list) {
+    __attribute__((weak)) void logLineImpl(const char* fmt, std::va_list list) {
         std::va_list listCopy;
         va_copy(listCopy, list);
         size len = vsnprintf(nullptr, 0, fmt, list);
@@ -246,14 +247,14 @@ File: %s:%u:%u
         hkLogSink(buf, len + 1);
     }
 
-    void logLine(const char* fmt, ...) {
+    __attribute__((weak)) void logLine(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
         logLineImpl(fmt, args);
         va_end(args);
     }
 
-    void debugLog(const char* fmt, ...) {
+    __attribute__((weak)) void debugLog(const char* fmt, ...) {
         std::va_list args;
         va_start(args, fmt);
         logLineImpl(fmt, args);
