@@ -41,12 +41,12 @@ namespace hk::diag {
     inline void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column) { }
 #endif
 
-    constexpr char cAssertionFailFormat[] = "AssertionFailed: %s";
-    constexpr char cAbortUnlessResultFormat[] = "ResultAbort (%04d-%04d/0x%x) [from %s]";
-    constexpr char cAbortUnlessResultFormatWithName[] = "ResultAbort (%04d-%04d/%s) [from %s]";
-    constexpr char cUnwrapResultFormat[] = "Unwrap (%04d-%04d/0x%x) [from %s]";
-    constexpr char cUnwrapResultFormatWithName[] = "Unwrap (%04d-%04d/%s) [from %s]";
-    constexpr char cNullptrUnwrapFormat[] = "Unwrap (nullptr) [from %s]";
+    extern const char cAssertionFailFormat[];
+    extern const char cAbortUnlessResultFormat[];
+    extern const char cAbortUnlessResultFormatWithName[];
+    extern const char cUnwrapResultFormat[];
+    extern const char cUnwrapResultFormatWithName[];
+    extern const char cNullptrUnwrapFormat[];
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 

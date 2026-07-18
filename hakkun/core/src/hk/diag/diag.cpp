@@ -16,6 +16,13 @@
 
 namespace hk::diag {
 
+    const char cAssertionFailFormat[] = "AssertionFailed: %s";
+    const char cAbortUnlessResultFormat[] = "ResultAbort (%04d-%04d/0x%x) [from %s]";
+    const char cAbortUnlessResultFormatWithName[] = "ResultAbort (%04d-%04d/%s) [from %s]";
+    const char cUnwrapResultFormat[] = "Unwrap (%04d-%04d/0x%x) [from %s]";
+    const char cUnwrapResultFormatWithName[] = "Unwrap (%04d-%04d/%s) [from %s]";
+    const char cNullptrUnwrapFormat[] = "Unwrap (nullptr) [from %s]";
+
 #if NNSDK
     Result setCurrentThreadName(const char* name) {
         auto* tls = svc::getTLS();
@@ -126,6 +133,7 @@ namespace hk::diag {
     constexpr char cDumpFormat[] = R"(
 ~~~ HakkunDump ~~~)";
 
+#if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
     void dumpImpl(Result result, const char* expr, const char* file, u32 line, u16 column) {
         logLine(cDumpFormat);
         const auto dumpSimple = [=]() {
@@ -146,6 +154,7 @@ namespace hk::diag {
             logLine("");
         }
     }
+#endif
 
     constexpr char cAbortFormat[] = R"(
 ~~~ HakkunAbort ~~~

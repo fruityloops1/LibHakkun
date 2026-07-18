@@ -163,6 +163,7 @@ using u32 = hk::UnsignedInteger<32>;
 using u64 = hk::UnsignedInteger<64>;
 
 using size = hk::UnsignedInteger<hk::cSystemRegisterWidth>;
+using ssize = hk::SignedInteger<hk::cSystemRegisterWidth>;
 using ptrdiff = hk::SignedInteger<hk::cSystemRegisterWidth>;
 using ptr = hk::UnsignedInteger<hk::cSystemRegisterWidth>;
 

@@ -28,7 +28,7 @@ namespace hk::ro {
 
         diag::logLine("hk::ro: %zu modules collected from g_pAutoLoadList:", sNumModules);
 
-        std::sort(sModules, sModules + sNumModules, [](const RoModule& a, const RoModule& b) {
+        util::insertionSort(sModules, sNumModules, [](const RoModule& a, const RoModule& b) {
             if (a.getNnModule() == nullptr || a.getNnModule()->m_Base == 0 || b.getNnModule() == nullptr || b.getNnModule()->m_Base == 0)
                 HK_ABORT_UNLESS_R(ResultRtldModuleInvalid());
             return a.getNnModule()->m_Base < b.getNnModule()->m_Base;

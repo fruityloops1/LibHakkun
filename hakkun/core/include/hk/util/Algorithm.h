@@ -48,7 +48,7 @@ namespace hk::util {
      * @param findBetween whether to return -1 or in between index with no exact match
      * @return size
      */
-    template <typename T, typename GetFunc>
+    template <typename T, LambdaType GetFunc>
     constexpr size binarySearch(GetFunc get, s32 low, s32 high, T searchValue, bool findBetween = false) {
         while (low <= high) {
             int_fast32_t mid = (low + high) / 2;
@@ -62,6 +62,31 @@ namespace hk::util {
         }
 
         return findBetween ? low : -1;
+    }
+
+    namespace detail {
+
+        template <typename T>
+        using DefaultCompare = decltype([](const T& a, const T& b) -> bool { return a < b; });
+
+    } // namespace detail
+
+    template <typename T, LambdaType Compare = detail::DefaultCompare<T>>
+    constexpr void insertionSort(T* values, size numValues, Compare cmp = Compare()) {
+        for (size rhsIdx = 1; rhsIdx < numValues; rhsIdx++) {
+            T rhs = T(forward<T>(values[rhsIdx]));
+            ssize lhsIdx = rhsIdx - 1;
+
+            while (lhsIdx >= 0 && !cmp(values[lhsIdx], rhs)) {
+                values[lhsIdx + 1].~T();
+                construct_at(values + 1 + lhsIdx, forward<T>(values[lhsIdx]));
+
+                lhsIdx--;
+            }
+
+            values[lhsIdx + 1].~T();
+            construct_at(values + 1 + lhsIdx, forward<T>(rhs));
+        }
     }
 
 #pragma clang diagnostic push

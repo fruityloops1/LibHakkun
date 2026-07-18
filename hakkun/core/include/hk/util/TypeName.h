@@ -16,7 +16,13 @@ namespace hk::util {
 #ifdef __clang__
                 constexpr static const char* cPrettyFunctionData = __PRETTY_FUNCTION__;
                 constexpr static size cPrettyFunctionDataLen = __builtin_strlen(cPrettyFunctionData);
-                constexpr static auto dataArr = ([]() {
+
+                struct Ret {
+                    std::array<char, cPrettyFunctionDataLen + 1> data;
+                    size length;
+                };
+
+                constexpr static auto output = ([]() -> Ret {
                     std::array<char, cPrettyFunctionDataLen + 1> data { '\0' };
 
                     const char* start = cPrettyFunctionData;
@@ -31,6 +37,13 @@ namespace hk::util {
                     size len = end - start;
 
                     __builtin_memcpy(data.data(), start, len);
+                    return { data, len };
+                })();
+
+                // if we dont do this it will waste data with huge padding
+                constexpr static std::array<char, output.length + 1> dataArr = ([]() {
+                    std::array<char, output.length + 1> data = { };
+                    __builtin_memcpy(data.data(), output.data.data(), output.length);
                     return data;
                 })();
 
