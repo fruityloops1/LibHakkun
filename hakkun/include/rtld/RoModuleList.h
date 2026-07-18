@@ -157,6 +157,9 @@ namespace nn::ro::detail {
         }
     };
 
+    extern RoModuleList* g_pAutoLoadList;
+    extern RoModuleList* g_pManualLoadList;
+
 #ifdef __aarch64__
     static_assert(sizeof(RoModuleList) == 0x10, "RoModuleList isn't valid");
 #elif __arm__

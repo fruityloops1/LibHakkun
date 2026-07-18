@@ -64,42 +64,11 @@ namespace nn {
 
 namespace hk::rtld {
 
-    static void relocateSelf(ptr moduleBase, const Elf_Dyn* dynamic) {
-        const auto data = hk::ro::parseDynamic(moduleBase, dynamic);
-
-        data.forEachRel([&](const Elf_Rel& entry) {
-            Elf_Addr* ptr = cast<Elf_Addr*>(moduleBase + entry.r_offset);
-            *ptr += moduleBase;
-        });
-
-        data.forEachRela([&](const Elf_Rela& entry) {
-            Elf_Addr* ptr = cast<Elf_Addr*>(moduleBase + entry.r_offset);
-            *ptr = moduleBase + entry.r_addend;
-        });
-    }
-
-    void initialize(ptr selfModuleBase, const Elf_Dyn* dynamic) {
-        relocateSelf(selfModuleBase, dynamic);
+    void initialize(ptr selfModuleBase) {
         hk::init::callInitializers();
 
         HK_ABORT_UNLESS_R(hk::ro::forEachAutoLoadModule(selfModuleBase, [&](ptr textBase, ptr rodataBase, ptr dataBase) {
-            struct {
-                hk::hook::Instr bInstr;
-                u32 offset;
-            } const* const offs = cast<decltype(offs)>(textBase);
-
-            const hk::ro::ModuleHeader* header = cast<const hk::ro::ModuleHeader*>(textBase + offs->offset);
-            const Elf_Dyn* dynamic = cast<const Elf_Dyn*>(ptr(header) + header->dynamicOffset);
-            nn::ro::detail::RoModule* module = cast<nn::ro::detail::RoModule*>(ptr(header) + header->moduleOffset);
-
-            new (module) nn::ro::detail::RoModule;
-
-            module->Initialize(textBase, dynamic);
-
-            if (module != init::getSelfRtldModule())
-                module->Relocate();
-
-            g_AutoLoad.pushFront(module);
+            g_AutoLoad.pushFront(init::initializeRtldModule(textBase, true));
         }));
 
         for (auto* module : g_AutoLoad) {
@@ -169,29 +138,8 @@ namespace hk::rtld {
     }
 
     extern "C" void rtldEntry(ptr x0, Handle threadHandle) {
-        ptr moduleBase = HK_UNWRAP(([]() hk_alwaysinline -> ValueOrResult<ptr> {
-            ptr addr;
-            __asm("adr %[result], ." : [result] "=r"(addr));
-
-            // us
-            auto [info, page] = HK_TRY(hk::svc::QueryMemory(addr));
-            return ptr(info.base_address);
-        })());
-
-        struct {
-            hk::hook::Instr bInstr;
-            u32 offset;
-        } const* const offs = cast<decltype(offs)>(moduleBase);
-
-        const hk::ro::ModuleHeader* header = cast<const hk::ro::ModuleHeader*>(moduleBase + offs->offset);
-        const Elf_Dyn* dynamic = cast<const Elf_Dyn*>(ptr(header) + header->dynamicOffset);
-
-        u8* bssStart = cast<u8*>(ptr(header) + header->bssOffset);
-        const size bssSize = header->bssEndOffset - header->bssOffset;
-
-        memset(bssStart, 0, bssSize);
-
-        initialize(moduleBase, dynamic);
+        ptr selfModuleBase = init::initializeSelfModule();
+        initialize(selfModuleBase);
         start(threadHandle);
         svc::ExitProcess();
     }
