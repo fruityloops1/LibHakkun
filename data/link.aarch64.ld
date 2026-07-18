@@ -26,13 +26,13 @@ SECTIONS
         __static_trampolines_end__ = .;
 
         *(.text .text.*)
-
         *(.plt .plt.*)
         __text_end__ = .;
     } :text
 
     . = ALIGN(0x1000);
 
+    __rodata_start__ = .;
     .rodata : {
         KEEP (*(.rodata.modulename))
         KEEP (*(.rodata.mod0))
@@ -41,8 +41,18 @@ SECTIONS
 
     .hash     : { *(.hash) } :rodata
     .gnu.hash : { *(.gnu.hash) } :rodata
-    .dynsym   : { *(.dynsym .dynsym.*) } :rodata
-    .dynstr   : { *(.dynstr .dynstr.*) } :rodata
+    
+    .dynsym   : {
+        __dynsym_start__ = .;
+        *(.dynsym .dynsym.*)
+        __dynsym_end__ = .;
+    } :rodata
+
+    .dynstr   : {
+        __dynstr_start__ = .;
+        *(.dynstr .dynstr.*)
+        __dynstr_end__ = .;
+    } :rodata
 
     .gcc_except_table : { *(.gcc_except_table .gcc_except_table.*) } :rodata
     .eh_frame_hdr : {
@@ -58,8 +68,10 @@ SECTIONS
 
     .note.gnu.build-id : { *(.note.gnu.build-id) } :rodata
 
+    __rodata_end__ = .;
     . = ALIGN(0x1000);
 
+    __data_start__ = .;
     .data : {
         *(.data .data.*)
     } :data
@@ -123,5 +135,6 @@ SECTIONS
         . = ALIGN(0x1000);
     } :data
 
+    __data_end__ = .;
     __module_end__ = ABSOLUTE(.);
 }
