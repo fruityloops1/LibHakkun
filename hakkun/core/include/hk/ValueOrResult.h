@@ -41,31 +41,36 @@ namespace hk {
      */
     template <typename T>
     class ValueOrResult {
-        Result mResult = ResultSuccess();
-        union { // this is a union because it allows you to control the destruction of the object within in constexpr
+        union {
             T mValue;
+            Result mResult;
         };
+        bool mHasValue;
 
         constexpr T disown() {
-            HK_ABORT_UNLESS_R(mResult);
-            mResult = MAKE_RESULT(diag::ResultValueDisowned());
+            HK_ABORT_UNLESS_R(Result(*this));
 
-            return move(mValue);
+            T value = move(mValue);
+            mResult = MAKE_RESULT(diag::ResultValueDisowned());
+            return move(value);
         }
 
     public:
         using Type = T;
 
-        explicit constexpr ValueOrResult(Result result)
-            : mResult(result) {
-            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
+        explicit constexpr ValueOrResult(Result result, diag::SourceLocation loc = diag::SourceLocation::current())
+            : mResult(result)
+            , mHasValue(false) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T>());
         }
 
-        constexpr ValueOrResult(const T& value) {
+        constexpr ValueOrResult(const T& value)
+            : mHasValue(true) {
             construct_at(&mValue, value);
         }
 
-        constexpr ValueOrResult(T&& value) {
+        constexpr ValueOrResult(T&& value)
+            : mHasValue(true) {
             construct_at(&mValue, forward<T>(value));
         }
 
@@ -74,7 +79,7 @@ namespace hk {
                 mValue.~T();
         }
 
-        constexpr bool hasValue() const { return mResult.succeeded(); }
+        constexpr bool hasValue() const { return mHasValue; }
 
         /**
          * @brief If a value is contained, call func with the value and return its result.
@@ -94,7 +99,7 @@ namespace hk {
                 } else
                     return func(disown());
             } else
-                return mResult;
+                return Result(*this);
         }
 
         /**
@@ -109,7 +114,7 @@ namespace hk {
             if (hasValue())
                 return func(disown());
 
-            return mResult;
+            return Result(*this);
         }
 
         /**
@@ -117,8 +122,8 @@ namespace hk {
          *
          * @return const T&
          */
-        constexpr const T& getInnerValue() const {
-            HK_ABORT_UNLESS_R(mResult);
+        constexpr const T& getInnerValue(diag::SourceLocation loc = diag::SourceLocation::current()) const {
+            HK_ABORT_UNLESS_R_WITH_LOCATION(loc, Result(*this));
             return mValue;
         }
 
@@ -138,7 +143,7 @@ namespace hk {
             return *this or defaultValue;
         }
 
-        constexpr operator Result() const { return mResult; }
+        constexpr operator Result() const { return mHasValue ? ResultSuccess() : mResult; }
         constexpr operator T() { return move(disown()); }
     };
 
@@ -149,11 +154,14 @@ namespace hk {
      */
     template <typename T>
     class ValueOrResult<T&> {
-        Result mResult = ResultSuccess();
-        T* mValueReference = nullptr;
+        union {
+            T* mValueReference;
+            Result mResult;
+        };
+        bool mHasValue;
 
         constexpr T& get() {
-            HK_ABORT_UNLESS_R(mResult);
+            HK_ABORT_UNLESS_R(Result(*this));
 
             return *mValueReference;
         }
@@ -161,22 +169,24 @@ namespace hk {
     public:
         using Type = T;
 
-        explicit constexpr ValueOrResult(Result result)
-            : mResult(result) {
-            HK_ABORT_UNLESS(result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T&>());
+        explicit constexpr ValueOrResult(Result result, diag::SourceLocation loc = diag::SourceLocation::current())
+            : mResult(result)
+            , mHasValue(false) {
+            HK_ABORT_UNLESS_WITH_LOCATION(loc, result.failed(), "hk::ValueOrResult<%s>(Result): Result must not be ResultSuccess()", util::getTypeName<T&>());
         }
 
         constexpr ValueOrResult(T* ptr)
-            : mValueReference(ptr) {
-            if (mValueReference == nullptr)
+            : mHasValue(ptr != nullptr) {
+            if (ptr != nullptr)
+                mValueReference = ptr;
+            else
                 mResult = ResultNoValue();
         }
 
         constexpr ValueOrResult(T& value)
-            : ValueOrResult(&value) {
-        }
+            : ValueOrResult(&value) { }
 
-        constexpr bool hasValue() const { return mResult.succeeded(); }
+        constexpr bool hasValue() const { return mHasValue; }
 
         /**
          * @brief If a value is contained, call func with the value and return its result.
@@ -197,7 +207,7 @@ namespace hk {
                     return func(get());
 
             } else
-                return mResult;
+                return Result(*this);
         }
 
         /**
@@ -212,7 +222,7 @@ namespace hk {
             if (hasValue())
                 return func(get());
 
-            return mResult;
+            return Result(*this);
         }
 
         /**
@@ -220,8 +230,8 @@ namespace hk {
          *
          * @return T&
          */
-        constexpr T& getInnerValue() const {
-            HK_ABORT_UNLESS_R(mResult);
+        constexpr const T& getInnerValue(diag::SourceLocation loc = diag::SourceLocation::current()) const {
+            HK_ABORT_UNLESS_R_WITH_LOCATION(loc, Result(*this));
             return get();
         }
 
@@ -233,7 +243,7 @@ namespace hk {
             return *this or defaultValue;
         }
 
-        constexpr operator Result() const { return mResult; }
+        constexpr operator Result() const { return mHasValue ? ResultSuccess() : mResult; }
         constexpr operator T&() { return get(); }
         constexpr T* operator->() { return &get(); }
         constexpr T* ptr() { return hasValue() ? &get() : nullptr; }
