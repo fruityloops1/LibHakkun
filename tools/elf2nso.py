@@ -5,7 +5,7 @@ import struct
 import hashlib
 import lz4.block
 
-from nso import NsoHeader
+from nxo import NsoHeader
 from elftools.elf.elffile import ELFFile
 from elftools.common.exceptions import ELFError, ELFParseError
 
@@ -16,7 +16,6 @@ def fatal(msg):
 
 
 def main(argc, argv):
-
     # Check arguments
     if argc < 3:
         fatal('Usage: %s <input elf> <output nso> [flags]\n -c  compress\n -s  check segment checksums' % argv[0])
@@ -32,11 +31,9 @@ def main(argc, argv):
     except (ELFError, ELFParseError):
         fatal('Reading ELF failed!')
 
-
     # Check architecture
     if elf.get_machine_arch() != 'ARM' and elf.get_machine_arch() != 'AArch64':
         fatal('Only ARM and AArch64 ELFs are supported! Input arch: %s' % elf.get_machine_arch())
-
 
     # Check segments
     pt_load_segments = []
@@ -52,7 +49,6 @@ def main(argc, argv):
     rodata_segment = pt_load_segments[1]
     data_segment = pt_load_segments[2]
 
-
     # Open output file
     try:
         out = open(argv[2], 'wb')
@@ -67,13 +63,11 @@ def main(argc, argv):
     if do_checksums == True:
         header.flags |= 0b111000
 
-
     # Module is alyways a single zeroed byte directly after the header
     header.module_offset = header.size
     header.module_file_size = 1
     out.seek(header.size, 0)
     out.write(struct.pack('B', 0))
-
 
     # text segment
     header.text_segment.file_offset = out.tell()
@@ -92,7 +86,6 @@ def main(argc, argv):
     header.text_compressed_size = len(text_segment_data)    
     out.write(text_segment_data)
 
-
     # rodata segment
     header.rodata_segment.file_offset = out.tell()
     header.rodata_segment.memory_offset = rodata_segment.header.p_vaddr
@@ -109,7 +102,6 @@ def main(argc, argv):
 
     header.rodata_compressed_size = len(rodata_segment_data)    
     out.write(rodata_segment_data)
-
 
     # data segment
     header.data_segment.file_offset = out.tell()
@@ -128,16 +120,13 @@ def main(argc, argv):
     header.data_compressed_size = len(data_segment_data)
     out.write(data_segment_data)
 
-
     # bss size
     header.bss_size = data_segment.header.p_memsz - data_segment.header.p_filesz
-
 
     # Write Header
     out.seek(0, 0)
     out.write(header.save())
     out.close()
-
 
     sys.exit(0)
 
