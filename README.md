@@ -23,7 +23,7 @@ Modular C++ toolchain and set of libraries for userspace Nintendo Switch process
         * [ExpHeap](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ExpHeap)
         * [HeapSourceBss](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceBss)
         * [HeapSourceDynamic](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceDynamic)
-* SF client implementation [WIP]: 
+* SF client implementation [WIP]:
     * SM, PM, LM, Socket
 
 ## Setup
@@ -31,7 +31,7 @@ Modular C++ toolchain and set of libraries for userspace Nintendo Switch process
 * CMake + GNUMake or Ninja
 * cURL
 * Clang, LLVM, LLD 19 or later
-* Python 3.10, `pyelftools`, `mmh`, and `lz4` packages
+* Python 3.11, `pyelftools`, `mmh`, and `lz4` packages
 #### Compile stdlibs and sail
 
 This part can be skipped, since these scripts are ran automatically when needed.
