@@ -46,5 +46,9 @@ function (usesail lib)
         add_custom_command(TARGET ${lib} PRE_LINK
             COMMAND ${SAIL_CMD}
         )
+
+        add_custom_command(TARGET ${lib} PRE_LINK
+            COMMAND ${CMAKE_COMMAND} -E echo "-- Linking"
+        )
     endif()
 endfunction()
