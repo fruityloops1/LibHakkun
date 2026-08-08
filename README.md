@@ -2,6 +2,8 @@
 
 Modular C++ toolchain and set of libraries for userspace Nintendo Switch processes with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
 
+Development happens at https://codeberg.org/fruityloops1/LibHakkun (GitHub repo is a mirror)
+
 ## Features
 * Clang/LLVM toolchain, linking musl libc + LLVM libc++
 * Can be used for standalone programs, modification of existing ones, NROs, and homebrews
@@ -16,13 +18,13 @@ Modular C++ toolchain and set of libraries for userspace Nintendo Switch process
 * Framework and user code clearly separated with a submodule to prevent messy codebases and forks
 * Multiple addons with additional functionality:
     * Rendering:
-        * [Nvn](https://github.com/fruityloops1/LibHakkun/tree/main/addons/Nvn)
-        * [DebugRenderer](https://github.com/fruityloops1/LibHakkun/tree/main/addons/DebugRenderer)
-        * [ImGui](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ImGui)
+        * [Nvn](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/Nvn)
+        * [DebugRenderer](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/DebugRenderer)
+        * [ImGui](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/ImGui)
     * Memory Allocation:
-        * [ExpHeap](https://github.com/fruityloops1/LibHakkun/tree/main/addons/ExpHeap)
-        * [HeapSourceBss](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceBss)
-        * [HeapSourceDynamic](https://github.com/fruityloops1/LibHakkun/tree/main/addons/HeapSourceDynamic)
+        * [ExpHeap](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/ExpHeap)
+        * [HeapSourceBss](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/HeapSourceBss)
+        * [HeapSourceDynamic](https://codeberg.org/fruityloops1/LibHakkun/src/branch/main/addons/HeapSourceDynamic)
 * SF client implementation [WIP]:
     * SM, PM, LM, Socket
 
