@@ -5,23 +5,25 @@ import subprocess
 import tarfile
 import zipfile
 import multiprocessing
-import importlib.util
 import shutil
-import urllib.request
-import sys
+import re
 
-is_aarch32 = len(sys.argv) > 1 and sys.argv[1] == 'aarch32'
-is_ounce = len(sys.argv) > 2 and sys.argv[2] == 'ounce'
+from libsetup_libcxx_arg import *
 
-target = 'armv7-none-eabi' if is_aarch32 else 'aarch64-none-elf'
+do_pack = len(sys.argv) > 3 and sys.argv[3] == 'pack'
 
-musl_ver = 'musl-1.2.5'
 musl_source_tar_name = musl_ver + '.tar.gz'
 musl_source = "https://musl.libc.org/releases/" + musl_source_tar_name
 
-llvm_source = "https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-19.1.0.zip"
+clang_version = re.search(r'version (.*)', subprocess.check_output(['clang', '--version'], text=True, stderr=subprocess.STDOUT)).group(1)
+tar_name = make_tar_name(clang_version)
+
+llvm_source = f"https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-{llvm_version}.zip"
 
 root_dir = os.getcwd()
+
+if do_pack:
+    tar = tarfile.open(tar_name, 'w:xz')
 
 def downloadAndCompileMusl():
     print(f"Downloading musl")
@@ -78,7 +80,17 @@ def downloadAndCompileMusl():
 
     subprocess.run(["make", "-j", f"{multiprocessing.cpu_count()}"])
 
+    shutil.copyfile(f'lib/libc.a', f'{root_dir}/lib/std/libc.a')
+    shutil.copyfile(f'lib/libm.a', f'{root_dir}/lib/std/libm.a')
     os.chdir(root_dir)
+
+    if do_pack:
+        tar.add('lib/std/libc.a')
+        tar.add('lib/std/libm.a')
+        tar.add('lib/std/musl/include')
+        tar.add('lib/std/musl/obj/include')
+        tar.add('lib/std/musl/arch/generic')
+        tar.add(f'lib/std/musl/arch/{arch}')
 
 def downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt():
     print(f"Downloading LLVM")
@@ -121,7 +133,7 @@ def downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt():
         -isystem {musl_path}/include
         -isystem {musl_path}/obj/include
         -isystem {musl_path}/arch/generic
-        -isystem {musl_path}/arch/{"arm" if is_aarch32 else "aarch64"}
+        -isystem {musl_path}/arch/{arch}
         -DNDEBUG
         -D_LIBCXXABI_NO_EXCEPTIONS
         -D_LIBCPP_HAS_NO_EXCEPTIONS
@@ -179,10 +191,16 @@ def downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt():
         shutil.copyfile(f'{build_dir}/compiler-rt/lib/linux/libclang_rt.builtins-arm.a', f'{root_dir}/lib/std/libclang_rt.builtins-arm.a')
     else:
         shutil.copyfile(f'{build_dir}/compiler-rt/lib/linux/libclang_rt.builtins-aarch64.a', f'{root_dir}/lib/std/libclang_rt.builtins-aarch64.a')
-    shutil.copyfile(f'{musl_path}/lib/libc.a', f'{root_dir}/lib/std/libc.a')
-    shutil.copyfile(f'{musl_path}/lib/libm.a', f'{root_dir}/lib/std/libm.a')
 
     os.chdir(root_dir)
+
+    if do_pack:
+        tar.add('lib/std/libc++.a')
+        tar.add('lib/std/libc++abi.a')
+        tar.add('lib/std/libunwind.a')
+        tar.add('lib/std/llvm-project/build/include/c++/v1')
+        tar.add('lib/std/llvm-project/libunwind/include')
+        tar.add(f'lib/std/libclang_rt.builtins-{arch}.a')
 
 try:
     shutil.rmtree(f'{root_dir}/lib/std')
@@ -191,3 +209,7 @@ except FileNotFoundError:
 os.makedirs(f'{root_dir}/lib/std')
 downloadAndCompileMusl()
 downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt()
+
+
+if do_pack:
+    tar.close()

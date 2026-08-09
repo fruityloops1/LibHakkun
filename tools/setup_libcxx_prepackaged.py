@@ -5,17 +5,18 @@ import subprocess
 import tarfile
 import sys
 
-is_aarch32 = len(sys.argv) > 1 and sys.argv[1] == 'aarch32'
+from libsetup_libcxx_arg import *
 
-prepackaged_source_tar_name = "stdlib-aarch32-19.1.0_clang_19.1.7.tar.xz" if is_aarch32 else "stdlib-19.1.0_clang_19.1.7.tar.xz"
-prepackaged_source = "https://codeberg.org/fruityloops1/LibHakkun/releases/download/stdlib-19.1.0/" + prepackaged_source_tar_name
+prepackaged_source_tar_name = make_tar_name(clang_version)
+prepackaged_source_uri = f"https://codeberg.org/fruityloops1/LibHakkun/releases/download/stdlib-{llvm_version}/" + prepackaged_source_tar_name
+print(prepackaged_source_uri)
 
 root_dir = os.getcwd()
 
 def downloadAndExtractPrepackaged():
     print(f"Downloading pre-packaged stdlib")
 
-    subprocess.run(['curl', '-O', '-L', prepackaged_source])
+    subprocess.run(['curl', '-O', '-L', prepackaged_source_uri])
 
     print(f"Extracting")
 
