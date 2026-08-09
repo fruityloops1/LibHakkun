@@ -89,13 +89,8 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `DEFINITIONS`: Preprocessor definitions
 * `INCLUDES`: Include directories
 * `ASM_OPTIONS`, `C_OPTIONS`, `CXX_OPTIONS`: Various compiler options
-* `USE_ADVANCED_RESULT`: Whether to enable stack trace building in hk::Result. Use hk::ResultNN to mask out extra data for compatibility with nn::Result
-* `TRAMPOLINE_LEVEL`: Level for trampoline hook.
-    * 0: only basic backups (no b.cond, cbz/cbnz, tbz/tbnz), +-128MB branch range
-    * 1: all backups, +-128MB branch range
-    * 2: all backups, infinite branch range
-* `HAKKUN_ADDONS`: List of Hakkun addons to enable
 * `IS_32_BIT`: Whether or not target is 32-bit
+* `IS_OUNCE`: Whether or not to build an Ounce binary
 * `HAKKUN_TARGET`: Type of program, MODULE by default
     * `MODULE`: Default RTLD module (e.g. for game mods)
     * `MODULE_STANDALONE`: Standalone main module providing nn::init::Start + rtld module, packs an exefs.nsp (e.g. for sysmodules)
@@ -103,6 +98,12 @@ Hakkun provides various options that you can configure from `config/config.cmake
 * `HOMEBREW_TYPE`: Type of homebrew loader to target
     * `NONE`: Default
     * `HBLOADER`: Target nx-hbloader (libnx)
+* `TRAMPOLINE_LEVEL`: Level for trampoline hook.
+    * 0: only basic backups (no b.cond, cbz/cbnz, tbz/tbnz), +-128MB branch range
+    * 1: all backups, +-128MB branch range
+    * 2: all backups, infinite branch range
+* `USE_ADVANCED_RESULT`: Whether to enable stack trace building in hk::Result. Use hk::ResultNN to mask out extra data for compatibility with nn::Result
+* `HAKKUN_ADDONS`: List of Hakkun addons to enable
 ##### `MODULE`/`MODULE_STANDALONE` options
 * `MODULE_NAME`: Name of your output RTLD module
 * `TITLE_ID`: Title ID of the target program
