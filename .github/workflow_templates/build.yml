@@ -4,31 +4,28 @@ on: [workflow_dispatch, push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: alpine
+    container:
+      image: fruityloops1/alpine-hakkun
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          submodules: true
-      - name: Set up dependencies
+          submodules: "recursive"
+      - name: Compile tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip git wget
-          python sys/tools/setup_libcxx_prepackaged.py
           python sys/tools/setup_sail.py
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 20
-          sudo apt-get install -y clang-20 llvm-20 lld-20
-          python3 -m pip install pyelftools mmh lz4
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DCMAKE_ASM_COMPILER=clang-20 -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-20" -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld-20" -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld-20"
+          cmake -B build -DCMAKE_C_COMPILER_FORCED=TRUE -DCMAKE_CXX_COMPILER_FORCED=TRUE -DCMAKE_BUILD_TYPE="${{ matrix.build_type }}"
           cmake --build build -j $(nproc)
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build-${{ matrix.build_type }}
           path: |
             build/*.nss
             build/main.npdm
