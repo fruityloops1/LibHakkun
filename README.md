@@ -1,6 +1,12 @@
 # <span style="font-size: 48px">Hakkun</span> ![goober](https://mario.wiki.gallery/images/0/0e/Ninji_PMSS.png)
 
-Modular C++ toolchain and set of libraries for userspace Nintendo Switch processes with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project. An example project can be found [here](https://github.com/fruityloops1/Hakkun-Example)
+Modular C++ toolchain and set of libraries for userspace Nintendo Switch processes with 64-bit and 32-bit support. This is the library repository to be cloned as submodule into a project.
+
+Templates:
+* https://codeberg.org/fruityloops1/Hakkun-Template - Code modification
+
+Example projects:
+* https://codeberg.org/fruityloops1/Hakkun-SMO-Example - Super Mario Odyssey
 
 Development happens at https://codeberg.org/fruityloops1/LibHakkun (GitHub repo is a mirror)
 
