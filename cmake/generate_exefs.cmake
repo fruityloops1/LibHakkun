@@ -1,10 +1,14 @@
 function(generate_exefs)
-    if (NOT HAKKUN_TARGET STREQUAL MODULE_DLL)
-        configure_file(${PROJECT_SOURCE_DIR}/config/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/npdm.json)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "-- Generating main.npdm"
-            COMMAND python ${CMAKE_SOURCE_DIR}/sys/tools/senobi/build_npdm.py ${CMAKE_CURRENT_BINARY_DIR}/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/main.npdm
-        )
+    if (EXISTS ${PROJECT_SOURCE_DIR}/config/npdm.json)
+        if (NOT HAKKUN_TARGET STREQUAL MODULE_DLL)
+            configure_file(${PROJECT_SOURCE_DIR}/config/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/npdm.json)
+            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E echo "-- Generating main.npdm"
+                COMMAND python ${CMAKE_SOURCE_DIR}/sys/tools/senobi/build_npdm.py ${CMAKE_CURRENT_BINARY_DIR}/npdm.json ${CMAKE_CURRENT_BINARY_DIR}/main.npdm
+            )
+        endif()
+    else()
+        message(WARNING "No npdm.json, skipping")
     endif()
 
     if (HAKKUN_TARGET STREQUAL MODULE OR HAKKUN_TARGET STREQUAL MODULE_STANDALONE)

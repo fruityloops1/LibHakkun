@@ -41,7 +41,8 @@ def deploy_sd():
         os.makedirs(sd_exefs_dir, exist_ok=True)
 
         if not is_standalone:
-            shutil.copyfile(f"{build_dir}/main.npdm", f"{sd_exefs_dir}/main.npdm")
+            if os.path.isfile(f"{build_dir}/main.npdm"):
+                shutil.copyfile(f"{build_dir}/main.npdm", f"{sd_exefs_dir}/main.npdm")
             shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{sd_exefs_dir}/{module_binary}")
             if has_rtld:
                 shutil.copyfile(f"{build_dir}/rtld.nso", f"{sd_exefs_dir}/rtld")
@@ -82,14 +83,19 @@ def deploy_ftp():
         if is_standalone:
             upload(f"{build_dir}/exefs.nsp", f"{layeredfs_dir}/exefs.nsp")
         else:
-            upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
+            if os.path.isfile(f"{build_dir}/main.npdm"):
+                upload(f"{build_dir}/main.npdm", f"{exefs_dir}/main.npdm")
             upload(f"{build_dir}/{project_name}.nso", f"{exefs_dir}/{module_binary}")
             if has_rtld:
                 upload(f"{build_dir}/rtld.nso", f"{exefs_dir}/rtld")
 
 if not is_hbloader_homebrew:
     # build/exefs
-    shutil.copyfile(f"{build_dir}/main.npdm", f"{build_dir}/exefs/main.npdm")
+    
+    if os.path.isfile(f"{build_dir}/main.npdm"):
+        shutil.copyfile(f"{build_dir}/main.npdm", f"{build_dir}/exefs/main.npdm")
+    else:
+        print("-- (no main.npdm)")
     shutil.copyfile(f"{build_dir}/{project_name}.nso", f"{build_dir}/exefs/{module_binary}")
     if has_rtld:
         shutil.copyfile(f"{build_dir}/rtld.nso", f"{build_dir}/exefs/rtld")
