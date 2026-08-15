@@ -60,16 +60,16 @@ namespace hk::init {
         u8* bssStart = cast<u8*>(ptr(header) + header->bssOffset);
         const size bssSize = header->bssEndOffset - header->bssOffset;
 
+        const bool skip = ignoreSelf && module == init::getSelfRtldModule();
+        if (skip)
+            return module;
+
         memset(bssStart, 0, bssSize);
 
         new (module) nn::ro::detail::RoModule;
 
-        const bool skip = ignoreSelf && module == init::getSelfRtldModule();
-
-        if (!skip) {
-            module->Initialize(moduleBase, dynamic);
-            module->Relocate();
-        }
+        module->Initialize(moduleBase, dynamic);
+        module->Relocate();
 
         return module;
     }
