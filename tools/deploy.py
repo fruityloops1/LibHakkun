@@ -16,7 +16,7 @@ else:
     title_id = int(sys.argv[4].removeprefix('0x'), 16)
     module_binary = sys.argv[5]
     has_rtld = sys.argv[6] == 'TRUE'
-    is_standalone = len(sys.argv) == 7 and sys.argv[7] == 'TRUE'
+    is_standalone = len(sys.argv) >= 7 and sys.argv[7] == 'TRUE'
     layeredfs_dir = f"atmosphere/contents/{title_id:016X}"
     exefs_dir = f"{layeredfs_dir}/exefs"
     sd_exefs_dir = f"{build_dir}/sd/{exefs_dir}"
