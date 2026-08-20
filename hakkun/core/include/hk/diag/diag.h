@@ -50,115 +50,129 @@ namespace hk::diag {
 
 #if defined(HK_RELEASE) and not defined(HK_RELEASE_DEBINFO)
 
-#define HK_ASSERT(CONDITION, ...)                                                                                                                   \
-    do {                                                                                                                                            \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                                                                        \
-        if (_condition_temp == false) {                                                                                                             \
-            if (__builtin_is_constant_evaluated())                                                                                                  \
-                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION);                                                                 \
-            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>(::hk::diag::ResultAssertionFailure()); \
-        }                                                                                                                                           \
+#define _HK_ASSERT_IMPL(COL_SUB, CONDITION, ...)                                                                  \
+    do {                                                                                                          \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                                      \
+        if (_condition_temp == false) {                                                                           \
+            if (__builtin_is_constant_evaluated())                                                                \
+                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION __VA_OPT__(", ") #__VA_ARGS__); \
+            constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - COL_SUB;              \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, _column>(::hk::diag::ResultAssertionFailure());      \
+        }                                                                                                         \
     } while (0)
 
-#define HK_ABORT(FMT, ...)                                                                                                                                      \
-    do {                                                                                                                                                        \
-        if (__builtin_is_constant_evaluated())                                                                                                                  \
-            ::hk::diag::detail::abortConstexpr("ResultAbort: " FMT __VA_OPT__(, ) __VA_ARGS__);                                                                 \
-        ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
+#define HK_ASSERT_WITH_LOCATION(LOC, CONDITION, ...) _HK_ASSERT_IMPL(__builtin_strlen(#LOC ", " #CONDITION __VA_OPT__(",") #__VA_ARGS__), CONDITION, __VA_ARGS__)
+#define HK_ASSERT(CONDITION, ...) _HK_ASSERT_IMPL(__builtin_strlen(#CONDITION __VA_OPT__(",") #__VA_ARGS__), CONDITION __VA_OPT__(, ) __VA_ARGS__)
+
+#define _HK_ABORT_IMPL(COL_SUB, FMT, ...)                                                                                \
+    do {                                                                                                                 \
+        if (__builtin_is_constant_evaluated())                                                                           \
+            ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__);                                          \
+        constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - COL_SUB;                         \
+        ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, _column>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
     } while (0)
 
-#define HK_ABORT_UNLESS(CONDITION, FMT, ...)                                                                                                                        \
-    do {                                                                                                                                                            \
-        const bool _condition_temp = (CONDITION);                                                                                                                   \
-        if (_condition_temp == false) {                                                                                                                             \
-            if (__builtin_is_constant_evaluated())                                                                                                                  \
-                ::hk::diag::detail::abortConstexpr("ResultAbort: " FMT __VA_OPT__(, ) __VA_ARGS__);                                                                 \
-            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
-        }                                                                                                                                                           \
+#define HK_ABORT_WITH_LOCATION(LOC, FMT, ...) _HK_ABORT_IMPL(__builtin_strlen(#LOC ", " #FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(, ) __VA_ARGS__)
+#define HK_ABORT(FMT, ...) _HK_ABORT_IMPL(__builtin_strlen(#FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(, ) __VA_ARGS__)
+
+#define _HK_ABORT_UNLESS_IMPL(COL_SUB, CONDITION, FMT, ...)                                                                  \
+    do {                                                                                                                     \
+        const bool _condition_temp = (CONDITION);                                                                            \
+        if (_condition_temp == false) {                                                                                      \
+            if (__builtin_is_constant_evaluated())                                                                           \
+                ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__);                                          \
+            constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - COL_SUB;                         \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, _column>(::hk::diag::ResultAbort() __VA_OPT__(, ) __VA_ARGS__); \
+        }                                                                                                                    \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT, ...)                                                                                      \
-    do {                                                                                                                    \
-        const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                                \
-        if (_result_temp.failed()) {                                                                                        \
-            if (__builtin_is_constant_evaluated())                                                                          \
-                ::hk::diag::detail::abortConstexpr(                                                                         \
-                    "ResultAbort",                                                                                          \
-                    _result_temp.getModule() + 2000,                                                                        \
-                    _result_temp.getDescription(),                                                                          \
-                    _result_temp.getValue());                                                                               \
-            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>(_result_temp); \
-        }                                                                                                                   \
+#define HK_ABORT_UNLESS_WITH_LOCATION(LOC, CONDITION, FMT, ...) _HK_ABORT_UNLESS_IMPL(__builtin_strlen(#LOC ", " #CONDITION ", " #FMT __VA_OPT__(", ") #__VA_ARGS__), CONDITION, FMT __VA_OPT__(, ) __VA_ARGS__)
+#define HK_ABORT_UNLESS(CONDITION, FMT, ...) _HK_ABORT_UNLESS_IMPL(__builtin_strlen(#CONDITION ", " #FMT __VA_OPT__(", ") #__VA_ARGS__), CONDITION, FMT __VA_OPT__(, ) __VA_ARGS__)
+
+#define _HK_ABORT_UNLESS_R_IMPL(COL_SUB, RESULT, ...)                                                \
+    do {                                                                                             \
+        const ::hk::Result _result_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                         \
+        if (_result_temp.failed()) {                                                                 \
+            if (__builtin_is_constant_evaluated())                                                   \
+                ::hk::diag::detail::abortConstexpr(                                                  \
+                    "ResultAbort",                                                                   \
+                    _result_temp.getModule() + 2000,                                                 \
+                    _result_temp.getDescription(),                                                   \
+                    _result_temp.getValue());                                                        \
+            constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - COL_SUB; \
+            ::hk::diag::abortReleaseImpl<__FILE__, __LINE__, _column>(_result_temp);                 \
+        }                                                                                            \
     } while (0)
+
+#define HK_ABORT_UNLESS_R_WITH_LOCATION(LOC, RESULT, ...) _HK_ABORT_UNLESS_R_IMPL(__builtin_strlen(#LOC ", " #RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(, ) __VA_ARGS__)
+#define HK_ABORT_UNLESS_R(RESULT, ...) _HK_ABORT_UNLESS_R_IMPL(__builtin_strlen(#RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(, ) __VA_ARGS__)
 
 #define HK_DUMP(RESULT, ...) (RESULT __VA_OPT__(, ) __VA_ARGS__)
 
-#define HK_ASSERT_WITH_LOCATION(LOC, CONDITION, ...) HK_ASSERT(CONDITION, __VA_ARGS__)
-#define HK_ABORT_WITH_LOCATION(LOC, FMT, ...) HK_ABORT(FMT, __VA_ARGS__)
-#define HK_ABORT_UNLESS_WITH_LOCATION(LOC, CONDITION, FMT, ...) HK_ABORT_UNLESS(CONDITION, FMT, __VA_ARGS__)
-#define HK_ABORT_UNLESS_R_WITH_LOCATION(LOC, RESULT, ...) HK_ABORT_UNLESS_R(RESULT, __VA_ARGS__)
-
-#define HK_TODO(...) HK_ABORT("todo" __VA_OPT__(": ", ) __VA_ARGS__)
+#define HK_TODO(...) HK_ABORT("TODO" __VA_OPT__(": ") __VA_ARGS__)
 
 #else
     // clang-format off
-#define HK_ASSERT_WITH_LOCATION(LOC, CONDITION, ...)                                \
-    do {                                                                            \
-        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);        \
-        if (_condition_temp == false) {                                             \
-            if (__builtin_is_constant_evaluated())                                  \
-                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION); \
-            ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                         \
-            ::hk::diag::abortImpl(                                                  \
-                HAS_NNSDK(::hk::svc::BreakReason_Assert,)                           \
-                MAKE_RESULT(::hk::diag::ResultAssertionFailure()),                  \
-                _hk_sourceLoc.file(),                                               \
-                _hk_sourceLoc.line(),                                               \
-                _hk_sourceLoc.column(),                                             \
-                ::hk::diag::cAssertionFailFormat,                                   \
-                #CONDITION);                                                        \
-        }                                                                           \
+#define _HK_ASSERT_IMPL(LOC, COL_SUB, CONDITION, ...)                                                             \
+    do {                                                                                                          \
+        const bool _condition_temp = (CONDITION __VA_OPT__(, ) __VA_ARGS__);                                      \
+        if (_condition_temp == false) {                                                                           \
+            if (__builtin_is_constant_evaluated())                                                                \
+                ::hk::diag::detail::abortConstexpr("AssertionFailed: " #CONDITION __VA_OPT__(", ") #__VA_ARGS__); \
+            ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                                                       \
+            ::hk::diag::abortImpl(                                                                                \
+                HAS_NNSDK(::hk::svc::BreakReason_Assert,)                                                         \
+                MAKE_RESULT(::hk::diag::ResultAssertionFailure()),                                                \
+                _hk_sourceLoc.file(),                                                                             \
+                _hk_sourceLoc.line(),                                                                             \
+                _hk_sourceLoc.column() - COL_SUB,                                                                 \
+                ::hk::diag::cAssertionFailFormat,                                                                 \
+                #CONDITION __VA_OPT__(", ") #__VA_ARGS__);                                                        \
+        }                                                                                                         \
     } while (0)
 
-#define HK_ASSERT(CONDITION, ...) HK_ASSERT_WITH_LOCATION(::hk::diag::SourceLocation::current(), CONDITION, __VA_ARGS__)
+#define HK_ASSERT_WITH_LOCATION(LOC, CONDITION, ...) _HK_ASSERT_IMPL(LOC, __builtin_strlen(#LOC ", " #CONDITION __VA_OPT__(", ") #__VA_ARGS__), CONDITION __VA_OPT__(,) __VA_ARGS__)
+#define HK_ASSERT(CONDITION, ...) _HK_ASSERT_IMPL(::hk::diag::SourceLocation::current(), __builtin_strlen(#CONDITION __VA_OPT__(", ") #__VA_ARGS__), CONDITION __VA_OPT__(,) __VA_ARGS__)
 
-#define HK_ABORT_WITH_LOCATION(LOC, FMT, ...)                                   \
-    do {                                                                        \
-        if (__builtin_is_constant_evaluated())                                  \
-            ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
-        ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                         \
-        ::hk::diag::abortImpl(                                                  \
-            HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
-            MAKE_RESULT(::hk::diag::ResultAbort()),                             \
-            _hk_sourceLoc.file(),                                               \
-            _hk_sourceLoc.line(),                                               \
-            _hk_sourceLoc.column(),                                             \
-            "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
+#define _HK_ABORT_IMPL(LOC, COL_SUB, FMT, ...)                                 \
+    do {                                                                       \
+        if (__builtin_is_constant_evaluated())                                 \
+            ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(,) __VA_ARGS__); \
+        ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                        \
+        ::hk::diag::abortImpl(                                                 \
+            HAS_NNSDK(::hk::svc::BreakReason_User,)                            \
+            MAKE_RESULT(::hk::diag::ResultAbort()),                            \
+            _hk_sourceLoc.file(),                                              \
+            _hk_sourceLoc.line(),                                              \
+            _hk_sourceLoc.column() - COL_SUB,                                  \
+            FMT __VA_OPT__(,) __VA_ARGS__);                                    \
     } while (0)
 
-#define HK_ABORT(FMT, ...) HK_ABORT_WITH_LOCATION(::hk::diag::SourceLocation::current(), FMT, __VA_ARGS__)
+#define HK_ABORT_WITH_LOCATION(LOC, FMT, ...) _HK_ABORT_IMPL(LOC, __builtin_strlen(#FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(,) __VA_ARGS__)
+#define HK_ABORT(FMT, ...) _HK_ABORT_IMPL(::hk::diag::SourceLocation::current(), __builtin_strlen(#FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(,) __VA_ARGS__)
 
-#define HK_ABORT_UNLESS_WITH_LOCATION(LOC, CONDITION, FMT, ...)                     \
-    do {                                                                            \
-        const bool _condition_temp = (CONDITION);                                   \
-        const char* _fmt = FMT;                                                     \
-        if (_condition_temp == false) {                                             \
-            if (__builtin_is_constant_evaluated())                                  \
-                ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(, ) __VA_ARGS__); \
-            ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                         \
-            ::hk::diag::abortImpl(                                                  \
-                HAS_NNSDK(::hk::svc::BreakReason_User,)                             \
-                MAKE_RESULT(::hk::diag::ResultAbort()),                             \
-                _hk_sourceLoc.file(),                                               \
-                _hk_sourceLoc.line(),                                               \
-                _hk_sourceLoc.column(),                                             \
-                "\n" FMT "\n" __VA_OPT__(, ) __VA_ARGS__);                          \
-        }                                                                           \
+#define _HK_ABORT_UNLESS_IMPL(LOC, CONDITION, COL_SUB, FMT, ...)                   \
+    do {                                                                           \
+        const bool _condition_temp = (CONDITION);                                  \
+        const char* _fmt = FMT;                                                    \
+        if (_condition_temp == false) {                                            \
+            if (__builtin_is_constant_evaluated())                                 \
+                ::hk::diag::detail::abortConstexpr(FMT __VA_OPT__(,) __VA_ARGS__); \
+            ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                        \
+            ::hk::diag::abortImpl(                                                 \
+                HAS_NNSDK(::hk::svc::BreakReason_User,)                            \
+                MAKE_RESULT(::hk::diag::ResultAbort()),                            \
+                _hk_sourceLoc.file(),                                              \
+                _hk_sourceLoc.line(),                                              \
+                _hk_sourceLoc.column() - COL_SUB,                                  \
+                FMT __VA_OPT__(,) __VA_ARGS__);                                    \
+        }                                                                          \
     } while (0)
 
-#define HK_ABORT_UNLESS(CONDITION, FMT, ...) HK_ABORT_UNLESS_WITH_LOCATION(::hk::diag::SourceLocation::current(), CONDITION, FMT, __VA_ARGS__)
+#define HK_ABORT_UNLESS_WITH_LOCATION(LOC, CONDITION, FMT, ...) _HK_ABORT_UNLESS_IMPL(LOC, CONDITION, __builtin_strlen(#CONDITION ", " #FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(,) __VA_ARGS__)
+#define HK_ABORT_UNLESS(CONDITION, FMT, ...) _HK_ABORT_UNLESS_IMPL(::hk::diag::SourceLocation::current(), CONDITION, __builtin_strlen(#CONDITION ", " #FMT __VA_OPT__(", ") #__VA_ARGS__), FMT __VA_OPT__(,) __VA_ARGS__)
 
-#define HK_ABORT_UNLESS_R_WITH_LOCATION(LOC, RESULT, ...)                                 \
+#define _HK_ABORT_UNLESS_R_IMPL(LOC, EXPR, COL_SUB, RESULT, ...)                          \
     do {                                                                                  \
         const ::hk::Result _result_temp = MAKE_RESULT(RESULT __VA_OPT__(, ) __VA_ARGS__); \
         if (_result_temp.failed()) {                                                      \
@@ -176,44 +190,47 @@ namespace hk::diag {
                     _result_temp,                                                         \
                     _hk_sourceLoc.file(),                                                 \
                     _hk_sourceLoc.line(),                                                 \
-                    _hk_sourceLoc.column(),                                               \
+                    _hk_sourceLoc.column() - COL_SUB,                                     \
                     ::hk::diag::cAbortUnlessResultFormatWithName,                         \
                     _result_temp.getModule() + 2000,                                      \
                     _result_temp.getDescription(),                                        \
                     _result_temp_name,                                                    \
-                    #RESULT);                                                             \
+                    EXPR);                                                                \
             } else {                                                                      \
                 ::hk::diag::abortImpl(                                                    \
                     HAS_NNSDK(::hk::svc::BreakReason_User,)                               \
                     _result_temp,                                                         \
                     _hk_sourceLoc.file(),                                                 \
                     _hk_sourceLoc.line(),                                                 \
-                    _hk_sourceLoc.column(),                                               \
+                    _hk_sourceLoc.column() - COL_SUB,                                     \
                     ::hk::diag::cAbortUnlessResultFormat,                                 \
                     _result_temp.getModule() + 2000,                                      \
                     _result_temp.getDescription(),                                        \
                     _result_temp.getValue(),                                              \
-                    #RESULT);                                                             \
+                    EXPR);                                                                \
             }                                                                             \
         }                                                                                 \
     } while (0)
 
-#define HK_ABORT_UNLESS_R(RESULT, ...) HK_ABORT_UNLESS_R_WITH_LOCATION(::hk::diag::SourceLocation::current(), RESULT, __VA_ARGS__)
+#define HK_ABORT_UNLESS_R_WITH_LOCATION(LOC, RESULT, ...) _HK_ABORT_UNLESS_R_IMPL(LOC, #RESULT __VA_OPT__(", ") #__VA_ARGS__, __builtin_strlen(#RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(,) __VA_ARGS__)
+#define HK_ABORT_UNLESS_R(RESULT, ...) _HK_ABORT_UNLESS_R_IMPL(::hk::diag::SourceLocation::current(), #RESULT __VA_OPT__(", ") #__VA_ARGS__, __builtin_strlen(#RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(,) __VA_ARGS__)
 
-#define HK_DUMP_WITH_LOCATION(LOC, RESULT, ...)                                                                                                                              \
-    ({                                                                                                                                                                       \
-        auto&& _value_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                                                                                              \
-        ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                                                                                                                      \
-        ::hk::Result _result_temp = MAKE_RESULT_IMPL(_value_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, _hk_sourceLoc.file(), _hk_sourceLoc.line(), _hk_sourceLoc.column()); \
-        if (_result_temp.failed())                                                                                                                                           \
-            ::hk::diag::dumpImpl(_result_temp, #RESULT __VA_OPT__(",") #__VA_ARGS__, _hk_sourceLoc.file(), _hk_sourceLoc.line(), _hk_sourceLoc.column());                    \
-        ::move(_value_temp);                                                                                                                                                 \
+#define _HK_DUMP_IMPL(LOC, EXPR, COL_SUB, RESULT, ...)                                                                        \
+    ({                                                                                                                        \
+        auto&& _value_temp = RESULT __VA_OPT__(, ) __VA_ARGS__;                                                               \
+        ::hk::diag::SourceLocation _hk_sourceLoc = LOC;                                                                       \
+        const u16 _column = _hk_sourceLoc.column() - COL_SUB;                                                                 \
+        ::hk::Result _result_temp = MAKE_RESULT_IMPL(_value_temp, EXPR, _hk_sourceLoc.file(), _hk_sourceLoc.line(), _column); \
+        if (_result_temp.failed())                                                                                            \
+            ::hk::diag::dumpImpl(_result_temp, EXPR, _hk_sourceLoc.file(), _hk_sourceLoc.line(), _column);                    \
+        ::move(_value_temp);                                                                                                  \
     })
 
-#define HK_DUMP(RESULT, ...) HK_DUMP_WITH_LOCATION(::hk::diag::SourceLocation::current(), RESULT, __VA_ARGS__)
+#define HK_DUMP_WITH_LOCATION(LOC, RESULT, ...) _HK_DUMP_IMPL(LOC, #RESULT __VA_OPT__(", ") #__VA_ARGS__, __builtin_strlen(#LOC ", " #RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(,) __VA_ARGS__)
+#define HK_DUMP(RESULT, ...) _HK_DUMP_IMPL(::hk::diag::SourceLocation::current(), #RESULT __VA_OPT__(", ") #__VA_ARGS__, __builtin_strlen(#RESULT __VA_OPT__(", ") #__VA_ARGS__), RESULT __VA_OPT__(,) __VA_ARGS__)
 
 #define HK_TODO(...) \
-    HK_ABORT("TODO: " __VA_ARGS__)
+    HK_ABORT("TODO" __VA_OPT__(": ") __VA_ARGS__)
 // clang-format on
 #endif
 

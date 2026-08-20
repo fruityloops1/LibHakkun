@@ -507,7 +507,7 @@ namespace hk::sf {
         if (request.mPrintResponse) {
             detail::printIpcMessageBuffer("Response:\n");
 
-            diag::dumpImpl(result, "PrintResponseResult", "", 0, 0);
+            diag::dumpImpl(result, "PrintResponseResult", __FILE__, __LINE__, 13);
         }
 #endif
         HK_TRY(result);

@@ -387,11 +387,13 @@ namespace hk {
  *        When VALUE is a pointer, abort if it is nullptr.
  *
  */
-#define HK_UNWRAP(VALUE, ...)                                                                                                                                                                   \
-    ({                                                                                                                                                                                          \
-        auto&& _hk_unwrap_v = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                 \
-        using _ValueT = ::hk::util::tRemoveReference<decltype(_hk_unwrap_v)>;                                                                                                                   \
-        ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>::check(::forward<_ValueT>(_hk_unwrap_v)); \
+#define HK_UNWRAP(VALUE, ...)                                                                                                                            \
+    ({                                                                                                                                                   \
+        constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - __builtin_strlen(#VALUE __VA_OPT__(",") #__VA_ARGS__);           \
+                                                                                                                                                         \
+        auto&& _hk_unwrap_v = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                          \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_hk_unwrap_v)>;                                                                            \
+        ::hk::detail::UnwrapChecker<_ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, _column>::check(::forward<_ValueT>(_hk_unwrap_v)); \
     })
 
         template <typename T>
@@ -414,16 +416,18 @@ namespace hk {
  * Function must return Result.
  */
 #undef HK_TRY
-#define HK_TRY(VALUE, ...)                                                                                                                                                                                                             \
-    ({                                                                                                                                                                                                                                 \
-        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                                                         \
-        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                                                                           \
-        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                                                                   \
-                                                                                                                                                                                                                                       \
-        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, ::hk::diag::SourceLocation::current().column()>::check(::forward<_ValueT>(_value_temp)); \
-        if (_result_temp.failed())                                                                                                                                                                                                     \
-            return _result_temp;                                                                                                                                                                                                       \
-        ::hk::detail::getTryExpressionValue(::move(_value_temp));                                                                                                                                                                      \
+#define HK_TRY(VALUE, ...)                                                                                                                                                                      \
+    ({                                                                                                                                                                                          \
+        constexpr static u16 _column = ::hk::diag::SourceLocation::current().column() - __builtin_strlen(#VALUE __VA_OPT__(",") #__VA_ARGS__);                                                  \
+                                                                                                                                                                                                \
+        auto&& _value_temp = VALUE __VA_OPT__(, ) __VA_ARGS__;                                                                                                                                  \
+        using _ValueT = ::hk::util::tRemoveReference<decltype(_value_temp)>;                                                                                                                    \
+        using _ResultT = ::hk::detail::TryResultType<_ValueT>::Type;                                                                                                                            \
+                                                                                                                                                                                                \
+        const _ResultT _result_temp = ::hk::detail::ResultChecker<_ResultT, _ValueT, #VALUE __VA_OPT__(",") #__VA_ARGS__, __FILE__, __LINE__, _column>::check(::forward<_ValueT>(_value_temp)); \
+        if (_result_temp.failed())                                                                                                                                                              \
+            return _result_temp;                                                                                                                                                                \
+        ::hk::detail::getTryExpressionValue(::move(_value_temp));                                                                                                                               \
     })
 
 } // namespace hk
