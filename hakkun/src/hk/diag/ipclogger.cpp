@@ -17,7 +17,7 @@ namespace hk::diag::ipclogger {
         Handle sessionHandle;
         if (symbol) {
             auto func = cast<hk::Result (*)(svc::Handle*, const char*)>(symbol);
-            HK_ABORT_UNLESS_R(func(&sessionHandle, "hk:log"));
+            HK_TRY(func(&sessionHandle, "hk:log"));
         } else {
             if (!hk::sm::ServiceManager::instance())
                 return MAKE_RESULT(ResultMissingServiceManager());
