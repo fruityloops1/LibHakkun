@@ -130,7 +130,7 @@ namespace hk::sf {
 
     namespace detail {
 
-        constexpr void printIpcMessageBuffer(const char* header = "\n", size size = cTlsBufferSize) {
+        inline void printIpcMessageBuffer(const char* header = "\n", size size = cTlsBufferSize) {
 #if !defined(HK_RELEASE) or defined(HK_RELEASE_DEBINFO)
             const u8* buf = svc::getTLS()->ipcMessageBuffer;
             diag::log("%s", header);
