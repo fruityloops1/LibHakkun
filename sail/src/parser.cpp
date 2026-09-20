@@ -91,7 +91,7 @@ namespace sail {
 
         std::string out = str;
 
-        while ((idx = str.find("\r\n")) != std::string::npos) {
+        while ((idx = out.find("\r\n")) != std::string::npos) {
             out.replace(idx, 2, "\n");
             idx++;
         }
@@ -172,7 +172,7 @@ namespace sail {
                 newSymbol.name = name;
                 newSymbol.type = Symbol::Type::Dynamic;
                 newSymbol.dataDynamic.name = dynamicSymbol;
-                newSymbol.versionIndices = {};
+                newSymbol.versionIndices = { };
                 symbols.push_back(newSymbol);
 
                 // printf("Dynamic Symbol: %s = %s\n", name.c_str(), dynamicSymbol.c_str());
