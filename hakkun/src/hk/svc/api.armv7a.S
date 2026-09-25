@@ -52,12 +52,12 @@ SVC_BEGIN _ZN2hk3svc20CreateTransferMemoryEPjjjNS0_16MemoryPermissionE
     bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc11CloseHandleEj
+SVC_BEGIN _ZN2hk3svc11CloseHandleENS_6HandleE
     svc #0x16
     bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc13ArbitrateLockEjjj
+SVC_BEGIN _ZN2hk3svc13ArbitrateLockENS_6HandleEjj
 	svc 0x1A
 	bx lr
 SVC_END
@@ -105,7 +105,7 @@ SVC_BEGIN _ZN2hk3svc5BreakENS0_11BreakReasonEPvj
 	bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc16BreakWithMessageENS0_11BreakReasonEPvmS2_S2_
+SVC_BEGIN _ZN2hk3svc16BreakWithMessageENS0_11BreakReasonEPvjS2_S2_
     ldr r4, [sp, #0x0]
     mov r5, #0x42 // Prevent showing message twice
 	svc 0x26
@@ -120,7 +120,7 @@ SVC_BEGIN _ZN2hk3svc19ReturnFromExceptionENS_6ResultE
 	svc 0x28
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc7GetInfoEPyNS0_8InfoTypeEjy
+SVC_BEGIN _ZN2hk3svc7GetInfoEPyNS0_8InfoTypeENS_6HandleEy
     str r0, [sp, #-4]!
     ldr r0, [sp, #4]
     ldr r3, [sp, #8]
@@ -155,7 +155,7 @@ SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
 SVC_END
 
 // the abi for the following svcs is completely Wrong
-SVC_BEGIN _ZN2hk3svc26InvalidateProcessDataCacheEjjj
+SVC_BEGIN _ZN2hk3svc26InvalidateProcessDataCacheENS_6HandleEjj
     stmdb sp!, {r3, r4, lr}
     mov r3, #0x0
     mov r4, #0x0
@@ -163,7 +163,7 @@ SVC_BEGIN _ZN2hk3svc26InvalidateProcessDataCacheEjjj
 	ldmia sp!, {r3, r4, pc}
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc21FlushProcessDataCacheEjjj
+SVC_BEGIN _ZN2hk3svc21FlushProcessDataCacheENS_6HandleEjj
     stmdb sp!, {r3, r4, lr}
     mov r3, #0x0
     mov r4, #0x0
@@ -189,7 +189,7 @@ SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
 	bx lr
 SVC_END
 
-SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEjjyj
+SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEjNS_6HandleEyj
     stmdb sp!, {r3, r4, lr}
     mov r3, #0x0
     ldr r4, [sp, #12]
