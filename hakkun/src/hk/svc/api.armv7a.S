@@ -69,17 +69,23 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc20SendSyncRequestLightEjPj
     mov r8, r1
-    ldrd r1, r2, [r8, #0]
-    ldrd r3, r4, [r8, #8]
-    ldrd r5, r6, [r8, #16]
+    ldr r1, [r8, #0]
+	ldr r2, [r8, #4]
+    ldr r3, [r8, #8]
+	ldr r4, [r8, #12]
+    ldr r5, [r8, #16]
+	ldr r6, [r8, #20]
     ldr r7, [r8, #24]
     str r8, [sp, #-4]!
     svc 0x20
     ldr r8, [sp], #4
     add sp, sp, #4
-    strd r1, r2, [r8, #0]
-    strd r3, r4, [r8, #8]
-    strd r5, r6, [r8, #16]
+    str r1, [r8, #0]
+	str r2, [r8, #4]
+    str r3, [r8, #8]
+	str r4, [r8, #12]
+    str r5, [r8, #16]
+	str r6, [r8, #20]
     str r7, [r8, #24]
     bx lr
 SVC_END
@@ -128,16 +134,22 @@ SVC_END
 
 SVC_BEGIN _ZN2hk3svc20ReplyAndReceiveLightEjPh
     mov r8, r1
-    ldrd r1, r2, [r8, #0]
-    ldrd r3, r4, [r8, #8]
-    ldrd r5, r6, [r8, #16]
+    ldr r1, [r8, #0]
+	ldr r2, [r8, #4]
+    ldr r3, [r8, #8]
+	ldr r4, [r8, #12]
+    ldr r5, [r8, #16]
+	ldr r6, [r8, #20]
     ldr r7, [r8, #24]
     str r8, [sp, #-4]!
     svc 0x42
     ldr r8, [sp], #4
-    strd r1, r2, [r8, #0]
-    strd r3, r4, [r8, #8]
-    strd r5, r6, [r8, #16]
+    str r1, [r8, #0]
+	str r2, [r8, #4]
+    str r3, [r8, #8]
+	str r4, [r8, #12]
+    str r5, [r8, #16]
+	str r6, [r8, #20]
     str r7, [r8, #24]
     bx lr
 SVC_END
@@ -174,7 +186,7 @@ SVC_BEGIN _ZN2hk3svc15ManageNamedPortEPjPKci
     ldr r2, [sp]
     str r1, [r2]
     add sp, sp, #4
-	ret
+	bx lr
 SVC_END
 
 SVC_BEGIN _ZN2hk3svc16MapProcessMemoryEjjyj

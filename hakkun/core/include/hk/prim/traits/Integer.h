@@ -205,9 +205,16 @@ namespace hk::util::detail {
     struct PrintfFormatVerbose<s64> {
         static constexpr const char cValue[] = "s64: %lld";
     };
+#if __SIZEOF_SIZE_T__ == 8
     template <>
     struct PrintfFormatVerbose<size> {
         static constexpr const char cValue[] = "size: %zu";
     };
+#else
+    template <>
+    struct PrintfFormatVerbose<u64> {
+        static constexpr const char cValue[] = "size: %zu";
+    };
+#endif
 
 } // namespace hk::util::detail

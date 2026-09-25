@@ -30,6 +30,7 @@ namespace hk::hook {
         return HookNInstr::installAtOffset(module, offset, outInstrs);
 #else
         instrs[0] = makeB(at, to);
+        const Span<const Instr> orig = { cast<const Instr*>(at), 1 };
         backup->make(orig, at, at + sizeof(Instr));
         return HookNInstr::installAtOffset(module, offset, { instrs, 1 });
 #endif
