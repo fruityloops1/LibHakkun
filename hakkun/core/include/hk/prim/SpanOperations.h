@@ -152,6 +152,15 @@ namespace hk {
                 return false;
             }
 
+            constexpr ::size findIndex(const T& value) const {
+                for (::size i = 0; i < getSize(); i++) {
+                    const T* cur = getDataConst() + i;
+                    if (*cur == value)
+                        return i;
+                }
+                return -1;
+            }
+
         protected:
             using Storage::getData;
             using Storage::getDataConst;
@@ -316,15 +325,6 @@ namespace hk {
         template <typename L>
         constexpr void transform(L&& func) {
             util::transform(getData(), getSize(), forward<L>(func));
-        }
-
-        constexpr size findIndex(const T& value) const {
-            for (size i = 0; i < getSize(); i++) {
-                const T* cur = getData() + i;
-                if (*cur == value)
-                    return i;
-            }
-            return -1;
         }
 
     protected:
