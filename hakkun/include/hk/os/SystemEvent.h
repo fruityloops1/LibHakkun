@@ -12,12 +12,21 @@ namespace hk::os {
         svc::Handle mReadHandle = 0;
 
         NON_COPYABLE(SystemEvent);
-        NON_MOVABLE(SystemEvent);
 
     public:
         SystemEvent() {
             tie(mWriteHandle, mReadHandle) = HK_UNWRAP(svc::CreateEvent());
         }
+
+        SystemEvent(SystemEvent&& old)
+            : mWriteHandle(old.mWriteHandle)
+            , mReadHandle(old.mReadHandle) {
+            old.mWriteHandle = 0;
+            old.mWriteHandle = 0;
+        }
+
+        explicit SystemEvent(svc::Handle readHandle)
+            : mReadHandle(readHandle) { }
 
         Result signal() {
             return svc::SignalEvent(mWriteHandle);
