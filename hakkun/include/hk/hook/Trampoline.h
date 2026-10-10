@@ -43,7 +43,8 @@ namespace hk::hook {
          */
 
         using TrampolineBackup = TrampolineBackupBase<
-#if HK_HOOK_TRAMPOLINE_LEVEL == 0 or !__aarch64__
+#if __aarch64__
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0
             2
 #elif HK_HOOK_TRAMPOLINE_LEVEL == 1
             5
@@ -51,6 +52,15 @@ namespace hk::hook {
             5 * 5
 #else
 #error
+#endif
+#else 
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0
+            2
+#elif HK_HOOK_TRAMPOLINE_LEVEL == 1
+            4
+#else
+#error
+#endif
 #endif
             >;
 

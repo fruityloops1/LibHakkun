@@ -29,10 +29,17 @@ namespace hk::hook {
 
         return HookNInstr::installAtOffset(module, offset, outInstrs);
 #else
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0
         instrs[0] = makeB(at, to);
-        const Span<const Instr> orig = { cast<const Instr*>(at), 1 };
-        backup->make(orig, at, at + sizeof(Instr));
-        return HookNInstr::installAtOffset(module, offset, { instrs, 1 });
+        const size numInstrs = 1;
+#else
+        instrs[0] = Instr(0xe51ff004); // ldr pc,[pc,#-0x4]
+        instrs[1] = Instr(to);
+        const size numInstrs = 2;
+#endif
+        const Span<const Instr> orig = { cast<const Instr*>(at), numInstrs };
+        backup->make(orig, at, at + numInstrs * sizeof(Instr));
+        return HookNInstr::installAtOffset(module, offset, { instrs, numInstrs });
 #endif
     }
 
@@ -58,7 +65,12 @@ namespace hk::hook {
 #ifdef __aarch64__
                 emitter.emitB(origReturnAddr);
 #else
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0
                 out.add(makeB(trampolineRx + out.size() * sizeof(Instr), origReturnAddr));
+#else 
+                out.add(Instr(0xe51ff004)); // ldr pc,[pc,#-0x4]
+                out.add(origReturnAddr);
+#endif
 #endif
             };
 

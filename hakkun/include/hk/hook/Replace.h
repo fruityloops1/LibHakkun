@@ -39,8 +39,14 @@ namespace hk::hook {
 
             return HookNInstr::installAtOffset(module, offset, outInstrs);
 #else
+#if HK_HOOK_TRAMPOLINE_LEVEL == 0
             instrs[0] = makeB(at, to);
             return HookNInstr::installAtOffset(module, offset, { instrs, 1 });
+#else
+            instrs[0] = Instr(0xe51ff004); // ldr pc,[pc,#-0x4]
+            instrs[1] = Instr(to);
+            return HookNInstr::installAtOffset(module, offset, { instrs, 2 });
+#endif
 #endif
         }
     };
