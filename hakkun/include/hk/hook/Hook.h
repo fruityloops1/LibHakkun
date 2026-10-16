@@ -21,7 +21,7 @@ namespace hk::hook {
 #else
 #error
 #endif
-#else
+#else // aarch32
 #if HK_HOOK_TRAMPOLINE_LEVEL == 0
             1
 #elif HK_HOOK_TRAMPOLINE_LEVEL == 1
