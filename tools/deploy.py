@@ -103,7 +103,7 @@ if not is_hbloader_homebrew:
     # build/exefs.nsp
     if is_standalone:
         print('-- Building exefs.nsp')
-        subprocess.check_output(['python', f'{os.path.dirname(os.path.abspath(__file__))}/senobi/build_pfs0.py', f"{build_dir}/exefs/", f"{build_dir}/exefs.nsp"])
+        subprocess.check_output(['python', f'{os.path.dirname(os.path.abspath(__file__))}/build_pfs0.py', f"{build_dir}/exefs/", f"{build_dir}/exefs.nsp"])
 
 deploy_sd()
 if (os.environ.get('HAKKUN_FTP_IP') is not None):
