@@ -5,7 +5,7 @@ import struct
 import hashlib
 import lz4.block
 
-from nxo import NroHeader
+from libnxo import NroHeader
 from elftools.elf.elffile import ELFFile
 from elftools.common.exceptions import ELFError, ELFParseError
 
