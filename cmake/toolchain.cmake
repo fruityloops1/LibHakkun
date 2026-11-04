@@ -127,7 +127,12 @@ endforeach()
 
 if (NOT STDLIB_FOUND)
     message(WARNING "Standard library not found! Running setup_libcxx_prepackaged.py")
-    execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/sys/tools/setup_libcxx_prepackaged.py ${ARCH_NAME}
+    set(PLATFORM_STR nx)
+    if (IS_OUNCE)
+        set(PLATFORM_STR ounce)
+    endif()
+
+    execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/sys/tools/setup_libcxx_prepackaged.py ${ARCH_NAME} ${PLATFORM_STR}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE result
     )
