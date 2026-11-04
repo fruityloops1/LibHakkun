@@ -16,7 +16,7 @@ root_dir = os.getcwd()
 def downloadAndExtractPrepackaged():
     print(f"Downloading pre-packaged stdlib")
 
-    subprocess.run(['curl', '-O', '-L', prepackaged_source_uri])
+    subprocess.run(['curl', '-O', '-L', '-f', prepackaged_source_uri])
 
     print(f"Extracting")
 

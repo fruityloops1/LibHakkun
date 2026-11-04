@@ -29,7 +29,7 @@ def downloadAndCompileMusl():
     print(f"Downloading musl")
 
     os.chdir(f'{root_dir}/lib/std')
-    subprocess.run(['curl', '-O', musl_source])
+    subprocess.run(['curl', '-O', '-L', '-f', musl_source])
 
     print(f"Extracting musl")
 
@@ -97,7 +97,7 @@ def downloadAndCompileLibcxxLibcxxabiLibunwindCompilerRt():
 
     os.chdir(f'{root_dir}/lib/std')
     llvm_zip_name = llvm_source.split('/')[-1]
-    subprocess.run(['curl', '-O', '-L', llvm_source])
+    subprocess.run(['curl', '-O', '-L', '-f', llvm_source])
 
     print(f"Extracting LLVM")
     
