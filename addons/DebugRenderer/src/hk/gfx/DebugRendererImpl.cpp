@@ -21,15 +21,23 @@
 #include "nvn/nvn_CppFuncPtrBase.h"
 #include "nvn/nvn_CppMethods.h"
 
+#include "embed_DebugRendererShader.h"
 #include "embed_font.h"
-#include "embed_shader.h"
 
 __attribute__((weak)) hk::gfx::DebugRendererSettings hkDebugRendererSettings;
 extern "C" __attribute__((weak)) void hkDebugRendererAfterInit(nvn::Device* device) { }
 
+#if HK_NVN_TARGET == HK_NVN_TARGET_NVN2
+#define HK_GFX_DEBUGRENDERER_SHADER_BIN DebugRenderer_Nvn2_bin
+#define HK_GFX_DEBUGRENDERER_SHADER_BIN_SIZE DebugRenderer_Nvn2_bin_size
+#else
+#define HK_GFX_DEBUGRENDERER_SHADER_BIN DebugRenderer_Nvn_bin
+#define HK_GFX_DEBUGRENDERER_SHADER_BIN_SIZE DebugRenderer_Nvn_bin_size
+#endif
+
 namespace hk::gfx {
     class DebugRendererImpl {
-        constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
+        constexpr static size cShaderBufferSize = alignUpPage(HK_GFX_DEBUGRENDERER_SHADER_BIN_SIZE);
         constexpr static size cVtxBufferSize = alignUpPage(HAKKUN_DEBUGRENDERER_VTXBUFFER_SIZE * sizeof(Vertex));
         // constexpr static size cIdxBufferSize = alignUpPage(0x3000 * sizeof(u16));
         constexpr static size cDefaultTextureMemorySize = cPageSize * 2;
@@ -76,7 +84,7 @@ namespace hk::gfx {
         bool tryInitialize() {
             if (mInitialized)
                 return false;
-            initialize((u8*)shader_bin);
+            initialize((u8*)HK_GFX_DEBUGRENDERER_SHADER_BIN);
             mInitialized = true;
             return true;
         }

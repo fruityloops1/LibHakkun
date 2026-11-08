@@ -13,7 +13,15 @@
 #include "nvn/nvn_Cpp.h"
 #include "nvn/nvn_CppMethods.h"
 
-#include "embed_shader.h"
+#include "embed_ImGuiShader.h"
+
+#if HK_NVN_TARGET == HK_NVN_TARGET_NVN2
+#define HK_GFX_IMGUI_SHADER_BIN ImGui_Nvn2_bin
+#define HK_GFX_IMGUI_SHADER_BIN_SIZE ImGui_Nvn2_bin_size
+#else
+#define HK_GFX_IMGUI_SHADER_BIN ImGui_Nvn_bin
+#define HK_GFX_IMGUI_SHADER_BIN_SIZE ImGui_Nvn_bin_size
+#endif
 
 namespace hk::gfx {
 
@@ -34,7 +42,7 @@ namespace hk::gfx {
     }
 
     class ImGuiBackendNvnImpl {
-        constexpr static size cShaderBufferSize = alignUpPage(shader_bin_size);
+        constexpr static size cShaderBufferSize = alignUpPage(HK_GFX_IMGUI_SHADER_BIN_SIZE);
 
         constexpr static size cInitialVtxBufferSize = 0x1000 * sizeof(ImDrawVert);
         constexpr static size cInitialIdxBufferSize = (cInitialVtxBufferSize / sizeof(ImDrawVert)) * 3 * sizeof(ImDrawIdx);
@@ -151,7 +159,7 @@ namespace hk::gfx {
             io.BackendRendererName = "HkAddon ImGuiNvn";
             io.DisplaySize = { 1920, 1080 };
 
-            mShader.create((u8*)shader_bin, cShaderBufferSize, mDevice, getImGuiAttribStates(), 3, getImGuiStreamState(), "hk::gfx::ImGuiBackendNvnImpl");
+            mShader.create((u8*)HK_GFX_IMGUI_SHADER_BIN, cShaderBufferSize, mDevice, getImGuiAttribStates(), 3, getImGuiStreamState(), "hk::gfx::ImGuiBackendNvnImpl");
 
             initBuffers(cInitialVtxBufferSize, cInitialIdxBufferSize);
             initTexture(false);
@@ -215,7 +223,6 @@ namespace hk::gfx {
 
             const auto dispSize = ImGui::GetIO().DisplaySize;
 
-
             Shader* lastBoundShader = nullptr;
 
             for (int i = 0; i < drawData.CmdListsCount; ++i) {
@@ -253,11 +260,11 @@ namespace hk::gfx {
 
                     cmdBuffer->SetScissor(min.x, min.y, size.x, size.y);
 
-                    #if IMGUI_VERSION_NUM>=19200
+#if IMGUI_VERSION_NUM >= 19200
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->TexRef.GetTexID());
-                    #else
+#else
                     TextureHandle* texHandle = reinterpret_cast<TextureHandle*>(cmd->GetTexID());
-                    #endif
+#endif
                     if (texHandle != nullptr) {
                         bindTexture(cmdBuffer, *texHandle);
                     } else {

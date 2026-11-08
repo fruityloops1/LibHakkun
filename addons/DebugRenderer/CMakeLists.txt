@@ -16,7 +16,11 @@ if (HAS_NVN EQUAL -1)
     message(FATAL_ERROR "Enable Nvn addon to use DebugRenderer")
 endif()
 
-embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader 0x1000 TRUE)
+if (NVN_TARGET STREQUAL Nvn2)
+    embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/DebugRenderer.Nvn2.bin DebugRendererShader 0x1000 TRUE)
+else()
+    embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/DebugRenderer.Nvn.bin DebugRendererShader 0x1000 TRUE)
+endif()
 embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/font.hkf font 0x1000 TRUE)
 
 apply_config(DebugRenderer)

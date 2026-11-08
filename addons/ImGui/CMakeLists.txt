@@ -24,10 +24,14 @@ include(../../cmake/bin2s.cmake)
 
 list(FIND HAKKUN_ADDONS Nvn HAS_NVN)
 if (HAS_NVN EQUAL -1)
-    message(FATAL_ERROR "Enable Nvn addon to use DebugRenderer")
+    message(FATAL_ERROR "Enable Nvn addon to use ImGui")
 endif()
 
-embed_file(ImGui ${CMAKE_CURRENT_SOURCE_DIR}/data/shader.bin shader 0x1000 TRUE)
+if (NVN_TARGET STREQUAL Nvn2)
+    embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/ImGui.Nvn2.bin ImGuiShader 0x1000 TRUE)
+else()
+    embed_file(DebugRenderer ${CMAKE_CURRENT_SOURCE_DIR}/data/ImGui.Nvn.bin ImGuiShader 0x1000 TRUE)
+endif()
 
 apply_config(ImGui)
 
