@@ -83,4 +83,28 @@ function(apply_config project)
     if (TITLE_ID AND NOT HAKKUN_TARGET STREQUAL MODULE_DLL)
         target_compile_definitions(${project} PRIVATE HK_TITLE_ID=${TITLE_ID})
     endif()
+
+    ## Addons
+
+    # Nvn
+    if ("Nvn" IN_LIST HAKKUN_ADDONS)
+        target_compile_definitions(${project} PRIVATE HK_NVN_TARGET_NVN=0 HK_NVN_TARGET_NVN2=1)
+
+        if (NOT NVN_TARGET)
+            message(WARNING "NVN_TARGET not set; inferring from platform")
+            if (IS_OUNCE)
+                set(NVN_TARGET Nvn2)
+            else()
+                set(NVN_TARGET Nvn)
+            endif()
+        endif()
+
+        if (NVN_TARGET STREQUAL Nvn)
+            target_compile_definitions(${project} PRIVATE HK_NVN_TARGET=HK_NVN_TARGET_NVN)
+        elseif(NVN_TARGET STREQUAL Nvn2)
+            target_compile_definitions(${project} PRIVATE HK_NVN_TARGET=HK_NVN_TARGET_NVN2)
+        else()
+            message(FATAL_ERROR "Invalid NVN target: ${NVN_TARGET}")
+        endif()
+    endif()
 endfunction()
