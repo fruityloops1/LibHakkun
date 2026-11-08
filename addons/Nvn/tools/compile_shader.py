@@ -44,8 +44,8 @@ else:
     vertexCodePath = ".vertex_code.bin"
     fragCodePath = ".frag_code.bin"
 
-    subprocess.check_call([uam_bin, '--glslcbinds', f'--nvnctrl={vertexCtrlPath}', f'--nvngpu={vertexCodePath}', vertex_path, '--stage', 'vert'])
-    subprocess.check_call([uam_bin, '--glslcbinds', f'--nvnctrl={fragCtrlPath}', f'--nvngpu={fragCodePath}', frag_path, '--stage', 'frag'])
+    subprocess.check_call([uam_bin, '--glslcbinds', f'--nvnctrl={vertexCtrlPath}', f'--nvngpu={vertexCodePath}', vertex_path, '--stage=vert'])
+    subprocess.check_call([uam_bin, '--glslcbinds', f'--nvnctrl={fragCtrlPath}', f'--nvngpu={fragCodePath}', frag_path, '--stage=frag'])
 
     vertCtrl = readBinaryFile(vertexCtrlPath)
     fragCtrl = readBinaryFile(fragCtrlPath)
