@@ -102,7 +102,11 @@ typedef struct {
 } NVNseparateSamplerHandle;
 
 typedef struct {
+#if OUNCE
+    char reserved[0x2CD0];
+#else
     char reserved[0x2000];
+#endif
 } NVNqueue;
 
 typedef struct {
@@ -111,11 +115,19 @@ typedef struct {
 } NVNqueueErrorInfo;
 
 typedef struct {
+#if OUNCE
+    char reserved[0x48];
+#else
     char reserved[0x40];
+#endif
 } NVNqueueBuilder;
 
 typedef struct {
-    char reserved[384];
+#if OUNCE
+    char reserved[0x218];
+#else
+    char reserved[0x180];
+#endif
 } NVNwindow;
 
 typedef struct {
@@ -127,7 +139,11 @@ typedef struct {
 } NVNtextureView;
 
 typedef struct {
+#if OUNCE
+    char reserved[0xC0];
+#else
     char reserved[0xA0];
+#endif
 } NVNcommandBuffer;
 
 typedef struct {
@@ -142,7 +158,11 @@ typedef struct {
 } NVNrectangle;
 
 typedef struct {
+#if OUNCE
+    char reserved[0xA0];
+#else
     char reserved[0xC0];
+#endif
 } NVNprogram;
 
 typedef struct {
@@ -217,7 +237,11 @@ typedef struct {
 } NVNcopyRegion;
 
 typedef struct {
+#if OUNCE
+    char reserved[0x60];
+#else
     char reserved[0x40];
+#endif
 } NVNwindowBuilder;
 
 typedef struct {
