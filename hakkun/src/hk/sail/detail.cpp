@@ -104,19 +104,20 @@ namespace hk::sail {
 
             const SymbolDataBlock::SearchFunction search = cast<const SymbolDataBlock::SearchFunction>(uintptr_t(gSymbols) + sym->offsetToSearchFunction);
 
-            s32 loadedVer = module->getVersionIndex();
+            const s32 loadedVer = module->getVersionIndex();
 
-            switch (sym->versionBoundaryType) {
-            case 1:
-                if (loadedVer >= sym->versionBoundary)
-                    return;
-            case 2:
-                if (loadedVer < sym->versionBoundary)
-                    return;
-            case 0:
-            default:
-                break;
-            }
+            if (loadedVer != -1) // assume newer if version isn't found
+                switch (sym->versionBoundaryType) {
+                case 1:
+                    if (loadedVer >= sym->versionBoundary)
+                        return;
+                case 2:
+                    if (loadedVer < sym->versionBoundary)
+                        return;
+                case 0:
+                default:
+                    break;
+                }
 
             ro::RoModule::Range range;
 
